@@ -8,7 +8,7 @@ $text-primary: #ffffff;
 $text-secondary: #cbd5e1;
 $text-muted: #94a3b8;
 $border-color: #4a5568;
-$hover-color: #63b3ed;
+$hover-color: #9b6012;;
 
 // Mixins
 @mixin flex-center {
@@ -23,7 +23,7 @@ $hover-color: #63b3ed;
 // Footer Styling
 .footer {
   background: linear-gradient(135deg, $primary-dark 0%, $secondary-dark 100%);
-  border-radius: 12px;
+  border-radius: 12px 12px 0 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   position: relative;
@@ -75,6 +75,7 @@ $hover-color: #63b3ed;
   .footer-left {
     flex: 1.5;
     min-width: 300px;
+    position: relative; // Add this for absolute positioning context
 
     .brand {
       font-size: 32px;
@@ -100,6 +101,9 @@ $hover-color: #63b3ed;
       color: $text-muted;
       font-size: 14px;
       font-weight: 400;
+      position: absolute;
+      bottom: -40px; // Position it below the footer-left section
+      left: 0;
     }
   }
 
@@ -117,6 +121,9 @@ $hover-color: #63b3ed;
         font-weight: 400;
         text-align: left;
         padding: 12px 0;
+        margin: 0; // Remove any default margins
+        width: 100%; // Ensure full width
+        justify-content: flex-start; // Align content to the left
         cursor: pointer;
         @include transition();
         position: relative;
@@ -201,7 +208,7 @@ $hover-color: #63b3ed;
         border: 2px solid $border-color;
         border-radius: 50%;
         background: transparent;
-        color: $text-secondary;
+        color: $accent-color;
         cursor: pointer;
         @include transition();
         position: relative;
@@ -221,16 +228,17 @@ $hover-color: #63b3ed;
           z-index: -1;
         }
 
-        mat-icon {
-          font-size: 24px;
-          width: 24px;
-          height: 24px;
+        fa-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
           @include transition();
         }
 
         &:hover {
           color: $text-primary;
           border-color: $accent-color;
+          background: $accent-color;
           transform: translateY(-3px);
           box-shadow: 0 8px 20px rgba($accent-color, 0.3);
 
@@ -239,8 +247,9 @@ $hover-color: #63b3ed;
             height: 100%;
           }
 
-          mat-icon {
-            transform: scale(1.1);
+          fa-icon {
+            color: $text-primary;
+            transform: scale(1.05);
           }
         }
 
@@ -303,7 +312,11 @@ $hover-color: #63b3ed;
       }
 
       .copyright {
+        position: static;
         text-align: center;
+        margin-top: 30px;
+        bottom: auto;
+        left: auto;
       }
     }
 
