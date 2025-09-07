@@ -1,1 +1,109 @@
-<p>category-edit works!</p>
+<div class="category-edit container" *ngIf="!isLoading; else loadingTpl">
+  <!-- Header -->
+  <header class="header">
+    <h2>{{ pageTitle }}</h2>
+    <nav class="breadcrumb">
+      <a routerLink="/categories">Categories</a>
+      <span class="separator">/</span>
+      <span class="current">{{ isEditMode ? 'Edit' : 'Add' }}</span>
+    </nav>
+  </header>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-error" role="alert">
+    <i class="icon-error"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Name Field -->
+    <div class="form-group">
+      <label for="name">Category Name <span class="required">*</span></label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        maxlength="100"
+        placeholder="Enter category name"
+        [class.invalid]="name?.invalid && (name?.dirty || name?.touched)"
+      />
+      <div *ngIf="name?.invalid && (name?.dirty || name?.touched)" class="field-error">
+        {{ getNameErrorMessage() }}
+      </div>
+      <small class="char-counter">{{ name?.value?.length || 0 }}/100</small>
+    </div>
+
+    <!-- Description Field -->
+    <div class="form-group">
+      <label for="description">Description <span class="optional">(Optional)</span></label>
+      <textarea
+        id="description"
+        formControlName="description"
+        rows="4"
+        maxlength="500"
+        placeholder="Enter category description"
+        [class.invalid]="description?.invalid && (description?.dirty || description?.touched)"
+      ></textarea>
+      <div *ngIf="description?.invalid && (description?.dirty || description?.touched)" class="field-error">
+        {{ getDescriptionErrorMessage() }}
+      </div>
+      <small class="char-counter">{{ description?.value?.length || 0 }}/500</small>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="categoryForm.invalid || isSaving"
+      >
+        <span *ngIf="isSaving" class="spinner"></span>
+        {{ submitButtonText }}
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="onReset()"
+        [disabled]="isSaving || !categoryForm.dirty"
+      >
+        Reset
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-outline"
+        (click)="onCancel()"
+        [disabled]="isSaving"
+      >
+        Cancel
+      </button>
+    </div>
+
+    <!-- Unsaved Changes Info -->
+    <div class="form-status" *ngIf="categoryForm.dirty && !isSaving">
+      <i class="icon-info"></i>
+      You have unsaved changes
+    </div>
+  </form>
+
+  <!-- Tips Section -->
+  <section class="tips">
+    <h3>Tips</h3>
+    <ul>
+      <li>Choose a descriptive name that clearly identifies the category</li>
+      <li>Keep names concise but meaningful</li>
+      <li>Use the description to provide additional context if needed</li>
+      <li *ngIf="!isEditMode">Make sure the category name doesn't already exist</li>
+    </ul>
+  </section>
+</div>
+
+<!-- Loading Template -->
+<ng-template #loadingTpl>
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading category details...</p>
+  </div>
+</ng-template>
