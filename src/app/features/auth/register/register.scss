@@ -1,0 +1,234 @@
+/* signup.component.scss */
+
+/*
+   Register Component Styles
+   */
+
+@use "sass:color";
+
+// 🎨 Theme variables
+$primary-color: #9b6012;
+$primary-dark: #1a202c;
+$secondary-dark: #2d3748;
+$white: #ffffff;
+$light-gray: #f8f9fa;
+$border-color: #ccc;
+$shadow-color: rgba(39, 54, 102, 0.15);
+$text-dark: #333;
+
+// Main Container
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, $light-gray 0%, $white 100%);
+}
+
+// Card Styling
+mat-card {
+  width: 100%;
+  max-width: 450px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px $shadow-color;
+  border: 1px solid rgba($border-color, 0.2);
+  overflow: hidden;
+
+  // Header
+  mat-card-header {
+    background: linear-gradient(
+      135deg,
+      $primary-color 0%,
+      color.adjust($primary-color, $lightness: -10%) 100%
+    );
+    color: $white;
+    padding: 28px 32px 22px;
+    text-align: center;
+
+    mat-card-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // Content
+  mat-card-content {
+    padding: 30px;
+    background: $white;
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+  }
+
+  // Footer / Actions
+  mat-card-actions {
+    padding: 22px 30px 28px;
+    background: $white;
+    text-align: center;
+    border-top: 1px solid rgba($border-color, 0.1);
+
+    p {
+      margin: 0;
+      color: $text-dark;
+      font-size: 14px;
+
+      a {
+        cursor: pointer;
+        color: $primary-color;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: color.adjust($primary-color, $lightness: -10%);
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+// Form Fields
+.full-width {
+  width: 100%;
+
+  // Material overrides
+  ::ng-deep {
+    .mat-mdc-form-field-outline {
+      color: rgba($border-color, 0.5);
+    }
+
+    .mat-mdc-form-field-focus-overlay {
+      background-color: transparent;
+    }
+
+    &.mat-focused {
+      .mat-mdc-form-field-outline-thick {
+        color: $primary-color;
+      }
+
+      .mat-mdc-floating-label {
+        color: $primary-color;
+      }
+    }
+
+    .mat-mdc-input-element {
+      color: $text-dark;
+      font-size: 16px;
+
+      &::placeholder {
+        color: rgba($text-dark, 0.6);
+      }
+    }
+
+    .mat-mdc-floating-label {
+      color: rgba($text-dark, 0.7);
+      font-weight: 400;
+    }
+
+    // Icon styling
+    mat-icon {
+      color: $primary-color !important;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+      
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// Button Styling
+button[mat-raised-button] {
+  height: 46px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  margin-top: 10px;
+  text-transform: none;
+  transition: all 0.3s ease;
+  background-color: $primary-color !important;
+  color: $white !important;
+
+  &:hover {
+    background-color: color.adjust($primary-color, $lightness: -10%) !important;
+    color: $white !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 16px;
+    min-height: calc(100vh - 32px);
+  }
+
+  mat-card {
+    max-width: 100%;
+
+    mat-card-header {
+      padding: 22px 24px 18px;
+
+      mat-card-title {
+        font-size: 22px;
+      }
+    }
+
+    mat-card-content {
+      padding: 22px;
+
+      form {
+        gap: 14px;
+      }
+    }
+
+    mat-card-actions {
+      padding: 18px 22px 22px;
+    }
+  }
+
+  button[mat-raised-button] {
+    height: 44px;
+    font-size: 14px;
+  }
+}
+
+.loading {
+  mat-card {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  button[mat-raised-button] {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      margin: auto;
+      border: 2px solid transparent;
+      border-top-color: $white;
+      border-radius: 50%;
+      animation: spin 1s ease infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
