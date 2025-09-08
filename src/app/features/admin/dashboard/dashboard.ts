@@ -10,6 +10,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [
     MatSidenavModule,
     MatToolbarModule,
