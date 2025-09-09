@@ -54,14 +54,13 @@ export class Login {
       this.authService.login(email, password).subscribe({
         next: (response) => {
           console.log('Login successful:', response);
-          this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
           
-          // Navigate based on role
-          if (response.user.role === 'ADMIN') {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/dashboard']);
-          }
+          // Show success message with user role
+          const roleMessage = response.user.role === 'ADMIN' ? 'Admin login successful!' : 'Login successful!';
+          this.snackBar.open(roleMessage, 'Close', { duration: 3000 });
+          
+          // Navigate based on role from database
+          this.navigateBasedOnRole(response.user.role);
         },
         error: (error) => {
           console.error('Login error:', error);
@@ -73,6 +72,23 @@ export class Login {
       });
     } else {
       this.markFormGroupTouched();
+    }
+  }
+
+  private navigateBasedOnRole(role: string) {
+    switch (role) {
+      case 'ADMIN':
+        this.router.navigate(['/dashboard']);
+        break;
+      case 'STUDENT':
+        this.router.navigate(['/dashboard']);
+        break;
+      case 'GUEST':
+        this.router.navigate(['/guest-dashboard']);
+        break;
+      default:
+        this.router.navigate(['/dashboard']); // Default fallback
+        break;
     }
   }
 

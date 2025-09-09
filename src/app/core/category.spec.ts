@@ -30,12 +30,12 @@ describe('CategoryService', () => {
     const response: GenericResponseV2<CategoryDto> = {
       status: 'SUCCESS',
       message: 'Category created',
-      data: { id: 1, ...category }
+      _embedded: { id: 1, ...category }
     };
 
     service.add(category).subscribe(res => {
       expect(res.status).toBe('SUCCESS');
-      expect(res.data.name).toBe('Test Category');
+      expect(res._embedded.name).toBe('Test Category');
     });
 
     const req = httpMock.expectOne(`${baseUrl}/add`);
@@ -50,12 +50,12 @@ describe('CategoryService', () => {
     const response: GenericResponseV2<CategoryDto> = {
       status: 'SUCCESS',
       message: 'Category updated',
-      data: { id: categoryId, ...category }
+      _embedded: { id: categoryId, ...category }
     };
 
     service.update(categoryId, category).subscribe(res => {
       expect(res.status).toBe('SUCCESS');
-      expect(res.data.name).toBe('Updated Category');
+      expect(res._embedded.name).toBe('Updated Category');
     });
 
     const req = httpMock.expectOne(`${baseUrl}/update/${categoryId}`);
@@ -69,7 +69,7 @@ describe('CategoryService', () => {
     const response: GenericResponseV2<void> = {
       status: 'SUCCESS',
       message: 'Category deleted',
-      data: undefined
+      _embedded: undefined
     };
 
     service.delete(categoryId).subscribe(res => {
@@ -86,13 +86,13 @@ describe('CategoryService', () => {
     const response: GenericResponseV2<CategoryDto> = {
       status: 'SUCCESS',
       message: 'Category fetched',
-      data: { id: categoryId, name: 'Test Category', description: 'Test Description' }
+      _embedded: { id: categoryId, name: 'Test Category', description: 'Test Description' }
     };
 
     service.getById(categoryId).subscribe(res => {
       expect(res.status).toBe('SUCCESS');
-      expect(res.data.id).toBe(categoryId);
-      expect(res.data.name).toBe('Test Category');
+      expect(res._embedded.id).toBe(categoryId);
+      expect(res._embedded.name).toBe('Test Category');
     });
 
     const req = httpMock.expectOne(`${baseUrl}/${categoryId}`);

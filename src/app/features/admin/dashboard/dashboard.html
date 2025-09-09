@@ -37,64 +37,68 @@
 <!-- MAIN CONTAINER (below navbar) -->
 <mat-sidenav-container class="app-container">
   <!-- SIDEBAR -->
-  <!-- SIDEBAR -->
-<mat-sidenav #sidenav mode="side" [opened]="!collapsed" id="sidebar">
+  <mat-sidenav #sidenav mode="side" [opened]="!collapsed" id="sidebar">
+    <mat-nav-list class="side-menu top">
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+        <mat-icon>home</mat-icon>
+        <span class="text">Home</span>
+      </a>
+      <a mat-list-item routerLink="/dashboard/analytics" routerLinkActive="active">
+        <mat-icon>bar_chart</mat-icon>
+        <span class="text">Analytics</span>
+      </a>
+      <a mat-list-item routerLink="/dashboard/team" routerLinkActive="active">
+        <mat-icon>group</mat-icon>
+        <span class="text">Team</span>
+      </a>
 
-  <mat-nav-list class="side-menu top">
-    <a mat-list-item routerLink="/" routerLinkActive="active">
-      <mat-icon>home</mat-icon>
-      <span class="text">Home</span>
-    </a>
-    <a mat-list-item routerLink="/analytics" routerLinkActive="active">
-      <mat-icon>bar_chart</mat-icon>
-      <span class="text">Analytics</span>
-    </a>
-    <a mat-list-item routerLink="/team" routerLinkActive="active">
-      <mat-icon>group</mat-icon>
-      <span class="text">Team</span>
-    </a>
+      <!-- Expansion panel for nested content -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>folder</mat-icon>
+            <span class="text">Content</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
-    <!-- Expansion panel for nested content -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon>folder</mat-icon>
-          <span class="text">Content</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
+        <mat-nav-list>
+          <a mat-list-item routerLink="/dashboard/category/add" routerLinkActive="active">
+            <mat-icon>category</mat-icon>
+            <span>Categories</span>
+          </a>
+          <a mat-list-item routerLink="/dashboard/videos" routerLinkActive="active">
+            <mat-icon>ondemand_video</mat-icon>
+            <span>Videos</span>
+          </a>
+          <a mat-list-item routerLink="/dashboard/notes" routerLinkActive="active">
+            <mat-icon>description</mat-icon>
+            <span>Notes</span>
+          </a>
+          <a mat-list-item routerLink="/dashboard/exam" routerLinkActive="active">
+            <mat-icon>edit_note</mat-icon>
+            <span>Exam</span>
+          </a>
+        </mat-nav-list>
+      </mat-expansion-panel>
+    </mat-nav-list>
 
-      <mat-nav-list>
-        <a mat-list-item routerLink="/categoory" routerLinkActive="active">
-          <mat-icon>category</mat-icon>
-          <span>Categories</span>
-        </a>
-        <a mat-list-item routerLink="/videos" routerLinkActive="active">
-          <mat-icon>ondemand_video</mat-icon>
-          <span>Videos</span>
-        </a>
-        <a mat-list-item routerLink="/notes" routerLinkActive="active">
-          <mat-icon>description</mat-icon>
-          <span>Notes</span>
-        </a>
-        <a mat-list-item routerLink="/exam" routerLinkActive="active">
-          <mat-icon>edit_note</mat-icon>
-          <span>Exam</span>
-        </a>
-      </mat-nav-list>
-    </mat-expansion-panel>
-  </mat-nav-list>
+    <!-- Bottom menu -->
+    <mat-nav-list class="side-menu">
+      <!-- Temporarily comment out routes that don't exist -->
+      <!-- <a mat-list-item routerLink="/dashboard/settings" routerLinkActive="active">
+        <mat-icon>settings</mat-icon>
+        <span class="text">Settings</span>
+      </a> -->
+      <a mat-list-item (click)="logout()" class="logout">
+        <mat-icon>logout</mat-icon>
+        <span class="text">Logout</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
 
-  <!-- Bottom menu -->
-  <mat-nav-list class="side-menu">
-    <a mat-list-item routerLink="/settings" routerLinkActive="active">
-      <mat-icon>settings</mat-icon>
-      <span class="text">Settings</span>
-    </a>
-    <a mat-list-item (click)="logout()" class="logout">
-      <mat-icon>logout</mat-icon>
-      <span class="text">Logout</span>
-    </a>
-  </mat-nav-list>
-</mat-sidenav>
-
+  <!-- MAIN CONTENT AREA -->
+  <mat-sidenav-content class="main-content">
+    <!-- This is where the routed components will be displayed -->
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
 </mat-sidenav-container>
