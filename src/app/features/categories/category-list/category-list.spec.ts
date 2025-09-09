@@ -31,7 +31,7 @@ describe('CategoryListComponent', () => {
     mockCategoryService.getAll.and.returnValue(of({
       status: 'SUCCESS',
       message: 'Success',
-      data: []
+      _embedded: []
     }));
     
     fixture.detectChanges();

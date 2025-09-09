@@ -1,13 +1,36 @@
-<!-- category-list.html -->
 <div class="category-list">
-  <h2>Categories</h2>
-  <button routerLink="/categories/add">+ Add Category</button>
+  <div class="header">
+    <h2>Categories</h2>
+    <button class="add-btn" (click)="onAdd()">Add Category</button>
+  </div>
 
-  <ul>
-    <li *ngFor="let cat of categories">
-      {{ cat.name }}
-      <button (click)="onEdit(cat.id!)">Edit</button>
-      <button (click)="onDelete(cat.id!)">Delete</button>
-    </li>
-  </ul>
+  @if (isLoading) {
+    <div class="loading">Loading categories...</div>
+  } @else if (errorMessage) {
+    <div class="error-message">{{ errorMessage }}</div>
+  } @else {
+    @if (categories.length > 0) {
+      <div class="categories-container">
+        @for (category of categories; track category.id) {
+          <div class="category-item">
+            <div class="category-info">
+              <h3>{{ category.name }}</h3>
+              @if (category.description) {
+                <p>{{ category.description }}</p>
+              }
+            </div>
+            <div class="category-actions">
+              <button (click)="onEdit(category.id!)">Edit</button>
+              <button (click)="onDelete(category.id!)">Delete</button>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <p>No categories found.</p>
+        <button (click)="onAdd()">Create Category</button>
+      </div>
+    }
+  }
 </div>

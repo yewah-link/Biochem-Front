@@ -32,7 +32,7 @@ export class CategoryListComponent implements OnInit {
     this.categoryService.getAll().subscribe({
       next: (response: GenericResponseV2<CategoryDto[]>) => {
         if (response.status === 'SUCCESS') {
-          this.categories = response.data;
+          this.categories = response._embedded;
         } else {
           this.errorMessage = response.message;
         }

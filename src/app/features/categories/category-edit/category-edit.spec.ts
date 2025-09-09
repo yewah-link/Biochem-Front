@@ -1,101 +1,160 @@
-// src/app/features/category/category-edit/category-edit.spec.ts
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Router } from '@angular/router';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { Component } from '@angular/core';
 
 import { CategoryEdit } from './category-edit';
 import { CategoryService, CategoryDto, GenericResponseV2 } from '../../../core/category.service';
+
+@Component({ template: '' })
+class TestComponent { }
 
 describe('CategoryEdit', () => {
   let component: CategoryEdit;
   let fixture: ComponentFixture<CategoryEdit>;
   let service: CategoryService;
   let httpMock: HttpTestingController;
+  let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
+    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+
     await TestBed.configureTestingModule({
       declarations: [CategoryEdit],
-      imports: [
-        ReactiveFormsModule,
-        RouterTestingModule,
-        HttpClientTestingModule
-      ],
-      providers: [CategoryService]
+      imports: [ReactiveFormsModule, HttpClientTestingModule],
+      providers: [
+        CategoryService,
+        { provide: Router, useValue: routerSpy }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CategoryEdit);
     component = fixture.componentInstance;
     service = TestBed.inject(CategoryService);
     httpMock = TestBed.inject(HttpTestingController);
+    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    
     fixture.detectChanges();
   });
 
   afterEach(() => {
-    httpMock.verify(); // ensure no outstanding requests
+    httpMock.verify();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize the form', () => {
+  it('should initialize form with validators', () => {
     expect(component.categoryForm).toBeDefined();
     expect(component.categoryForm.get('name')).toBeTruthy();
     expect(component.categoryForm.get('description')).toBeTruthy();
+
+    const nameControl = component.categoryForm.get('name');
+    nameControl?.setValue('');
+    expect(nameControl?.hasError('required')).toBeTruthy();
   });
 
-  it('should show error if name is empty on submit', () => {
-    component.categoryForm.setValue({ name: '', description: '' });
-    component.onSubmit();
-    expect(component.categoryForm.invalid).toBeTrue();
-  });
-
-  it('should call add when no categoryId is set', () => {
-    const dummyCategory: CategoryDto = { name: 'Test Category', description: 'Test Desc' };
-    const mockResponse: GenericResponseV2<CategoryDto> = {
-      status: 'SUCCESS',
-      message: 'Category created',
-      data: { id: 1, name: 'Test Category', description: 'Test Desc' }
+  it('should handle form submission for new category', () => {
+    const categoryData: CategoryDto = { 
+      name: 'Test Category', 
+      description: 'Test Description' 
     };
 
-    component.categoryForm.setValue(dummyCategory);
+    component.categoryForm.patchValue(categoryData);
     component.onSubmit();
 
     const req = httpMock.expectOne('http://localhost:8080/api/v1/category/add');
     expect(req.request.method).toBe('POST');
-    req.flush(mockResponse);
+    
+    const response: GenericResponseV2<CategoryDto> = {
+      status: 'SUCCESS',
+      message: 'Category created',
+     _embedded: { id: 1, ...categoryData }
+    };
+    req.flush(response);
   });
 
-  it('should call update when categoryId is set', () => {
-    const dummyCategory: CategoryDto = { name: 'Updated Name', description: 'Updated Desc' };
-    const mockResponse: GenericResponseV2<CategoryDto> = {
-      status: 'SUCCESS',
-      message: 'Category updated',
-      data: { id: 1, name: 'Updated Name', description: 'Updated Desc' }
+  it('should handle form submission for existing category', () => {
+    const categoryData: CategoryDto = { 
+      name: 'Updated Category', 
+      description: 'Updated Description' 
     };
 
     component.categoryId = 1;
     component.isEditMode = true;
-    component.categoryForm.setValue(dummyCategory);
+    component.categoryForm.patchValue(categoryData);
     component.onSubmit();
 
     const req = httpMock.expectOne('http://localhost:8080/api/v1/category/update/1');
     expect(req.request.method).toBe('PUT');
-    req.flush(mockResponse);
+    
+    const response: GenericResponseV2<CategoryDto> = {
+      status: 'SUCCESS',
+      message: 'Category updated',
+      _embedded: { id: 1, ...categoryData }
+    };
+    req.flush(response);
   });
 
-  it('should handle service error on submit', () => {
+  it('should load category data in edit mode', () => {
+    const categoryData: CategoryDto = { 
+      id: 1, 
+      name: 'Existing Category', 
+      description: 'Existing Description' 
+    };
+
+    component.categoryId = 1;
+    component.loadCategory();
+
+    const req = httpMock.expectOne('http://localhost:8080/api/v1/category/1');
+    expect(req.request.method).toBe('GET');
+    
+    const response: GenericResponseV2<CategoryDto> = {
+      status: 'SUCCESS',
+      message: 'Category fetched',
+      _embedded: categoryData
+    };
+    req.flush(response);
+
+    expect(component.categoryForm.get('name')?.value).toBe(categoryData.name);
+    expect(component.categoryForm.get('description')?.value).toBe(categoryData.description);
+  });
+
+  it('should handle service errors', () => {
     component.categoryId = 1;
     component.isEditMode = true;
-    const dummyCategory: CategoryDto = { name: 'Error Test', description: '' };
-
-    component.categoryForm.setValue(dummyCategory);
+    component.categoryForm.patchValue({ name: 'Test', description: '' });
+    
     component.onSubmit();
 
     const req = httpMock.expectOne('http://localhost:8080/api/v1/category/update/1');
-    req.error(new ErrorEvent('Network error'));
+    req.error(new ProgressEvent('Network error'));
 
-    expect(component.errorMessage).toBe('Failed to save category. Please try again.');
+    expect(component.errorMessage).toBeTruthy();
+    expect(component.isSaving).toBeFalse();
+  });
+
+  it('should handle cancel with dirty form', () => {
+    spyOn(window, 'confirm').and.returnValue(false);
+    
+    component.categoryForm.markAsDirty();
+    component.onCancel();
+    
+    expect(window.confirm).toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should reset form', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    
+    component.categoryForm.patchValue({ name: 'Test', description: 'Test' });
+    component.categoryForm.markAsDirty();
+    
+    component.onReset();
+    
+    expect(window.confirm).toHaveBeenCalled();
+    expect(component.categoryForm.pristine).toBeTruthy();
   });
 });

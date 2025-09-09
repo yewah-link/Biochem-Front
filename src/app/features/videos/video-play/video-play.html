@@ -1,1 +1,80 @@
-<p>video-play works!</p>
+<!-- Video Player Component -->
+@if (video) {
+  <div class="video-player-container">
+    <!-- Player Header -->
+    <div class="player-header">
+      <button class="back-button" (click)="onBackClick()">
+        <span class="icon">←</span>
+        Back to Videos
+      </button>
+      
+      <div class="player-actions">
+        <button class="action-btn delete-btn" (click)="onDeleteClick()">
+          <span class="icon">🗑️</span>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Video Player -->
+    <div class="video-wrapper"
+         (mousemove)="onPlayerMouseMove()"
+         (mouseleave)="onPlayerMouseLeave()">
+      
+      <video
+        #videoPlayer
+        class="video-element"
+        [src]="getVideoStreamUrl()"
+        (loadedmetadata)="onVideoLoadedMetadata()"
+        (timeupdate)="onTimeUpdate()"
+        (ended)="onVideoEnded()"
+        (error)="onVideoError()"
+        [class.fullscreen]="isFullscreen">
+        Your browser does not support the video tag.
+      </video>
+
+      <!-- Custom Controls Overlay -->
+      <div class="video-controls" [class.hidden]="!showControls">
+        <!-- Play/Pause Button -->
+        <div class="control-center">
+          <button class="play-pause-btn" (click)="togglePlayPause()">
+            @if (!isPlaying) {
+              <span class="icon">▶</span>
+            } @else {
+              <span class="icon">⏸</span>
+            }
+          </button>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="controls-bottom">
+          <!-- Progress Bar -->
+          <div class="progress-container">
+            <input
+              type="range"
+              class="progress-bar"
+              [value]="currentTime"
+              [max]="duration"
+              (input)="seekTo($event)" />
+            <div class="progress-time">
+              <span>{{ formatTime(currentTime) }}</span>
+              <span>/</span>
+              <span>{{ formatTime(duration) }}</span>
+            </div>
+          </div>
+
+          <!-- Control Buttons -->
+          <div class="control-buttons">
+            <button class="control-btn volume-btn" (click)="toggleMute()">
+              <span class="icon">🔊</span>
+            </button>
+            
+            <button class="control-btn fullscreen-btn" (click)="toggleFullscreen()">
+              <span class="icon">⛶</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

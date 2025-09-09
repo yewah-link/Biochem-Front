@@ -9,9 +9,9 @@ export interface CategoryDto {
 }
 
 export interface GenericResponseV2<T> {
-  status: 'SUCCESS' | 'FAILED';
+  status: 'SUCCESS' | 'ERROR';
   message: string;
-  data: T;
+  _embedded: T;
 }
 
 @Injectable({

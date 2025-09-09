@@ -7,6 +7,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { RouterModule } from '@angular/router'; // Add this import
 
 @Component({
   selector: 'app-dashboard',
@@ -17,25 +18,21 @@ import { MatExpansionModule } from '@angular/material/expansion';
     MatIconModule,
     MatListModule,
     MatExpansionModule,
-    MatButtonModule
-],
+    MatButtonModule,
+    RouterModule // Add this to imports
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
 export class Dashboard {
-mobileSearchActive = false;
-collapsed = false;
+  mobileSearchActive = false;
+  collapsed = false;
+  showContent = false;
+  search: string = '';
 
-showContent = false;
-
-search: string = '';
-
-onSearch() {
-  console.log('Searching for:', this.search);
-  
-}
-
-
+  onSearch() {
+    console.log('Searching for:', this.search);
+  }
 
   toggleSidenav() {
     this.collapsed = !this.collapsed;
@@ -44,5 +41,4 @@ onSearch() {
   logout() {
     alert('Logging out...');
   }
-
 }

@@ -1,1 +1,250 @@
-<p>video-edit works!</p>
+<!-- Main Container -->
+<div class="video-manager">
+  <!-- Navigation Header -->
+  <header class="nav-header">
+    <div class="nav-container">
+      <h1 class="app-title">VideoTube Manager</h1>
+      <nav class="nav-buttons">
+        <button 
+          class="nav-btn" 
+          [class.active]="currentView === 'list'"
+          (click)="switchToView('list')">
+          <span class="icon">📋</span>
+          Video List
+        </button>
+        <button 
+          class="nav-btn" 
+          [class.active]="currentView === 'upload'"
+          (click)="switchToView('upload')">
+          <span class="icon">📤</span>
+          Upload Video
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Loading Spinner -->
+  @if (isLoading) {
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+  }
+
+  <!-- Messages -->
+  @if (!isLoading) {
+    <div class="messages">
+      @if (errorMessage) {
+        <div class="alert alert-error">
+          <span class="icon">❌</span>
+          {{ errorMessage }}
+        </div>
+      }
+      @if (successMessage) {
+        <div class="alert alert-success">
+          <span class="icon">✅</span>
+          {{ successMessage }}
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Video List View -->
+  @if (currentView === 'list' && !isLoading) {
+    <div class="video-list-view">
+      <div class="view-header">
+        <h2>Your Videos</h2>
+        <p class="video-count">{{ videos.length }} video(s)</p>
+      </div>
+
+      @if (videos.length > 0) {
+        <div class="videos-grid">
+          @for (video of videos; track video.id) {
+            <div class="video-card">
+              <!-- Video Thumbnail -->
+              <div class="video-thumbnail" (click)="playVideo(video)">
+                <img [src]="getVideoThumbnail(video)" [alt]="video.description" />
+                <div class="play-overlay">
+                  <span class="play-icon">▶️</span>
+                </div>
+              </div>
+
+              <!-- Video Info -->
+              <div class="video-info">
+                <h3 class="video-title" (click)="playVideo(video)">{{ video.description }}</h3>
+                
+                <div class="video-meta">
+                  <span class="category">{{ getCategoryName(video.category) }}</span>
+                  <span class="file-size">{{ formatFileSize(video.fileSize) }}</span>
+                  <span class="file-type">{{ video.fileType }}</span>
+                </div>
+
+                <div class="video-actions">
+                  <button class="action-btn play-btn" (click)="playVideo(video)">
+                    <span class="icon">▶️</span>
+                    Play
+                  </button>
+                  <button class="action-btn delete-btn" (click)="deleteVideo(video.id!)">
+                    <span class="icon">🗑️</span>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Empty State -->
+        <div class="empty-state">
+          <div class="empty-icon">📹</div>
+          <h3>No videos uploaded yet</h3>
+          <p>Start by uploading your first video!</p>
+          <button class="primary-btn" (click)="switchToView('upload')">
+            Upload Video
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Upload View -->
+  @if (currentView === 'upload' && !isLoading) {
+    <div class="upload-view">
+      <div class="view-header">
+        <h2>Upload New Video</h2>
+        <p>Share your content with the world</p>
+      </div>
+
+      <div class="upload-form">
+        <!-- File Upload -->
+        <div class="form-group">
+          <label for="fileInput" class="form-label">Select Video File</label>
+          <div class="file-input-container">
+            <input 
+              type="file" 
+              id="fileInput"
+              accept="video/*"
+              (change)="onFileSelected($event)"
+              class="file-input">
+            <div class="file-input-display">
+              <span class="file-icon">📁</span>
+              <span class="file-text">
+                {{ selectedFile ? selectedFile.name : 'Choose video file...' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description" class="form-label">Video Description</label>
+          <textarea 
+            id="description"
+            [(ngModel)]="uploadForm.description"
+            placeholder="Tell viewers about your video..."
+            class="form-textarea"
+            rows="4">
+          </textarea>
+        </div>
+
+        <!-- Category Selection -->
+        <div class="form-group">
+          <label for="category" class="form-label">Category</label>
+          <select 
+            id="category"
+            [(ngModel)]="uploadForm.categoryId"
+            class="form-select">
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">
+                {{ category.name }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <!-- File Type (Auto-detected) -->
+        @if (selectedFile) {
+          <div class="form-group">
+            <label class="form-label">File Type</label>
+            <div class="file-type-display">
+              <span class="type-badge">{{ uploadForm.fileType }}</span>
+            </div>
+          </div>
+        }
+
+        <!-- Upload Button -->
+        <div class="form-actions">
+          <button 
+            class="primary-btn upload-btn"
+            (click)="uploadVideo()"
+            [disabled]="!selectedFile || !uploadForm.description.trim()">
+            <span class="icon">📤</span>
+            Upload Video
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Video Player View -->
+  @if (currentView === 'play' && currentVideo && !isLoading) {
+    <div class="player-view">
+      <div class="player-header">
+        <button class="back-btn" (click)="switchToView('list')">
+          <span class="icon">⬅️</span>
+          Back to Videos
+        </button>
+      </div>
+
+      <div class="video-player-container">
+        <!-- Video Player -->
+        <div class="video-player">
+          <video 
+            controls 
+            width="100%" 
+            height="400"
+            [src]="getVideoStreamUrl(currentVideo)">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <!-- Video Details -->
+        <div class="video-details">
+          <h2 class="player-video-title">{{ currentVideo.description }}</h2>
+          
+          <div class="video-metadata">
+            <div class="meta-item">
+              <span class="meta-label">Category:</span>
+              <span class="meta-value">{{ getCategoryName(currentVideo.category) }}</span>
+            </div>
+            
+            <div class="meta-item">
+              <span class="meta-label">File Size:</span>
+              <span class="meta-value">{{ formatFileSize(currentVideo.fileSize) }}</span>
+            </div>
+            
+            <div class="meta-item">
+              <span class="meta-label">Format:</span>
+              <span class="meta-value">{{ currentVideo.fileType }}</span>
+            </div>
+            
+            @if (currentVideo.fileName) {
+              <div class="meta-item">
+                <span class="meta-label">File Name:</span>
+                <span class="meta-value">{{ currentVideo.fileName }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Player Actions -->
+          <div class="player-actions">
+            <button class="action-btn delete-btn" (click)="deleteVideo(currentVideo.id!)">
+              <span class="icon">🗑️</span>
+              Delete Video
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

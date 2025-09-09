@@ -1,109 +1,216 @@
-<div class="category-edit container" *ngIf="!isLoading; else loadingTpl">
-  <!-- Header -->
-  <header class="header">
-    <h2>{{ pageTitle }}</h2>
-    <nav class="breadcrumb">
-      <a routerLink="/categories">Categories</a>
-      <span class="separator">/</span>
-      <span class="current">{{ isEditMode ? 'Edit' : 'Add' }}</span>
-    </nav>
-  </header>
-
-  <!-- Error Message -->
-  <div *ngIf="errorMessage" class="alert alert-error" role="alert">
-    <i class="icon-error"></i>
-    {{ errorMessage }}
-  </div>
-
-  <!-- Form -->
-  <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" novalidate>
-    <!-- Name Field -->
-    <div class="form-group">
-      <label for="name">Category Name <span class="required">*</span></label>
-      <input
-        id="name"
-        type="text"
-        formControlName="name"
-        maxlength="100"
-        placeholder="Enter category name"
-        [class.invalid]="name?.invalid && (name?.dirty || name?.touched)"
-      />
-      <div *ngIf="name?.invalid && (name?.dirty || name?.touched)" class="field-error">
-        {{ getNameErrorMessage() }}
-      </div>
-      <small class="char-counter">{{ name?.value?.length || 0 }}/100</small>
-    </div>
-
-    <!-- Description Field -->
-    <div class="form-group">
-      <label for="description">Description <span class="optional">(Optional)</span></label>
-      <textarea
-        id="description"
-        formControlName="description"
-        rows="4"
-        maxlength="500"
-        placeholder="Enter category description"
-        [class.invalid]="description?.invalid && (description?.dirty || description?.touched)"
-      ></textarea>
-      <div *ngIf="description?.invalid && (description?.dirty || description?.touched)" class="field-error">
-        {{ getDescriptionErrorMessage() }}
-      </div>
-      <small class="char-counter">{{ description?.value?.length || 0 }}/500</small>
-    </div>
-
-    <!-- Form Actions -->
-    <div class="form-actions">
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="categoryForm.invalid || isSaving"
-      >
-        <span *ngIf="isSaving" class="spinner"></span>
-        {{ submitButtonText }}
-      </button>
-
-      <button
-        type="button"
-        class="btn btn-secondary"
-        (click)="onReset()"
-        [disabled]="isSaving || !categoryForm.dirty"
-      >
-        Reset
-      </button>
-
-      <button
-        type="button"
-        class="btn btn-outline"
-        (click)="onCancel()"
-        [disabled]="isSaving"
-      >
-        Cancel
-      </button>
-    </div>
-
-    <!-- Unsaved Changes Info -->
-    <div class="form-status" *ngIf="categoryForm.dirty && !isSaving">
-      <i class="icon-info"></i>
-      You have unsaved changes
-    </div>
-  </form>
-
-  <!-- Tips Section -->
-  <section class="tips">
-    <h3>Tips</h3>
-    <ul>
-      <li>Choose a descriptive name that clearly identifies the category</li>
-      <li>Keep names concise but meaningful</li>
-      <li>Use the description to provide additional context if needed</li>
-      <li *ngIf="!isEditMode">Make sure the category name doesn't already exist</li>
-    </ul>
-  </section>
+<!-- Loading Template -->
+<div class="loading-container" [class.hidden]="!isLoading">
+  <div class="spinner"></div>
+  <p>Loading...</p>
 </div>
 
-<!-- Loading Template -->
-<ng-template #loadingTpl>
-  <div class="loading-container">
-    <div class="spinner"></div>
-    <p>Loading category details...</p>
-  </div>
-</ng-template>
+<!-- Main Content Container -->
+<div class="category-container" [class.hidden]="isLoading">
+
+  <!-- Header with Navigation -->
+  <header class="header">
+    <div class="nav-section">
+      @if (currentView !== 'list') {
+        <button 
+          class="back-btn" 
+          (click)="goToList()"
+          type="button">
+          ← Back to Categories
+        </button>
+      }
+      <h2>{{ pageTitle }}</h2>
+    </div>
+    
+    <div class="action-section">
+      @if (currentView === 'list') {
+        <button 
+          class="add-btn btn btn-primary" 
+          (click)="onAdd()"
+          type="button">
+          Add Category
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- Breadcrumb -->
+  @if (currentView !== 'list') {
+    <nav class="breadcrumb">
+      <a (click)="goToList()" style="cursor: pointer;">Categories</a>
+      <span class="separator">/</span>
+      <span class="current">{{ isEditMode ? 'Edit' : (currentView === 'details' ? 'Details' : 'Add') }}</span>
+    </nav>
+  }
+
+  <!-- Error Message -->
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">
+      <i class="icon-error"></i>
+      {{ errorMessage }}
+      <button class="close-error" (click)="errorMessage = ''">&times;</button>
+    </div>
+  }
+
+  <!-- CATEGORY LIST VIEW -->
+  @if (currentView === 'list') {
+    <div class="category-list">
+      @if (categories.length > 0) {
+        <div class="categories-container">
+          <div 
+            *ngFor="let category of categories; trackBy: trackByCategory" 
+            class="category-item"
+            (click)="onCategoryClick(category)">
+            <div class="category-info">
+              <h3>{{ category.name }}</h3>
+              @if (category.description) {
+                <p>{{ category.description }}</p>
+              }
+            </div>
+            <div class="category-actions" (click)="$event.stopPropagation()">
+              <button class="btn btn-sm btn-outline" (click)="onEdit(category.id!)">Edit</button>
+              <button class="btn btn-sm btn-danger" (click)="onDelete(category.id!)">Delete</button>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <div class="empty-icon">📁</div>
+          <h3>No categories found</h3>
+          <p>Get started by creating your first category</p>
+          <button class="btn btn-primary" (click)="onAdd()">Create Category</button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- CATEGORY DETAILS VIEW -->
+  @if (currentView === 'details' && selectedCategory) {
+    <div class="category-details">
+      <div class="details-card">
+        <div class="details-header">
+          <h3>{{ selectedCategory.name }}</h3>
+          <div class="details-actions">
+            <button class="btn btn-outline" (click)="onEdit(selectedCategory.id!)">Edit</button>
+            <button class="btn btn-danger" (click)="onDelete(selectedCategory.id!)">Delete</button>
+          </div>
+        </div>
+        
+        <div class="details-body">
+          <div class="detail-item">
+            <label>Description:</label>
+            @if (selectedCategory.description) {
+              <p>{{ selectedCategory.description }}</p>
+            } @else {
+              <p class="no-value">No description provided</p>
+            }
+          </div>
+          
+          <div class="detail-item">
+            <label>ID:</label>
+            <p>{{ selectedCategory.id }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- FORM VIEW (Add/Edit) -->
+  @if (currentView === 'form') {
+    <div class="category-edit">
+      <!-- Form -->
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" novalidate>
+        
+        <!-- Name Field -->
+        <div class="form-group">
+          <label for="name">Category Name <span class="required">*</span></label>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            maxlength="100"
+            placeholder="Enter category name"
+            [class.invalid]="name?.invalid && (name?.dirty || name?.touched)"
+          />
+          @if (name?.invalid && (name?.dirty || name?.touched)) {
+            <div class="field-error">
+              {{ getNameErrorMessage() }}
+            </div>
+          }
+          <small class="char-counter">{{ name?.value?.length || 0 }}/100</small>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="description">Description <span class="optional">(Optional)</span></label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="4"
+            maxlength="500"
+            placeholder="Enter category description"
+            [class.invalid]="description?.invalid && (description?.dirty || description?.touched)"
+          ></textarea>
+          @if (description?.invalid && (description?.dirty || description?.touched)) {
+            <div class="field-error">
+              {{ getDescriptionErrorMessage() }}
+            </div>
+          }
+          <small class="char-counter">{{ description?.value?.length || 0 }}/500</small>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="categoryForm.invalid || isSaving"
+          >
+            @if (isSaving) {
+              <span class="spinner"></span>
+            }
+            {{ submitButtonText }}
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="onReset()"
+            [disabled]="isSaving || !categoryForm.dirty"
+          >
+            Reset
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline"
+            (click)="onCancel()"
+            [disabled]="isSaving"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <!-- Unsaved Changes Info -->
+        @if (categoryForm.dirty && !isSaving) {
+          <div class="form-status">
+            <i class="icon-info"></i>
+            You have unsaved changes
+          </div>
+        }
+      </form>
+
+      <!-- Tips Section -->
+      <section class="tips">
+        <h3>Tips</h3>
+        <ul>
+          <li>Choose a descriptive name that clearly identifies the category</li>
+          <li>Keep names concise but meaningful</li>
+          <li>Use the description to provide additional context if needed</li>
+          @if (!isEditMode) {
+            <li>Make sure the category name doesn't already exist</li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+</div>
