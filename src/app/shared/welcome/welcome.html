@@ -1,0 +1,77 @@
+<div class="welcome-container">
+  <!-- Main Carousel -->
+  <div class="carousel-container"
+       (mouseenter)="onMouseEnter()"
+       (mouseleave)="onMouseLeave()">
+
+    <!-- Carousel Slides -->
+    <div class="carousel-wrapper">
+      <div class="slide"
+           *ngFor="let slide of slides; let i = index"
+           [class.active]="i === currentSlide"
+           [style.background]="slide.backgroundColor">
+
+        <div class="slide-content">
+          <!-- Card Box for Slide Text (LEFT SIDE) -->
+          <div class="slide-text card-box">
+            <h1>{{ slide.title }}</h1>
+            <p>{{ slide.description }}</p>
+            <div class="slide-actions">
+              <button mat-raised-button color="accent" *ngIf="slide.buttonText">
+                {{ slide.buttonText }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Slide Image (RIGHT SIDE) -->
+          <div class="slide-image">
+            <img [src]="slide.image"
+                 [alt]="slide.title"
+                 (error)="onImageError($event)"
+                 loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Arrows -->
+    <button class="carousel-nav prev"
+            (click)="previousSlide()"
+            mat-icon-button>
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <button class="carousel-nav next"
+            (click)="nextSlide()"
+            mat-icon-button>
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <!-- Slide Indicators -->
+    <div class="carousel-indicators">
+      <button *ngFor="let slide of slides; let i = index"
+              [class.active]="i === currentSlide"
+              (click)="goToSlide(i)"
+              class="indicator">
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Section -->
+  <div class="bottom-section">
+    <div class="welcome-info">
+      <h2>Welcome to <span class="brand">BioChem Hub</span></h2>
+      <p>Your all-in-one platform for notes, videos, and exam prep.</p>
+      <p class="subtitle">Explore our application. You only need to login when you want to access your dashboard.</p>
+
+      <div class="quick-actions">
+        <button mat-raised-button color="primary" routerLink="/signup">
+          <mat-icon>person_add</mat-icon> Get Started Free
+        </button>
+        <button mat-stroked-button routerLink="/login">
+          <mat-icon>login</mat-icon> I have an account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

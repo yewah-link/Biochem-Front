@@ -1,28 +1,16 @@
-.loader-wrapper {
+.app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; // full screen height
+  min-height: 100vh;
 }
 
-.loader-main {
-  flex: 1; // take remaining space between navbar and footer
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+.main-content {
+  flex: 1;
+  background: linear-gradient(135deg, #f1f0ee 0%, #f7f5f8 100%);
 
-  .hero {
-    max-width: 600px;
-    padding: 2rem;
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-
-    p {
-      font-size: 1.2rem;
-      color: #555;
-    }
+  app-welcome {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 }

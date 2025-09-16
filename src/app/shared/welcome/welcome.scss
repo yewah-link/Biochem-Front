@@ -1,0 +1,479 @@
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  background: #f9f9f9;
+}
+
+.carousel-container {
+  max-width: 1300px;
+  height: 400px;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+  // Diagonal styling with creative overlay
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg,
+      rgba(255,255,255,0.1) 0%,
+      transparent 25%,
+      transparent 75%,
+      rgba(255,255,255,0.05) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  // White triangle corner accent
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-left: 80px solid transparent;
+    border-top: 80px solid rgba(255,255,255,0.15);
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+
+.carousel-wrapper {
+  display: flex;
+  height: 100%;
+  transition: transform 0.6s ease-in-out;
+}
+
+// Individual Slides
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+
+  &.active {
+    opacity: 1;
+    transform: translateX(0);
+    z-index: 1;
+  }
+
+  &:not(.active) {
+    &:nth-child(1) { transform: translateX(-100%); }
+    &:nth-child(2) { transform: translateX(100%); }
+    &:nth-child(3) { transform: translateX(200%); }
+  }
+}
+
+// Slide Content Layout
+.slide-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 4rem;
+  gap: 4rem;
+  z-index: 3;
+  position: relative;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+    gap: 2rem;
+  }
+}
+
+// White Card Box for Slide Text
+.slide-text {
+  flex: 1;
+  max-width: 350px; // Reduced from 500px
+
+  // White elevated card styling
+  &.card-box {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px; // Reduced from 20px
+    padding: 1.7rem; // Reduced from 2.5rem
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.1),
+      0 10px 20px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateY(0);
+    transition: all 0.3s ease;
+
+    // Subtle hover effect
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 15px 30px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    // Diagonal accent line
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px; // Reduced from 60px
+      height: 3px; // Reduced from 4px
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border-radius: 0 0 3px 0;
+    }
+  }
+
+  h1 {
+    font-size: 2rem; // Reduced from 3rem
+    font-weight: 700;
+    margin-bottom: 1rem; // Reduced from 1.5rem
+    color: #2c3e50;
+    text-shadow: none;
+    line-height: 1.2;
+
+    // Gradient text effect
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    @media (max-width: 768px) {
+      font-size: 2.2rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.8rem;
+    }
+  }
+
+  p {
+    font-size: 1rem; // Reduced from 1.2rem
+    margin-bottom: 1.3rem; // Reduced from 2rem
+    color: #5a6c7d;
+    line-height: 1.6;
+    font-weight: 400;
+
+    @media (max-width: 768px) {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Slide Actions
+.slide-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  button {
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 25px;
+    min-width: 160px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    @media (max-width: 480px) {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+// Slide Image with enhanced styling
+.slide-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  img {
+    max-width: 400px;
+    max-height: 350px;
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.2),
+      0 10px 20px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: scale(1.02);
+      box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.25),
+        0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 768px) {
+      max-width: 300px;
+      max-height: 250px;
+    }
+  }
+
+  // Decorative frame effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(45deg,
+      rgba(255,255,255,0.1),
+      transparent,
+      rgba(255,255,255,0.1));
+    border-radius: 25px;
+    z-index: -1;
+  }
+}
+
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+
+  // Enhanced circular elevated style
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #333 !important;
+  border-radius: 50%;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.15),
+    0 4px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+
+  border: none !important;
+  width: 55px !important;
+  height: 55px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow:
+      0 12px 25px rgba(0, 0, 0, 0.2),
+      0 6px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  &.prev {
+    left: 1rem;
+    @media (max-width: 768px) {
+      left: 0.5rem;
+    }
+  }
+
+  &.next {
+    right: 1rem;
+    @media (max-width: 768px) {
+      right: 0.5rem;
+    }
+  }
+}
+
+// Enhanced Slide Indicators
+.carousel-indicators {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.8rem 1.5rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+
+  .indicator {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.8);
+      transform: scale(1.2);
+    }
+
+    &.active {
+      background: white;
+      transform: scale(1.3);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+// Bottom Section
+.bottom-section {
+  flex: 1;
+  background: #f8f9fa;
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-info {
+  text-align: center;
+  max-width: 800px;
+
+  h2 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    font-weight: 600;
+
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+  }
+
+  .brand {
+    color: #667eea;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  p {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+
+    &.subtitle {
+      font-size: 1rem;
+      opacity: 0.8;
+      margin-bottom: 2.5rem;
+    }
+  }
+}
+
+.quick-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  button {
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 25px;
+    min-width: 180px;
+
+    @media (max-width: 480px) {
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+}
+
+// Enhanced animations
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+// Enhanced loading animation for images
+.slide-image img {
+  animation: fadeInScale 0.8s ease-in-out;
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Card box animation when slide becomes active
+.slide.active .slide-text.card-box {
+  animation: cardSlideIn 0.8s ease-out;
+}
+
+@keyframes cardSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
