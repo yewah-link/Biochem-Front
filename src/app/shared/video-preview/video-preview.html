@@ -1,0 +1,67 @@
+<div class="hero-section">
+  <div class="hero-content">
+    <h1>All the biochemistry knowledge you need in one place</h1>
+    <p>From molecular mechanisms to metabolic pathways, master the fundamentals of life sciences.</p>
+  </div>
+</div>
+
+<div class="categories-container">
+  @if (categoriesWithVideos$ | async; as categoryGroups) {
+    <div class="categories-grid">
+      @for (categoryData of categoryGroups; track categoryData.category.id) {
+        <div class="category-section">
+          <div class="category-header">
+            <h2>{{ categoryData.category.name }}</h2>
+          </div>
+
+          @if (categoryData.videos.length > 0) {
+            <div class="videos-row">
+              @for (video of categoryData.videos; track video.id) {
+                <div class="video-card" (click)="openVideo(video.id!)">
+                  <div class="video-thumbnail">
+                    <!-- Thumbnail image -->
+                    <img
+                      *ngIf="shouldShowThumbnail(video)"
+                      [src]="getVideoThumbnail(video)"
+                      [alt]="video.fileName || 'Video thumbnail'"
+                      loading="lazy"
+                      (error)="onThumbnailError($event, video)"
+                    />
+
+                    <!-- Placeholder if thumbnail fails -->
+                    @if (shouldShowPlaceholder(video)) {
+                      <div class="thumbnail-placeholder">
+                        🎥
+                      </div>
+                    }
+
+                    <!-- Overlay play icon -->
+                    <div class="play-overlay">
+                      <div class="play-icon">▶</div>
+                    </div>
+                  </div>
+
+                  <div class="video-info">
+                    <h4 class="video-title">{{ video.fileName || 'Untitled Video' }}</h4>
+                    <p class="video-description">{{ video.description }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="no-videos">
+              <p>No videos available in this category</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (categoryGroups.length === 0) {
+      <div class="no-categories">
+        <h3>No categories found</h3>
+        <p>Start by creating some categories and uploading videos.</p>
+      </div>
+    }
+  }
+</div>

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, map } from 'rxjs';
+import { Observable, BehaviorSubject, map, catchError, of } from 'rxjs';
 
-// Interfaces - moved outside the service class
+// Interfaces - outside the service class
 export interface CategoryDto {
   id?: number;
   name?: string;
@@ -14,6 +14,7 @@ export interface VideoDto {
   description: string;
   fileName?: string;
   filePath?: string;
+  thumbnailPath?: string;
   fileType: string;
   fileSize?: number;
   category?: CategoryDto;
@@ -71,18 +72,6 @@ export class VideoService {
     );
   }
 
-  // Stream video metadata
-  streamVideo(id: number): Observable<VideoDto> {
-    return this.http.get<GenericResponse<VideoDto>>(`${this.apiUrl}/stream/${id}`).pipe(
-      map(res => {
-        if (res.status === 'SUCCESS' && res._embedded) {
-          return res._embedded;
-        }
-        throw new Error(res.message || 'Failed to stream video');
-      })
-    );
-  }
-
   // Get videos by category
   getVideosByCategory(categoryId: number): Observable<VideoDto[]> {
     return this.http.get<GenericResponse<VideoDto[]>>(`${this.apiUrl}/category/${categoryId}`).pipe(
@@ -108,5 +97,94 @@ export class VideoService {
   // Set current video
   setCurrentVideo(video: VideoDto | null): void {
     this.currentVideoSubject.next(video);
+  }
+
+  // Get video thumbnail URL - Fixed to handle undefined IDs properly
+  getVideoThumbnail(video: VideoDto): string {
+    if (!video.id) {
+      console.warn('Video ID is undefined for thumbnail request');
+      return '';
+    }
+    return `${this.apiUrl}/thumbnail/${video.id}`;
+  }
+
+  // Get video stream URL - Fixed to handle undefined IDs properly
+  getVideoStreamUrl(video: VideoDto): string {
+    if (!video.id) {
+      console.warn('Video ID is undefined for stream request');
+      return '';
+    }
+    return `${this.apiUrl}/stream/${video.id}`;
+  }
+
+  // Check if thumbnail exists for a video
+  checkThumbnailExists(videoId: number): Observable<boolean> {
+    return this.http.head(`${this.apiUrl}/thumbnail/${videoId}`, {
+      observe: 'response',
+      responseType: 'blob'
+    }).pipe(
+      map(response => response.status === 200),
+      catchError(() => of(false))
+    );
+  }
+
+  // Get video thumbnail as blob for display with proper error handling
+  getVideoThumbnailBlob(videoId: number): Observable<Blob | null> {
+    if (!videoId) {
+      return of(null);
+    }
+
+    return this.http.get(`${this.apiUrl}/thumbnail/${videoId}`, {
+      responseType: 'blob',
+      headers: new HttpHeaders({
+        'Accept': 'image/jpeg, image/png, image/gif, image/webp, */*'
+      })
+    }).pipe(
+      catchError(error => {
+        console.error(`Failed to load thumbnail for video ${videoId}:`, error);
+        return of(null);
+      })
+    );
+  }
+
+  // Stream video file with range support
+  streamVideoFile(videoId: number, range?: string): Observable<Blob | null> {
+    if (!videoId) {
+      return of(null);
+    }
+
+    const headers = new HttpHeaders({
+      'Accept': 'video/mp4, video/webm, video/ogg, video/*',
+      ...(range && { 'Range': range })
+    });
+
+    return this.http.get(`${this.apiUrl}/stream/${videoId}`, {
+      responseType: 'blob',
+      headers
+    }).pipe(
+      catchError(error => {
+        console.error(`Failed to stream video ${videoId}:`, error);
+        return of(null);
+      })
+    );
+  }
+
+  // Format file size utility method
+  formatFileSize(bytes?: number): string {
+    if (!bytes || bytes === 0) return 'Unknown size';
+
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  // Validate video ID helper
+  isValidVideoId(video: VideoDto): boolean {
+    return !!(video && video.id && video.id > 0);
+  }
+
+  // Generate fallback thumbnail URL (could be a placeholder image)
+  getFallbackThumbnailUrl(): string {
+    return 'assets/images/video-placeholder.png';
   }
 }
