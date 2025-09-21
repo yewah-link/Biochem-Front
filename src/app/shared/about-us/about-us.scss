@@ -1,0 +1,223 @@
+// Reset and base styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background: #f9f9f9;
+}
+
+// Back to Top Button - Top Left
+.back-to-navbar {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #9b6012;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(155, 96, 18, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+
+  &:hover {
+    background-color: #d4941e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(155, 96, 18, 0.4);
+  }
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+// Hero Section
+.intro {
+  background: linear-gradient(135deg, #9b6012 0%, #d4941e 100%);
+  padding: 4rem 0;
+  margin-bottom: 3rem;
+  color: white;
+  text-align: center;
+
+  h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    line-height: 1.2;
+  }
+
+  p {
+    font-size: 1.3rem;
+    opacity: 0.95;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+}
+
+// Main Container
+.about-us-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+// Content Grid
+.offerings, .company-info {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 2rem;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  h2 {
+    color: #9b6012;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      position: relative;
+      padding-left: 1.5rem;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #9b6012;
+        font-weight: bold;
+      }
+
+      strong {
+        color: #9b6012;
+      }
+    }
+  }
+
+  p {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.7;
+  }
+}
+
+// Mission Section (full width)
+.mission {
+  background: white;
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  margin-bottom: 3rem;
+
+  h2 {
+    color: #9b6012;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+}
+
+// Grid layout for desktop
+@media (min-width: 769px) {
+  .about-us-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    grid-template-areas:
+      "intro intro"
+      "offerings company"
+      "mission mission";
+
+    .intro {
+      grid-area: intro;
+      margin-left: -1rem;
+      margin-right: -1rem;
+    }
+    .offerings { grid-area: offerings; }
+    .company-info { grid-area: company; }
+    .mission { grid-area: mission; }
+  }
+
+  .back-to-navbar {
+    width: 56px;
+    height: 56px;
+    top: 1.5rem;
+    left: 1.5rem;
+  }
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .intro {
+    padding: 2.5rem 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+    }
+  }
+
+  .offerings, .company-info {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .mission {
+    padding: 2rem 1.5rem;
+  }
+
+  .back-to-navbar {
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
