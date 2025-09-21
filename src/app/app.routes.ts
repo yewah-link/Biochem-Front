@@ -10,11 +10,13 @@ import { authGuard } from './core/auth/auth.guard';
 import { NoteEdit } from './features/notes/note-edit/note-edit';
 // 👉 You’ll need a NoteList component for viewing all notes
 import { NoteList } from './features/notes/note-list/note-list';
+import { AboutUs } from './shared/about-us/about-us';
 
 export const routes: Routes = [
   { path: '', component: Loader },
   { path: 'login', component: Login },
   { path: 'signup', component: Register },
+  { path: 'about-us',component: AboutUs},
   {
     path: 'dashboard',
     component: Dashboard,
