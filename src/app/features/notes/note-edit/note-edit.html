@@ -1,6 +1,6 @@
 <div class="note-edit-container">
   <div class="edit-header">
-    <h2>{{ note?.id ? 'Edit Note' : 'Create New Note' }}</h2>
+    <h2>{{ pageTitle }}</h2>
     <div class="header-actions">
       <button mat-button (click)="onCancel()" [disabled]="isLoading">
         Cancel
@@ -9,16 +9,57 @@
               color="primary"
               (click)="onSave()"
               [disabled]="isLoading || noteForm.invalid">
-        <mat-spinner *ngIf="isLoading" diameter="20" class="save-spinner"></mat-spinner>
-        <mat-icon *ngIf="!isLoading">save</mat-icon>
-        {{ isLoading ? 'Saving...' : 'Save' }}
+        @if (isLoading) {
+          <mat-spinner diameter="20" class="save-spinner"></mat-spinner>
+        } @else {
+          <mat-icon>save</mat-icon>
+        }
+        {{ isLoading ? 'Saving...' : submitButtonText }}
       </button>
     </div>
   </div>
 
+  <!-- Error/Success Messages -->
+  @if (errorMessage || successMessage) {
+    <div class="messages">
+      @if (errorMessage) {
+        <div class="error-message">
+          <mat-icon>error</mat-icon>
+          {{ errorMessage }}
+        </div>
+      }
+      @if (successMessage) {
+        <div class="success-message">
+          <mat-icon>check_circle</mat-icon>
+          {{ successMessage }}
+        </div>
+      }
+    </div>
+  }
+
   <form [formGroup]="noteForm" class="note-form">
     <mat-card class="form-card">
       <mat-card-content>
+
+        <!-- Category Selection -->
+        <div class="form-section">
+          <mat-form-field appearance="outline" class="category-field">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="categoryId">
+              @for (category of categories; track category.id) {
+                <mat-option [value]="category.id">
+                  {{ category.name }}
+                </mat-option>
+              }
+            </mat-select>
+            @if (hasError('categoryId')) {
+              <mat-error>
+                {{ getErrorMessage('categoryId') }}
+              </mat-error>
+            }
+          </mat-form-field>
+        </div>
+
         <!-- Title -->
         <div class="form-section">
           <mat-form-field appearance="outline" class="title-field">
@@ -28,9 +69,11 @@
                    placeholder="Enter note title..."
                    maxlength="200">
             <mat-hint align="end">{{ noteForm.get('title')?.value?.length || 0 }}/200</mat-hint>
-            <mat-error *ngIf="noteForm.get('title')?.invalid && noteForm.get('title')?.touched">
-              {{ getErrorMessage('title') }}
-            </mat-error>
+            @if (hasError('title')) {
+              <mat-error>
+                {{ getErrorMessage('title') }}
+              </mat-error>
+            }
           </mat-form-field>
         </div>
 
@@ -44,9 +87,11 @@
                       rows="12"
                       maxlength="5000"></textarea>
             <mat-hint align="end">{{ noteForm.get('content')?.value?.length || 0 }}/5000</mat-hint>
-            <mat-error *ngIf="noteForm.get('content')?.invalid && noteForm.get('content')?.touched">
-              {{ getErrorMessage('content') }}
-            </mat-error>
+            @if (hasError('content')) {
+              <mat-error>
+                {{ getErrorMessage('content') }}
+              </mat-error>
+            }
           </mat-form-field>
         </div>
 
@@ -61,52 +106,59 @@
             </div>
 
             <!-- Upload new file -->
-            <div class="file-upload" *ngIf="!selectedFile && !note?.fileName">
-              <input type="file"
-                     #fileInput
-                     (change)="onFileSelected($event)"
-                     accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
-                     hidden>
-              <button mat-stroked-button
-                      type="button"
-                      (click)="fileInput.click()">
-                <mat-icon>attach_file</mat-icon>
-                Choose File
-              </button>
-              <div class="file-info">
-                <small>Maximum file size: 10MB</small>
-                <br>
-                <small>Supported formats: PDF, DOC, TXT, Images, Excel, PowerPoint</small>
+            @if (!selectedFile && !note?.fileName) {
+              <div class="file-upload">
+                <input type="file"
+                       #fileInput
+                       (change)="onFileSelected($event)"
+                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
+                       hidden>
+                <button mat-stroked-button
+                        type="button"
+                        (click)="fileInput.click()">
+                  <mat-icon>attach_file</mat-icon>
+                  Choose File
+                </button>
+                <div class="file-info">
+                  <small>Maximum file size: 10MB</small>
+                  <br>
+                  <small>Supported formats: PDF, DOC, TXT, Images, Excel, PowerPoint</small>
+                </div>
               </div>
-            </div>
+            }
 
             <!-- Selected file -->
-            <div class="selected-file" *ngIf="selectedFile">
-              <mat-chip-set>
-                <mat-chip [removable]="true" (removed)="removeFile()">
-                  <mat-icon matChipAvatar>{{ getFileIcon(selectedFile.name) }}</mat-icon>
-                  {{ selectedFile.name }}
-                  <span class="file-size">({{ formatFileSize(selectedFile.size) }})</span>
-                  <mat-icon matChipRemove>cancel</mat-icon>
-                </mat-chip>
-              </mat-chip-set>
-            </div>
+            @if (selectedFile) {
+              <div class="selected-file">
+                <mat-chip-set>
+                  <mat-chip [removable]="true" (removed)="removeFile()">
+                    <mat-icon matChipAvatar>{{ getFileIcon(selectedFile.name) }}</mat-icon>
+                    {{ selectedFile.name }}
+                    <span class="file-size">({{ formatFileSize(selectedFile.size) }})</span>
+                    <mat-icon matChipRemove>cancel</mat-icon>
+                  </mat-chip>
+                </mat-chip-set>
+              </div>
+            }
 
             <!-- Existing file -->
-            <div class="existing-file" *ngIf="note?.fileName && !selectedFile">
-              <mat-chip-set>
-                <mat-chip>
-                  <mat-icon matChipAvatar>{{ getFileIcon(note?.fileName) }}</mat-icon>
-                  {{ note?.fileName }}
-                  <small class="existing-label">Existing attachment</small>
-                </mat-chip>
-              </mat-chip-set>
-              <small class="replace-info">
-                Choose a new file above to replace the existing attachment
-              </small>
-            </div>
+            @if (note?.fileName && !selectedFile) {
+              <div class="existing-file">
+                <mat-chip-set>
+                  <mat-chip>
+                    <mat-icon matChipAvatar>{{ getFileIcon(note?.fileName || '') }}</mat-icon>
+                    {{ note?.fileName }}
+                    <small class="existing-label">Existing attachment</small>
+                  </mat-chip>
+                </mat-chip-set>
+                <small class="replace-info">
+                  Choose a new file above to replace the existing attachment
+                </small>
+              </div>
+            }
           </div>
         </div>
+
       </mat-card-content>
     </mat-card>
   </form>
