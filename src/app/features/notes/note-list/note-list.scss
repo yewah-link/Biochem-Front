@@ -1,0 +1,146 @@
+.note-list-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--grey);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.list-header {
+  margin-bottom: 2rem;
+
+  button {
+    background: #9b6012 !important;
+    font-family: var(--poppins);
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(155, 96, 18, 0.3);
+  }
+}
+
+.note-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.note-card {
+  background: var(--light) !important;
+  box-shadow: 0 2px 6px rgba(39, 54, 102, 0.15) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(155, 96, 18, 0.1);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(39, 54, 102, 0.25) !important;
+    border-color: rgba(155, 96, 18, 0.3);
+  }
+
+  mat-card-header {
+    padding: 1.5rem 1.5rem 1rem !important;
+
+    mat-card-title {
+      font-family: var(--poppins);
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 1.1rem;
+    }
+
+    mat-card-subtitle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+
+      .category-chip {
+        background: var(--light-orange) !important;
+        color: var(--orange) !important;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .date-info {
+        color: var(--dark-grey);
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 0 1.5rem 1rem !important;
+
+    p {
+      color: var(--dark-grey);
+      line-height: 1.5;
+      font-size: 0.9rem;
+      font-family: var(--lato);
+    }
+  }
+
+  mat-card-actions {
+    padding: 1rem 1.5rem !important;
+    border-top: 1px solid var(--grey);
+
+    button {
+      font-family: var(--lato);
+      font-weight: 500;
+      color: #9b6012 !important;
+
+      &[color="warn"] {
+        color: var(--red) !important;
+      }
+    }
+  }
+}
+
+/* RESPONSIVE */
+@media screen and (max-width: 768px) {
+  .note-list-container {
+    padding: 1rem;
+  }
+
+  .note-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .note-list-container {
+    padding: 0.5rem;
+  }
+
+  .list-header button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .note-card {
+    mat-card-header {
+      padding: 1rem 1rem 0.5rem !important;
+
+      mat-card-subtitle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+    }
+
+    mat-card-content {
+      padding: 0 1rem 0.5rem !important;
+    }
+
+    mat-card-actions {
+      padding: 0.75rem 1rem !important;
+
+      button {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}

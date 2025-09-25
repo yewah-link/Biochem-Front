@@ -1,1 +1,72 @@
-<p>exam-list works!</p>
+<div class="exam-list-container">
+  <div class="list-header">
+    <h2>Exams</h2>
+    <button mat-raised-button color="primary" (click)="createExam()">
+      <mat-icon>add</mat-icon> New Exam
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading exams...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage && !isLoading) {
+    <div class="error-container">
+      <mat-icon color="warn">error</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <button mat-button color="primary" (click)="retryLoad()">Retry</button>
+    </div>
+  }
+
+  <!-- Success State with Data -->
+  @if (!isLoading && !errorMessage && exams.length > 0) {
+    <div class="exams-grid">
+      @for (exam of exams; track exam.id) {
+        <mat-card class="exam-card">
+          <mat-card-header>
+            <mat-card-title>{{ exam.title }}</mat-card-title>
+            <mat-card-subtitle>
+              <mat-chip>{{ exam.category.name }}</mat-chip>
+              <span class="date-info">{{ formatDate(exam.createdDate) }}</span>
+            </mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p>{{ exam.description }}</p>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button mat-button (click)="editExam(exam)">
+              <mat-icon>edit</mat-icon> Edit
+            </button>
+            <button
+              mat-button
+              color="warn"
+              (click)="deleteExam(exam.id!)"
+              [disabled]="deletingIds.has(exam.id!)">
+              <mat-icon>delete</mat-icon>
+              {{ deletingIds.has(exam.id!) ? 'Deleting...' : 'Delete' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading && !errorMessage && exams.length === 0) {
+    <div class="empty-state">
+      <mat-icon>school</mat-icon>
+      <h3>No exams available</h3>
+      <p>Create your first exam to get started!</p>
+      <button mat-raised-button color="primary" (click)="createExam()">
+        <mat-icon>add</mat-icon> Create Exam
+      </button>
+    </div>
+  }
+</div>
