@@ -1,0 +1,87 @@
+.exam-edit-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0;
+      color: #333;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+
+      button {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        transition: background 0.3s, color 0.3s;
+
+        &:hover {
+          filter: brightness(0.9);
+        }
+      }
+    }
+  }
+
+  .form-card {
+    width: 100%;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    background-color: #fff;
+
+    mat-card-content {
+      .exam-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+
+        .full-width {
+          width: 100%;
+        }
+
+        mat-form-field {
+          width: 100%;
+          font-size: 1rem;
+
+          textarea {
+            resize: vertical;
+            min-height: 80px;
+          }
+
+          mat-label {
+            font-weight: 500;
+          }
+        }
+
+        button {
+          align-self: flex-end;
+        }
+      }
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .edit-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  }
+}

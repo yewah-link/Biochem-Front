@@ -1,0 +1,392 @@
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  width: 250px;
+}
+
+.navbar {
+  background-color: #ffffff;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(39, 54, 102, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 0 16px;
+  height: 64px;
+}
+
+.normal-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.brand {
+  font-weight: bold;
+  font-size: 20px;
+  color: #9b6012;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  padding: 0 12px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 9px 12px;
+  font-size: 16px;
+  background: transparent;
+}
+
+.search-icon {
+  color: #666;
+}
+
+.nav-links {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.nav-links button {
+  text-transform: none;
+  border-radius: 4px;
+  font-weight: 550;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.welcome-text {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.profile-btn {
+  color: #9b6012 !important;
+}
+
+.nav-links.logged-in {
+  gap: 16px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.mobile-search {
+  display: none;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-search.active {
+  display: flex;
+}
+
+.mobile-search-input {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+}
+
+@media (max-width: 768px) {
+  .search-container,
+  .nav-links {
+    display: none;
+  }
+
+  .mobile-search-btn,
+  .menu-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .normal-navbar {
+    justify-content: flex-start;
+  }
+
+  .brand {
+    margin: 0;
+  }
+
+  .spacer {
+    display: block;
+    flex: 1;
+  }
+
+  .welcome-text {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-search-btn,
+  .menu-btn {
+    display: none;
+  }
+
+  .spacer {
+    display: none;
+  }
+
+  .normal-navbar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .brand {
+    justify-self: start;
+  }
+
+  .search-container {
+    justify-self: stretch;
+    margin: 0;
+    width: 80%;
+    max-width: none;
+    justify-self: center;
+  }
+
+  .nav-links {
+    justify-self: end;
+  }
+}
+
+/* ✅ CATEGORY BAR UPDATED */
+.category-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a0b01;
+  padding: 5px 0;
+}
+
+.scroll-btn {
+  background: #1a0b01;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+  font-size: 18px;
+}
+
+.scroll-btn:hover {
+  background: #2c1201;
+}
+
+.category-track {
+  max-width: 1300px;
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  scroll-behavior: smooth;
+  flex: 1;
+  justify-content: center;
+}
+
+.category-track button {
+  background: transparent;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: 0.2s ease;
+}
+
+.category-track button:hover {
+  background: #9b6012;
+}
+
+.category-track button.active {
+  background: #9b6012;
+  color: white;
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .category-track button {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+}
+
+
+/* VIDEO SECTION */
+.video-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.video-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a0b01;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.empty-state {
+  font-size: 16px;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* ===========================
+   DEFAULT GRID MODE (No Video Playing)
+   =========================== */
+.video-grid.default-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.video-grid.default-grid .video-card {
+  width: 240px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.video-grid.default-grid .video-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.video-grid.default-grid .thumbnail {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.video-grid.default-grid .video-info {
+  padding: 10px;
+}
+
+.video-grid.default-grid .video-description {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* VIDEO PLAYER MODE (With Video) */
+.video-content-layout {
+  display: flex;
+  gap: 20px;
+}
+
+/* Main Player */
+.video-player-section {
+  flex: 2;
+}
+
+.main-video {
+  width: 100%;
+  height: 450px;
+  border-radius: 8px;
+  background: black;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.current-video-info {
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* Sidebar Recommended Videos */
+.recommended-videos {
+  flex: 1;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+}
+
+.recommended-videos h4 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Sidebar Video List */
+.video-grid.sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.video-grid.sidebar-list .video-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+.video-grid.sidebar-list .video-card:hover {
+  background: #f1f1f1;
+}
+
+.video-grid.sidebar-list .thumbnail {
+  width: 120px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.video-grid.sidebar-list .video-info {
+  flex: 1;
+}
+
+.video-grid.sidebar-list .video-description {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.2;
+}

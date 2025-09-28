@@ -33,8 +33,8 @@ export class Login {
   errorMessage: string = '';
 
   constructor(
-    private fb: FormBuilder, 
-    private authService: Auth, 
+    private fb: FormBuilder,
+    private authService: Auth,
     private router: Router,
     private snackBar: MatSnackBar
   ) {
@@ -54,11 +54,11 @@ export class Login {
       this.authService.login(email, password).subscribe({
         next: (response) => {
           console.log('Login successful:', response);
-          
+
           // Show success message with user role
           const roleMessage = response.user.role === 'ADMIN' ? 'Admin login successful!' : 'Login successful!';
           this.snackBar.open(roleMessage, 'Close', { duration: 3000 });
-          
+
           // Navigate based on role from database
           this.navigateBasedOnRole(response.user.role);
         },
@@ -81,7 +81,7 @@ export class Login {
         this.router.navigate(['/dashboard']);
         break;
       case 'STUDENT':
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/student']);
         break;
       case 'GUEST':
         this.router.navigate(['/guest-dashboard']);

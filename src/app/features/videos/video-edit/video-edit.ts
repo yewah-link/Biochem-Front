@@ -18,14 +18,13 @@ export class VideoEdit implements OnInit {
   categories: CategoryDto[] = [];
   currentVideo: VideoDto | null = null;
   selectedFile: File | null = null;
-  
+
   // Form data
   uploadForm = {
     description: '',
     categoryId: 1,
     fileType: 'video/mp4'
   };
-
 
   // View states
   currentView: 'list' | 'upload' | 'play' = 'list';
@@ -53,7 +52,7 @@ export class VideoEdit implements OnInit {
   loadVideos(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     this.videoService.getAllVideos().subscribe({
       next: (videos) => {
         this.videos = videos;
@@ -72,7 +71,6 @@ export class VideoEdit implements OnInit {
     this.clearMessages();
   }
 
-  
   // File selection
   onFileSelected(event: any): void {
     const file = event.target.files[0];
@@ -83,7 +81,6 @@ export class VideoEdit implements OnInit {
     }
   }
 
-  
   // Upload video
   uploadVideo(): void {
     if (!this.selectedFile || !this.uploadForm.description.trim()) {
@@ -106,7 +103,7 @@ export class VideoEdit implements OnInit {
         this.resetUploadForm();
         this.loadVideos();
         this.isLoading = false;
-        
+
         // Switch back to list view after successful upload
         setTimeout(() => {
           this.currentView = 'list';
@@ -121,96 +118,89 @@ export class VideoEdit implements OnInit {
   }
 
   // Play video
-    playVideo(video: VideoDto): void {
-      this.currentVideo = video;
-      this.videoService.setCurrentVideo(video);
-      this.currentView = 'play';
-    }
-  
-    // Delete video
-    deleteVideo(videoId: number): void {
-      if (!confirm('Are you sure you want to delete this video?')) {
-        return;
-      }
-  
-      this.isLoading = true;
-      this.videoService.deleteVideoById(videoId).subscribe({
-        next: () => {
-          this.successMessage = 'Video deleted successfully!';
-          this.loadVideos();
-          this.isLoading = false;
-          
-          setTimeout(() => {
-            this.clearMessages();
-          }, 3000);
-        },
-        error: (error) => {
-          this.errorMessage = 'Delete failed: ' + error.message;
-          this.isLoading = false;
-        }
-      });
-    }
-  
-    // Get category name
-    getCategoryName(category?: any): string {
-      if (!category) return 'Uncategorized';
-      
-      // If category is a number (categoryId), use it directly
-      if (typeof category === 'number') {
-        const cat = this.categories.find(c => c.id === category);
-        return cat?.name || 'Unknown';
-      }
-      
-      // If category is an object, get the id property
-      if (typeof category === 'object' && category.id) {
-        const cat = this.categories.find(c => c.id === category.id);
-        return cat?.name || 'Unknown';
-      }
-      
-      return 'Unknown';
-    }
-  
-    // Format file size
-    formatFileSize(bytes?: number): string {
-      if (!bytes) return 'Unknown size';
-      
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(1024));
-      return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
-    }
-  
-    // Get video thumbnail URL (placeholder for now)
-    getVideoThumbnail(video: VideoDto): string {
-      // Return placeholder thumbnail - replace with actual thumbnail logic
-      return `http://localhost:8080/api/videos/thumbnail/${video.id}`;
-    }
-  
-    // Get video stream URL
-    getVideoStreamUrl(video: VideoDto): string {
-      return `http://localhost:8080/api/videos/stream/${video.id}`;
-    }
-  
-    // Reset upload form
-    private resetUploadForm(): void {
-      this.uploadForm = {
-        description: '',
-        categoryId: 1,
-        fileType: 'video/mp4'
-      };
-      this.selectedFile = null;
-      
-      // Reset file input
-      const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
-      }
-    }
-  
-    // Clear messages
-    private clearMessages(): void {
-      this.errorMessage = '';
-      this.successMessage = '';
+  playVideo(video: VideoDto): void {
+    this.currentVideo = video;
+    this.videoService.setCurrentVideo(video);
+    this.currentView = 'play';
+  }
+
+  // Delete video
+  deleteVideo(videoId: number): void {
+    if (!confirm('Are you sure you want to delete this video?')) {
+      return;
     }
 
+    this.isLoading = true;
+    this.videoService.deleteVideoById(videoId).subscribe({
+      next: () => {
+        this.successMessage = 'Video deleted successfully!';
+        this.loadVideos();
+        this.isLoading = false;
 
+        setTimeout(() => {
+          this.clearMessages();
+        }, 3000);
+      },
+      error: (error) => {
+        this.errorMessage = 'Delete failed: ' + error.message;
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Get category name
+  getCategoryName(category?: any): string {
+    if (!category) return 'Uncategorized';
+
+    // If category is a number (categoryId), use it directly
+    if (typeof category === 'number') {
+      const cat = this.categories.find(c => c.id === category);
+      return cat?.name || 'Unknown';
+    }
+
+    // If category is an object, get the id property
+    if (typeof category === 'object' && category.id) {
+      const cat = this.categories.find(c => c.id === category.id);
+      return cat?.name || 'Unknown';
+    }
+
+    return 'Unknown';
+  }
+
+  // Format file size
+  formatFileSize(bytes?: number): string {
+    return this.videoService.formatFileSize(bytes);
+  }
+
+  // Get video thumbnail URL
+  getVideoThumbnail(video: VideoDto): string {
+    return this.videoService.getVideoThumbnail(video);
+  }
+
+  // Get video stream URL
+  getVideoStreamUrl(video: VideoDto): string {
+    return this.videoService.getVideoStreamUrl(video);
+  }
+
+  // Reset upload form
+  private resetUploadForm(): void {
+    this.uploadForm = {
+      description: '',
+      categoryId: 1,
+      fileType: 'video/mp4'
+    };
+    this.selectedFile = null;
+
+    // Reset file input
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  // Clear messages
+  private clearMessages(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
 }
