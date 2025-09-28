@@ -1,1 +1,162 @@
-<p>note-open works!</p>
+<div class="note-view-container">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading note...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!isLoading && !note">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Note not found</h3>
+    <p>The note you're looking for doesn't exist or may have been deleted.</p>
+    <button mat-raised-button color="primary" (click)="onBackToList()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Notes
+    </button>
+  </div>
+
+  <!-- Note Content -->
+  <div class="note-content" *ngIf="!isLoading && note">
+    <!-- Header -->
+    <div class="note-header">
+      <div class="header-left">
+        <button mat-icon-button
+                matTooltip="Back to notes"
+                (click)="onBackToList()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+
+        <div class="title-section">
+          <h1 class="note-title">{{ note.title }}</h1>
+          <mat-chip class="category-chip" *ngIf="note.category">
+            <mat-icon matChipAvatar>folder</mat-icon>
+            {{ note.category.name }}
+          </mat-chip>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button mat-icon-button
+                matTooltip="Edit note"
+                (click)="onEditNote()">
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <button mat-icon-button
+                matTooltip="Download attachment"
+                *ngIf="note.fileName"
+                (click)="onDownloadDocument()">
+          <mat-icon>download</mat-icon>
+        </button>
+
+        <button mat-icon-button
+                [matMenuTriggerFor]="noteMenu"
+                matTooltip="More options">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #noteMenu="matMenu">
+          <button mat-menu-item (click)="onEditNote()">
+            <mat-icon>edit</mat-icon>
+            <span>Edit Note</span>
+          </button>
+          <button mat-menu-item
+                  *ngIf="note.fileName"
+                  (click)="onDownloadDocument()">
+            <mat-icon>download</mat-icon>
+            <span>Download Attachment</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item
+                  class="delete-action"
+                  (click)="onDeleteNote()">
+            <mat-icon>delete</mat-icon>
+            <span>Delete Note</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <!-- Meta Information -->
+    <div class="note-meta">
+      <div class="meta-item">
+        <mat-icon class="meta-icon">schedule</mat-icon>
+        <span class="meta-label">Created:</span>
+        <span class="meta-value">{{ formatDate(note.createdAt) }}</span>
+      </div>
+
+      <div class="meta-item" *ngIf="note.updatedAt && note.updatedAt !== note.createdAt">
+        <mat-icon class="meta-icon">update</mat-icon>
+        <span class="meta-label">Updated:</span>
+        <span class="meta-value">{{ formatDate(note.updatedAt) }}</span>
+      </div>
+
+      <div class="meta-item" *ngIf="note.fileName">
+        <mat-icon class="meta-icon">{{ getFileIcon(note.fileName) }}</mat-icon>
+        <span class="meta-label">Attachment:</span>
+        <span class="meta-value file-link" (click)="onDownloadDocument()">
+          {{ note.fileName }}
+          <small *ngIf="note.fileSize">({{ formatFileSize(note.fileSize) }})</small>
+        </span>
+      </div>
+    </div>
+
+    <mat-divider class="content-divider"></mat-divider>
+
+    <!-- Note Body -->
+    <div class="note-body">
+      <div class="content-text" [innerHTML]="getFormattedContent()"></div>
+    </div>
+
+    <!-- Attachment Preview (if applicable) -->
+    <div class="attachment-section" *ngIf="note.fileName">
+      <mat-card class="attachment-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>{{ getFileIcon(note.fileName) }}</mat-icon>
+          <mat-card-title>{{ note.fileName }}</mat-card-title>
+          <mat-card-subtitle *ngIf="note.fileSize">
+            {{ formatFileSize(note.fileSize) }}
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-actions align="end">
+          <button mat-button (click)="onDownloadDocument()">
+            <mat-icon>download</mat-icon>
+            Download
+          </button>
+          <button mat-button *ngIf="isImageFile(note.fileName)" (click)="onPreviewAttachment()">
+            <mat-icon>visibility</mat-icon>
+            Preview
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <div class="action-left">
+        <button mat-stroked-button (click)="onBackToList()">
+          <mat-icon>arrow_back</mat-icon>
+          Back to Notes
+        </button>
+      </div>
+
+      <div class="action-right">
+        <button mat-button
+                color="warn"
+                (click)="onDeleteNote()">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+
+        <button mat-raised-button
+                color="primary"
+                (click)="onEditNote()">
+          <mat-icon>edit</mat-icon>
+          Edit Note
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -18,6 +18,9 @@ export interface GenericResponseV2<T> {
   providedIn: 'root'
 })
 export class CategoryService {
+  getAllCategories() {
+    throw new Error('Method not implemented.');
+  }
   private apiUrl = 'http://localhost:8080/api/v1/category';
 
   constructor(private http: HttpClient) {}

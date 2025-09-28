@@ -1,0 +1,144 @@
+.note-view-container {
+  padding: 1rem;
+
+  .loading-container, .error-state {
+    text-align: center;
+    margin-top: 2rem;
+
+    mat-spinner {
+      margin-bottom: 1rem;
+    }
+
+    .error-icon {
+      font-size: 48px;
+      color: #f44336; // Material red
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .note-content {
+    display: flex;
+    flex-direction: column;
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .header-left {
+        display: flex;
+        align-items: center;
+
+        button {
+          margin-right: 0.5rem;
+        }
+
+        .title-section {
+          display: flex;
+          flex-direction: column;
+
+          .note-title {
+            margin: 0;
+            font-size: 1.8rem;
+          }
+
+          .category-chip {
+            margin-top: 0.25rem;
+            font-size: 0.9rem;
+          }
+        }
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+    }
+
+    .note-meta {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1rem 0;
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        .meta-icon {
+          font-size: 18px;
+          color: rgba(0, 0, 0, 0.54);
+        }
+
+        .meta-label {
+          font-weight: 600;
+          color: rgba(0, 0, 0, 0.6);
+        }
+
+        .meta-value {
+          color: rgba(0, 0, 0, 0.87);
+          cursor: default;
+        }
+
+        .file-link {
+          cursor: pointer;
+          color: #3f51b5;
+          text-decoration: underline;
+
+          small {
+            font-weight: normal;
+            color: rgba(0, 0, 0, 0.6);
+          }
+        }
+      }
+    }
+
+    .content-divider {
+      margin: 1rem 0;
+    }
+
+    .note-body {
+      .content-text {
+        white-space: pre-wrap;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+    }
+
+    .attachment-section {
+      margin-top: 1rem;
+
+      .attachment-card {
+        max-width: 400px;
+
+        mat-card-header {
+          mat-icon {
+            background-color: #e0e0e0;
+            border-radius: 50%;
+          }
+        }
+
+        mat-card-actions {
+          button {
+            margin-left: 0.5rem;
+          }
+        }
+      }
+    }
+
+    .action-bar {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+
+      .action-left, .action-right {
+        display: flex;
+        align-items: center;
+
+        button {
+          margin-right: 0.5rem;
+        }
+      }
+    }
+  }
+}

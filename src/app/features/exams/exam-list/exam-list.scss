@@ -1,0 +1,157 @@
+.exam-list-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 1rem;
+
+  .list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h2 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+
+      mat-icon {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  /* Loading State */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem 0;
+
+    mat-spinner {
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: #555;
+    }
+  }
+
+  /* Error State */
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: #b00020;
+    margin: 2rem 0;
+
+    mat-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin: 0.5rem 0 1rem;
+      font-size: 1.1rem;
+    }
+
+    button {
+      margin-top: 0.5rem;
+    }
+  }
+
+  /* Exams Grid */
+  .exams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+
+    .exam-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+
+      mat-card-header {
+        mat-card-title {
+          font-size: 1.2rem;
+          font-weight: 600;
+        }
+
+        mat-card-subtitle {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          .date-info {
+            font-size: 0.85rem;
+            color: #666;
+          }
+        }
+      }
+
+      mat-card-content {
+        flex-grow: 1;
+        p {
+          color: #444;
+        }
+      }
+
+      mat-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+
+        button {
+          display: flex;
+          align-items: center;
+
+          mat-icon {
+            margin-right: 0.25rem;
+          }
+        }
+      }
+    }
+  }
+
+  /* Empty State */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: 3rem 0;
+
+    mat-icon {
+      font-size: 4rem;
+      color: #1976d2;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+
+      mat-icon {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}
