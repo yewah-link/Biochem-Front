@@ -100,73 +100,163 @@
   </div>
 
   <!-- VIDEO LIST SECTION -->
-<div class="video-list">
-  <h2 class="video-title">Videos</h2>
+  <div class="video-list">
+    <h2 class="video-title">Videos</h2>
 
-  <!-- If a video is selected, show player layout -->
-  @if (selectedVideo) {
-    <div class="video-content-layout">
+    <!-- If a video is selected, show player layout -->
+    @if (selectedVideo) {
+      <div class="video-content-layout">
 
-      <!-- Main Video Player -->
-      <div class="video-player-section">
-        <video
-          controls
-          class="main-video"
-          [src]="getVideoStreamUrl(selectedVideo)"
-          [poster]="getVideoThumbnail(selectedVideo)">
-          Your browser does not support the video tag.
-        </video>
-        <div class="current-video-info">
-          <h3>{{ selectedVideo.description }}</h3>
-        </div>
-      </div>
-
-      <!-- Sidebar Recommendations -->
-      <div class="recommended-videos">
-        <h4>Up Next</h4>
-        <div class="video-grid sidebar-list">
-          @for (video of videos; track video.id) {
-            <div class="video-card" (click)="selectVideo(video)">
-              <img
-                [src]="videoService.getVideoThumbnail(video) || videoService.getFallbackThumbnailUrl()"
-                alt="Thumbnail"
-                class="thumbnail"/>
-              <div class="video-info">
-                <p class="video-description">{{ video.description }}</p>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-
-    </div>
-  }
-
-  <!-- Otherwise, show simple grid layout -->
-  @else {
-    <div class="video-grid default-grid">
-      @for (video of videos; track video.id) {
-        <div class="video-card" (click)="selectVideo(video)">
-          <img
-            [src]="videoService.getVideoThumbnail(video) || videoService.getFallbackThumbnailUrl()"
-            alt="Thumbnail"
-            class="thumbnail"/>
-          <div class="video-info">
-            <p class="video-description">{{ video.description }}</p>
+        <!-- Main Video Player -->
+        <div class="video-player-section">
+          <video
+            controls
+            class="main-video"
+            [src]="getVideoStreamUrl(selectedVideo)"
+            [poster]="getVideoThumbnail(selectedVideo)">
+            Your browser does not support the video tag.
+          </video>
+          <div class="current-video-info">
+            <h3>{{ selectedVideo.description }}</h3>
           </div>
         </div>
+
+        <!-- Sidebar Recommendations -->
+        <div class="recommended-videos">
+          <h4>Up Next</h4>
+          <div class="video-grid sidebar-list">
+            @for (video of getRecommendedVideos(); track video.id) {
+              <div class="video-card" (click)="selectVideo(video)">
+                <img
+                  [src]="videoService.getVideoThumbnail(video) || videoService.getFallbackThumbnailUrl()"
+                  alt="Thumbnail"
+                  class="thumbnail"/>
+                <div class="video-info">
+                  <p class="video-description">{{ video.description }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- Otherwise, show simple grid layout -->
+    @else {
+      <div class="video-grid default-grid">
+        @for (video of videos; track video.id) {
+          <div class="video-card" (click)="selectVideo(video)">
+            <img
+              [src]="videoService.getVideoThumbnail(video) || videoService.getFallbackThumbnailUrl()"
+              alt="Thumbnail"
+              class="thumbnail"/>
+            <div class="video-info">
+              <p class="video-description">{{ video.description }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Empty Fallback -->
+    @if (videos.length === 0) {
+      <div class="empty-state">
+        <p>No videos available in this category yet.</p>
+      </div>
+    }
+  </div>
+
+<!-- Full-width Hero Section -->
+<div class="notes-hero">
+  <div class="notes-hero-container"> <!-- Optional wrapper to constrain content -->
+    <div class="hero-content">
+      <h3>Master Your Biochemistry Studies</h3>
+      <p>
+        Access comprehensive study notes organized by category. Each note includes detailed explanations,
+        key concepts, and attached resources to help you excel in your biochemistry courses.
+      </p>
+      <p>
+        Whether you're reviewing for exams, completing assignments, or deepening your understanding of
+        complex biochemical processes, these notes are designed to provide clear, concise, and
+        reliable guidance. Explore topics ranging from molecular biology and enzymology to metabolism
+        and genetics, all structured for easy learning and quick reference.
+      </p>
+      <ul class="features-list">
+        <li>📚 Organized by topic categories</li>
+        <li>📄 Downloadable study materials</li>
+        <li>🎯 Focused content for exam preparation</li>
+        <li>💡 Clear explanations and examples</li>
+      </ul>
+    </div>
+    <div class="hero-image">
+      <img src="assets/books.jfif" alt="Study Notes" />
+    </div>
+  </div>
+</div>
+
+<!-- Notes Section -->
+<div class="notes-section">
+  <h2 class="section-title">Study Notes</h2>
+
+  <!-- Notes Grid -->
+  @if (getFilteredNotes().length > 0) {
+    <div class="notes-grid">
+      @for (note of getFilteredNotes(); track note.id) {
+        <mat-card class="note-card">
+          <mat-card-header>
+            <mat-card-title>{{ note.title }}</mat-card-title>
+            <mat-card-subtitle>
+              <mat-chip>{{ getCategoryName(note.category) }}</mat-chip>
+            </mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div class="note-content" [innerHTML]="getFormattedContent(note.content)"></div>
+
+            @if (note.fileName) {
+              <div class="document-info">
+                <mat-icon>attach_file</mat-icon>
+                <span>{{ note.fileName }}</span>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
       }
     </div>
-  }
-
-  <!-- Empty Fallback -->
-  @if (videos.length === 0) {
+  } @else {
     <div class="empty-state">
-      <p>No videos available in this category yet.</p>
+      <p>No notes available for this category yet.</p>
     </div>
   }
 </div>
 
+
+<!-- Test Section -->
+<div class="test-section">
+  <div class="test-content-wrapper">
+    <div class="test-image">
+      <img src="assets/tests.jfif" alt="Take Tests" />
+    </div>
+    <div class="test-info">
+      <h2>Ready to Test Your Knowledge?</h2>
+      <p>
+        Challenge yourself with our comprehensive biochemistry tests. Evaluate your understanding,
+        identify areas for improvement, and track your progress over time.
+      </p>
+      <ul class="test-features">
+        <li>✓ Topic-based assessments</li>
+        <li>✓ Instant feedback and scoring</li>
+        <li>✓ Detailed answer explanations</li>
+        <li>✓ Progress tracking</li>
+      </ul>
+      <button mat-raised-button color="primary" class="take-test-btn" routerLink="/tests">
+        Take Test
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
 
 
 </mat-sidenav-container>
