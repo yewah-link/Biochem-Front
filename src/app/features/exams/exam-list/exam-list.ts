@@ -1,24 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { ExamDto, ExamService, GenericResponseV2 } from '../../../core/exam.service';
 
 @Component({
   selector: 'app-exam-list',
   standalone: true,
-  imports: [
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule
-  ],
+  imports: [],
   templateUrl: './exam-list.html',
   styleUrls: ['./exam-list.scss']
 })
@@ -34,8 +21,7 @@ export class ExamList implements OnInit {
 
   constructor(
     private examService: ExamService,
-    private router: Router,
-    private snackBar: MatSnackBar
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -72,6 +58,18 @@ export class ExamList implements OnInit {
     this.router.navigate(['/dashboard/exams/edit', exam.id]);
   }
 
+  addQuestions(exam: ExamDto): void {
+    this.router.navigate(['/dashboard/exams', exam.id, 'questions', 'add']);
+  }
+
+  viewQuestions(exam: ExamDto): void {
+    this.router.navigate(['/dashboard/exams', exam.id, 'questions']);
+  }
+
+  editQuestions(exam: ExamDto): void {
+    this.router.navigate(['/dashboard/exams', exam.id, 'questions', 'edit']);
+  }
+
   deleteExam(id: number): void {
     if (!confirm('Are you sure you want to delete this exam?')) {
       return;
@@ -83,14 +81,17 @@ export class ExamList implements OnInit {
       next: (res: GenericResponseV2<void>) => {
         if (res.status === 'SUCCESS') {
           this.exams = this.exams.filter(e => e.id !== id);
-          this.showMessage('Exam deleted successfully');
+          this.successMessage = 'Exam deleted successfully';
+          setTimeout(() => this.successMessage = '', 3000);
         } else {
-          this.showMessage(res.message || 'Failed to delete exam', true);
+          this.errorMessage = res.message || 'Failed to delete exam';
+          setTimeout(() => this.errorMessage = '', 3000);
         }
         this.deletingIds.delete(id);
       },
       error: (error) => {
-        this.showMessage('Failed to delete exam. Please try again.', true);
+        this.errorMessage = 'Failed to delete exam. Please try again.';
+        setTimeout(() => this.errorMessage = '', 3000);
         this.deletingIds.delete(id);
         console.error('Error deleting exam:', error);
       }
@@ -105,13 +106,6 @@ export class ExamList implements OnInit {
     } catch {
       return 'N/A';
     }
-  }
-
-  private showMessage(message: string, isError = false): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      panelClass: isError ? ['error-snackbar'] : ['success-snackbar']
-    });
   }
 
   retryLoad(): void {

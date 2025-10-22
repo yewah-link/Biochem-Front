@@ -1,165 +1,255 @@
-<div class="note-edit-container">
-  <div class="edit-header">
-    <h2>{{ pageTitle }}</h2>
-    <div class="header-actions">
-      <button mat-button (click)="onCancel()" [disabled]="isLoading">
-        Cancel
-      </button>
-      <button mat-raised-button
-              color="primary"
-              (click)="onSave()"
-              [disabled]="isLoading || noteForm.invalid">
-        @if (isLoading) {
-          <mat-spinner diameter="20" class="save-spinner"></mat-spinner>
-        } @else {
-          <mat-icon>save</mat-icon>
-        }
-        {{ isLoading ? 'Saving...' : submitButtonText }}
-      </button>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ pageTitle }}</h1>
+          <p class="mt-1 text-sm text-gray-600">
+            {{ isEditMode ? 'Update your study note' : 'Create a new study note' }}
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-all shadow-sm"
+            (click)="onCancel()"
+            [disabled]="isLoading"
+            type="button">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancel
+          </button>
+
+          <button
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#9b6012] hover:bg-[#7d4d0e] text-white rounded-lg font-semibold transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="onSave()"
+            [disabled]="isLoading || noteForm.invalid"
+            type="button">
+            @if (isLoading) {
+              <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Saving...</span>
+            } @else {
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              <span>{{ submitButtonText }}</span>
+            }
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Error/Success Messages -->
-  @if (errorMessage || successMessage) {
-    <div class="messages">
-      @if (errorMessage) {
-        <div class="error-message">
-          <mat-icon>error</mat-icon>
-          {{ errorMessage }}
+  <!-- Content Area -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Error Message -->
+    @if (errorMessage) {
+      <div class="flex items-center justify-between p-4 mb-6 bg-red-50 border border-red-200 rounded-lg" role="alert">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+          <span class="text-red-800 font-medium">{{ errorMessage }}</span>
         </div>
-      }
-      @if (successMessage) {
-        <div class="success-message">
-          <mat-icon>check_circle</mat-icon>
-          {{ successMessage }}
+        <button class="text-red-400 hover:text-red-600" (click)="errorMessage = ''">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Success Message -->
+    @if (successMessage) {
+      <div class="flex items-center justify-between p-4 mb-6 bg-green-50 border border-green-200 rounded-lg" role="alert">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <span class="text-green-800 font-medium">{{ successMessage }}</span>
         </div>
-      }
-    </div>
-  }
+        <button class="text-green-400 hover:text-green-600" (click)="successMessage = ''">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    }
 
-  <form [formGroup]="noteForm" class="note-form">
-    <mat-card class="form-card">
-      <mat-card-content>
-
-        <!-- Category Selection -->
-        <div class="form-section">
-          <mat-form-field appearance="outline" class="category-field">
-            <mat-label>Category</mat-label>
-            <mat-select formControlName="categoryId">
-              @for (category of categories; track category.id) {
-                <mat-option [value]="category.id">
-                  {{ category.name }}
-                </mat-option>
-              }
-            </mat-select>
-            @if (hasError('categoryId')) {
-              <mat-error>
-                {{ getErrorMessage('categoryId') }}
-              </mat-error>
-            }
-          </mat-form-field>
-        </div>
-
-        <!-- Title -->
-        <div class="form-section">
-          <mat-form-field appearance="outline" class="title-field">
-            <mat-label>Note Title</mat-label>
-            <input matInput
-                   formControlName="title"
-                   placeholder="Enter note title..."
-                   maxlength="200">
-            <mat-hint align="end">{{ noteForm.get('title')?.value?.length || 0 }}/200</mat-hint>
-            @if (hasError('title')) {
-              <mat-error>
-                {{ getErrorMessage('title') }}
-              </mat-error>
-            }
-          </mat-form-field>
-        </div>
-
-        <!-- Content -->
-        <div class="form-section">
-          <mat-form-field appearance="outline" class="content-field">
-            <mat-label>Note Content</mat-label>
-            <textarea matInput
-                      formControlName="content"
-                      placeholder="Write your note here..."
-                      rows="12"
-                      maxlength="5000"></textarea>
-            <mat-hint align="end">{{ noteForm.get('content')?.value?.length || 0 }}/5000</mat-hint>
-            @if (hasError('content')) {
-              <mat-error>
-                {{ getErrorMessage('content') }}
-              </mat-error>
-            }
-          </mat-form-field>
-        </div>
-
-        <mat-divider></mat-divider>
-
-        <!-- File Upload Section -->
-        <div class="form-section">
-          <div class="file-section">
-            <div class="file-header">
-              <h3>Attachment</h3>
-              <small>Optional - Attach a document to your note</small>
+    <!-- Form -->
+    <form [formGroup]="noteForm" class="space-y-6">
+      <!-- Main Content Card -->
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="p-6 space-y-6">
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              Category <span class="text-red-600">*</span>
+            </label>
+            <div class="relative">
+              <select
+                formControlName="categoryId"
+                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent transition-all appearance-none cursor-pointer"
+                [class.border-red-500]="hasError('categoryId')">
+                <option value="" disabled>Select a category</option>
+                @for (category of categories; track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select>
+              <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
-
-            <!-- Upload new file -->
-            @if (!selectedFile && !note?.fileName) {
-              <div class="file-upload">
-                <input type="file"
-                       #fileInput
-                       (change)="onFileSelected($event)"
-                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
-                       hidden>
-                <button mat-stroked-button
-                        type="button"
-                        (click)="fileInput.click()">
-                  <mat-icon>attach_file</mat-icon>
-                  Choose File
-                </button>
-                <div class="file-info">
-                  <small>Maximum file size: 10MB</small>
-                  <br>
-                  <small>Supported formats: PDF, DOC, TXT, Images, Excel, PowerPoint</small>
-                </div>
-              </div>
-            }
-
-            <!-- Selected file -->
-            @if (selectedFile) {
-              <div class="selected-file">
-                <mat-chip-set>
-                  <mat-chip [removable]="true" (removed)="removeFile()">
-                    <mat-icon matChipAvatar>{{ getFileIcon(selectedFile.name) }}</mat-icon>
-                    {{ selectedFile.name }}
-                    <span class="file-size">({{ formatFileSize(selectedFile.size) }})</span>
-                    <mat-icon matChipRemove>cancel</mat-icon>
-                  </mat-chip>
-                </mat-chip-set>
-              </div>
-            }
-
-            <!-- Existing file -->
-            @if (note?.fileName && !selectedFile) {
-              <div class="existing-file">
-                <mat-chip-set>
-                  <mat-chip>
-                    <mat-icon matChipAvatar>{{ getFileIcon(note?.fileName || '') }}</mat-icon>
-                    {{ note?.fileName }}
-                    <small class="existing-label">Existing attachment</small>
-                  </mat-chip>
-                </mat-chip-set>
-                <small class="replace-info">
-                  Choose a new file above to replace the existing attachment
-                </small>
-              </div>
+            @if (hasError('categoryId')) {
+              <p class="mt-1 text-sm text-red-600">{{ getErrorMessage('categoryId') }}</p>
             }
           </div>
-        </div>
 
-      </mat-card-content>
-    </mat-card>
-  </form>
+          <!-- Title -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              Note Title <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="title"
+              placeholder="Enter note title..."
+              maxlength="200"
+              class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent transition-all"
+              [class.border-red-500]="hasError('title')">
+            <div class="flex items-center justify-between mt-1">
+              @if (hasError('title')) {
+                <p class="text-sm text-red-600">{{ getErrorMessage('title') }}</p>
+              } @else {
+                <span></span>
+              }
+              <p class="text-xs text-gray-500">
+                {{ noteForm.get('title')?.value?.length || 0 }}/200
+              </p>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              Note Content <span class="text-red-600">*</span>
+            </label>
+            <textarea
+              formControlName="content"
+              placeholder="Write your note here..."
+              rows="12"
+              maxlength="5000"
+              class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent transition-all resize-y"
+              [class.border-red-500]="hasError('content')"></textarea>
+            <div class="flex items-center justify-between mt-1">
+              @if (hasError('content')) {
+                <p class="text-sm text-red-600">{{ getErrorMessage('content') }}</p>
+              } @else {
+                <span></span>
+              }
+              <p class="text-xs text-gray-500">
+                {{ noteForm.get('content')?.value?.length || 0 }}/5000
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- File Attachment Card -->
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-[#9b6012]/10 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Attachment</h3>
+              <p class="text-sm text-gray-600">Optional - Attach a document to your note</p>
+            </div>
+          </div>
+
+          <!-- Upload new file -->
+          @if (!selectedFile && !note?.fileName) {
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#9b6012] transition-colors">
+              <input
+                type="file"
+                #fileInput
+                (change)="onFileSelected($event)"
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx"
+                class="hidden">
+              <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <button
+                type="button"
+                (click)="fileInput.click()"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-[#9b6012] border border-[#9b6012] rounded-lg font-medium transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                Choose File
+              </button>
+              <p class="mt-3 text-xs text-gray-500">
+                Maximum file size: 10MB<br>
+                Supported formats: PDF, DOC, TXT, Images, Excel, PowerPoint
+              </p>
+            </div>
+          }
+
+          <!-- Selected file -->
+          @if (selectedFile) {
+            <div class="bg-[#9b6012]/5 border border-[#9b6012]/20 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ selectedFile.name }}</p>
+                    <p class="text-xs text-gray-600">{{ formatFileSize(selectedFile.size) }}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeFile()"
+                  class="ml-3 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Existing file -->
+          @if (note?.fileName && !selectedFile) {
+            <div class="space-y-3">
+              <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ note?.fileName }}</p>
+                    <p class="text-xs text-gray-600 italic">Existing attachment</p>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-gray-600 italic text-center">
+                Choose a new file above to replace the existing attachment
+              </p>
+            </div>
+          }
+        </div>
+      </div>
+    </form>
+  </div>
 </div>

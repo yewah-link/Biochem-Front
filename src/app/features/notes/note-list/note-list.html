@@ -1,58 +1,192 @@
-<div class="note-list-container">
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900"> Notes</h1>
+          <p class="mt-1 text-sm text-gray-600">Your learning resources and documents</p>
+        </div>
 
-  <!-- Loading spinner -->
-  @if (isLoading) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
-    </div>
-  }
-
-  <!-- Notes list -->
-  @if (!isLoading) {
-    <div class="note-list">
-      <div class="list-header">
-        <button mat-raised-button color="primary" (click)="createNote()">
-          <mat-icon>add</mat-icon>
+        <button
+          class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#9b6012] hover:bg-[#7d4d0e] text-white rounded-lg font-semibold transition-all shadow-sm hover:shadow-md"
+          (click)="createNote()"
+          type="button">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
           New Note
         </button>
       </div>
+    </div>
+  </div>
 
-      @if (notes.length > 0) {
-        <div class="note-grid">
-          @for (note of notes; track note.id) {
-            <mat-card class="note-card">
-              <mat-card-header>
-                <mat-card-title>{{ note.title }}</mat-card-title>
-                <mat-card-subtitle>
-                  <mat-chip class="category-chip">{{ getCategoryName(note.category) }}</mat-chip>
-                  <span class="date-info">
-                    {{ formatDate((note.updatedAt || note.createdAt)?.toString()) }}
-
-                  </span>
-                </mat-card-subtitle>
-              </mat-card-header>
-
-              <mat-card-content>
-                <p>{{ truncateText(note.content, 150) }}</p>
-              </mat-card-content>
-
-              <mat-card-actions>
-                <button mat-button (click)="editNote(note)">
-                  <mat-icon>edit</mat-icon>
-                  Edit
-                </button>
-                <button mat-button color="warn" (click)="deleteNote(note.id!)">
-                  <mat-icon>delete</mat-icon>
-                  Delete
-                </button>
-              </mat-card-actions>
-            </mat-card>
-          }
-        </div>
-      } @else {
-        <p>No notes available.</p>
-      }
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="flex flex-col items-center justify-center py-20">
+      <div class="relative w-16 h-16">
+        <div class="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-[#9b6012] rounded-full border-t-transparent animate-spin"></div>
+      </div>
+      <p class="mt-6 text-gray-600 font-medium text-lg">Loading notes...</p>
     </div>
   }
 
+  <!-- Content Area -->
+  @if (!isLoading) {
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Error Message -->
+      @if (errorMessage) {
+        <div class="flex items-center justify-between p-4 mb-6 bg-red-50 border border-red-200 rounded-lg" role="alert">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-red-800 font-medium">{{ errorMessage }}</span>
+          </div>
+          <button class="text-red-400 hover:text-red-600" (click)="errorMessage = ''">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      }
+
+      <!-- Success Message -->
+      @if (successMessage) {
+        <div class="flex items-center justify-between p-4 mb-6 bg-green-50 border border-green-200 rounded-lg" role="alert">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-green-800 font-medium">{{ successMessage }}</span>
+          </div>
+          <button class="text-green-400 hover:text-green-600" (click)="successMessage = ''">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      }
+
+      <!-- Notes Grid -->
+      @if (notes.length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (note of notes; track note.id) {
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer overflow-hidden"
+                 (click)="editNote(note)">
+
+              <!-- Document Header with Folded Corner -->
+              <div class="relative bg-gradient-to-br from-[#9b6012]/5 to-[#9b6012]/10 p-6 border-b border-gray-100">
+                <!-- Folded Corner Effect -->
+                <div class="absolute top-0 right-0 w-0 h-0 border-l-[40px] border-l-transparent border-t-[40px] border-t-[#9b6012] opacity-20"></div>
+
+                <!-- Document Icon -->
+                <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center border border-gray-200">
+                    <svg class="w-6 h-6 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-[#9b6012] transition-colors">
+                      {{ note.title }}
+                    </h3>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#9b6012]/10 text-[#9b6012] border border-[#9b6012]/20">
+                        {{ getCategoryName(note.category) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Document Content Preview -->
+              <div class="p-6">
+                <!-- Content Lines (mimicking document text) -->
+                <div class="space-y-2 mb-4">
+                  <div class="h-2 bg-gray-200 rounded w-full"></div>
+                  <div class="h-2 bg-gray-200 rounded w-5/6"></div>
+                  <div class="h-2 bg-gray-200 rounded w-4/6"></div>
+                </div>
+
+                <p class="text-sm text-gray-600 line-clamp-3 mb-4 leading-relaxed">
+                  {{ truncateText(note.content, 150) }}
+                </p>
+
+                <!-- Document Metadata -->
+                <div class="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-4">
+                  <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ formatDate((note.updatedAt || note.createdAt)?.toString()) }}</span>
+                  </div>
+
+                  @if (note.fileName) {
+                    <div class="flex items-center gap-1 text-[#9b6012]">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                      <span class="font-medium">Attached</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Document Actions -->
+              <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3" (click)="$event.stopPropagation()">
+                <button
+                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                  (click)="editNote(note)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+
+                @if (note.fileName) {
+                  <button
+                    class="px-4 py-2 text-sm font-medium text-[#9b6012] bg-[#9b6012]/10 hover:bg-[#9b6012]/20 border border-[#9b6012]/20 rounded-lg transition-colors"
+                    (click)="downloadDocument(note.id!)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </button>
+                }
+
+                <button
+                  class="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors"
+                  (click)="deleteNote(note.id!)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Empty State -->
+        <div class="text-center py-20">
+          <div class="w-24 h-24 bg-[#9b6012]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-12 h-12 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">No notes yet</h3>
+          <p class="text-gray-600 mb-8 max-w-md mx-auto">Create your first study note to organize your learning materials</p>
+          <button
+            class="inline-flex items-center gap-2 px-6 py-3 bg-[#9b6012] hover:bg-[#7d4d0e] text-white rounded-lg font-semibold transition-all shadow-sm"
+            (click)="createNote()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Create Your First Note
+          </button>
+        </div>
+      }
+    </div>
+  }
 </div>

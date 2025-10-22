@@ -2,41 +2,24 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Auth } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
 export class Login {
   loginForm: FormGroup;
-  isLoading: boolean = false;
-  errorMessage: string = '';
+  isLoading = false;
+  errorMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private authService: Auth,
-    private router: Router,
-    private snackBar: MatSnackBar
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -55,11 +38,7 @@ export class Login {
         next: (response) => {
           console.log('Login successful:', response);
 
-          // Show success message with user role
-          const roleMessage = response.user.role === 'ADMIN' ? 'Admin login successful!' : 'Login successful!';
-          this.snackBar.open(roleMessage, 'Close', { duration: 3000 });
-
-          // Navigate based on role from database
+          // Navigate based on user role
           this.navigateBasedOnRole(response.user.role);
         },
         error: (error) => {
@@ -87,7 +66,7 @@ export class Login {
         this.router.navigate(['/guest-dashboard']);
         break;
       default:
-        this.router.navigate(['/dashboard']); // Default fallback
+        this.router.navigate(['/dashboard']);
         break;
     }
   }

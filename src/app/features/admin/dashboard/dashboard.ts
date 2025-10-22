@@ -1,44 +1,52 @@
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormFieldModule } from "@angular/material/form-field";
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { RouterModule } from '@angular/router'; // Add this import
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    MatSidenavModule,
-    MatToolbarModule,
-    MatIconModule,
-    MatListModule,
-    MatExpansionModule,
-    MatButtonModule,
-    RouterModule // Add this to imports
+    CommonModule, 
+    RouterModule, 
+    FormsModule
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
 export class Dashboard {
-  mobileSearchActive = false;
-  collapsed = false;
-  showContent = false;
+  sidebarOpen = true;
+  showContentSubmenu = false;
+  mobileMenuOpen = false;
   search: string = '';
 
-  onSearch() {
-    console.log('Searching for:', this.search);
+  toggleSidebar() {
+    this.sidebarOpen = !this.sidebarOpen;
   }
 
-  toggleSidenav() {
-    this.collapsed = !this.collapsed;
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  toggleContentSubmenu() {
+    this.showContentSubmenu = !this.showContentSubmenu;
+  }
+
+  onSearch() {
+    if (this.search.trim()) {
+      console.log('Searching for:', this.search);
+      // Implement your search logic here
+      // Example: this.router.navigate(['/search'], { queryParams: { q: this.search } });
+    }
   }
 
   logout() {
-    alert('Logging out...');
+    console.log('Logging out...');
+    // Implement your logout logic here
+    // Example: 
+    // this.authService.logout().subscribe(() => {
+    //   this.router.navigate(['/login']);
+    // });
   }
 }
