@@ -1,104 +1,212 @@
 <!-- NAVBAR (always visible, independent of sidenav) -->
-<mat-toolbar class="navbar">
-  <!-- Left group -->
-  <div class="nav-left">
-    <a class="brand">
-      <mat-icon>dashboard</mat-icon>
-      <span class="text">AdminHub</span>
-    </a>
-    <button mat-icon-button (click)="sidenav.toggle()" class="menu-toggle">
-      <mat-icon>menu</mat-icon>
-    </button>
-  </div>
+<nav class="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 shadow-sm">
+  <div class="h-full px-4 flex items-center justify-between">
+    <!-- Left group -->
+    <div class="flex items-center gap-4">
+      <button 
+        (click)="toggleSidebar()" 
+        class="p-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-600 hover:text-amber-700"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      
+      <a class="flex items-center gap-2 text-xl font-semibold text-gray-800 cursor-pointer hover:text-amber-700 transition-colors">
+        <svg class="w-8 h-8 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <span>AdminHub</span>
+      </a>
+    </div>
 
-  <!-- Center group -->
-  <div class="nav-center">
-    <a class="nav-link">Categories</a>
-    <div class="form-input">
-      <input type="text" placeholder="Search" />
-      <button mat-icon-button>
-        <mat-icon>search</mat-icon>
+    <!-- Center group -->
+    <div class="hidden md:flex items-center gap-6">
+      <a class="text-gray-600 hover:text-gray-900 font-medium cursor-pointer transition-colors">
+        Categories
+      </a>
+      <div class="relative">
+        <input 
+          type="text" 
+          placeholder="Search" 
+          [(ngModel)]="search"
+          (keyup.enter)="onSearch()"
+          class="w-64 pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+        />
+        <button 
+          (click)="onSearch()"
+          class="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-amber-50 rounded transition-colors"
+        >
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right group - Profile -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex flex-col items-end">
+        <span class="text-sm font-medium text-gray-800">John Doe</span>
+        <span class="text-xs text-gray-500">Administrator</span>
+      </div>
+      <button class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 hover:ring-amber-500 transition-all">
+        <img 
+          src="https://secure.gravatar.com/avatar/d09eaad01aea86c51b4f892b4f8abf6f?s=100&d=wavatar&r=g"
+          alt="Profile"
+          class="w-full h-full object-cover"
+        >
       </button>
     </div>
   </div>
-
-  <!-- Right group -->
-  <div class="nav-right">
-    <button mat-icon-button class="notification">
-      <mat-icon>notifications</mat-icon>
-      <span class="num">8</span>
-    </button>
-    <button mat-icon-button class="profile">
-      <img src="https://secure.gravatar.com/avatar/d09eaad01aea86c51b4f892b4f8abf6f?s=100&d=wavatar&r=g">
-    </button>
-  </div>
-</mat-toolbar>
+</nav>
 
 <!-- MAIN CONTAINER (below navbar) -->
-<mat-sidenav-container class="app-container">
+<div class="fixed top-16 left-0 right-0 bottom-0 flex">
   <!-- SIDEBAR -->
-  <mat-sidenav #sidenav mode="side" [opened]="!collapsed" id="sidebar">
-    <mat-nav-list class="side-menu top">
-      <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-        <mat-icon>home</mat-icon>
-        <span class="text">Home</span>
-      </a>
-      <a mat-list-item routerLink="/dashboard/analytics" routerLinkActive="active">
-        <mat-icon>bar_chart</mat-icon>
-        <span class="text">Analytics</span>
-      </a>
-      <a mat-list-item routerLink="/dashboard/team" routerLinkActive="active">
-        <mat-icon>group</mat-icon>
-        <span class="text">Team</span>
-      </a>
+  <aside 
+    [class]="(sidebarOpen ? 'w-64' : 'w-20') + ' bg-gradient-to-b from-gray-900 to-gray-800 border-r border-gray-700 transition-all duration-300 ease-in-out overflow-hidden'"
+  >
+    <div class="h-full flex flex-col overflow-y-auto">
+      <!-- Top menu items -->
+      <nav class="flex-1 pt-4 px-3 space-y-1">
+        <a 
+          routerLink="/dashboard" 
+          routerLinkActive="bg-amber-600 text-white shadow-lg"
+          [routerLinkActiveOptions]="{exact: true}"
+          class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-all cursor-pointer rounded-lg group"
+          [title]="!sidebarOpen ? 'Home' : ''"
+        >
+          <svg class="w-5 h-5 min-w-[20px] text-gray-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span [class.hidden]="!sidebarOpen" class="font-medium whitespace-nowrap">Home</span>
+        </a>
+        
+        <a 
+          routerLink="/dashboard/analytics" 
+          routerLinkActive="bg-amber-600 text-white shadow-lg"
+          class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-all cursor-pointer rounded-lg group"
+          [title]="!sidebarOpen ? 'Analytics' : ''"
+        >
+          <svg class="w-5 h-5 min-w-[20px] text-gray-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <span [class.hidden]="!sidebarOpen" class="font-medium whitespace-nowrap">Analytics</span>
+        </a>
+        
+        <a 
+          routerLink="/dashboard/team" 
+          routerLinkActive="bg-amber-600 text-white shadow-lg"
+          class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-all cursor-pointer rounded-lg group"
+          [title]="!sidebarOpen ? 'Team' : ''"
+        >
+          <svg class="w-5 h-5 min-w-[20px] text-gray-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span [class.hidden]="!sidebarOpen" class="font-medium whitespace-nowrap">Team</span>
+        </a>
 
-      <!-- Expansion panel for nested content -->
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <mat-icon>folder</mat-icon>
-            <span class="text">Content</span>
-          </mat-panel-title>
-        </mat-expansion-panel-header>
+        <!-- Collapsible Content Menu -->
+        <div class="rounded-lg overflow-hidden">
+          <button 
+            (click)="sidebarOpen && toggleContentSubmenu()"
+            class="w-full flex items-center justify-between gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-all rounded-lg group"
+            [title]="!sidebarOpen ? 'Content' : ''"
+            [class.cursor-not-allowed]="!sidebarOpen"
+          >
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 min-w-[20px] text-gray-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              <span [class.hidden]="!sidebarOpen" class="font-medium whitespace-nowrap">Content</span>
+            </div>
+            <svg 
+              *ngIf="sidebarOpen"
+              [class]="showContentSubmenu ? 'rotate-180' : ''"
+              class="w-4 h-4 transition-transform duration-200" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-        <mat-nav-list>
-          <a mat-list-item routerLink="/dashboard/category/add" routerLinkActive="active">
-            <mat-icon>category</mat-icon>
-            <span>Categories</span>
-          </a>
-          <a mat-list-item routerLink="/dashboard/videos" routerLinkActive="active">
-            <mat-icon>ondemand_video</mat-icon>
-            <span>Videos</span>
-          </a>
-          <a mat-list-item routerLink="/dashboard/notes" routerLinkActive="active">
-            <mat-icon>description</mat-icon>
-            <span>Notes</span>
-          </a>
-          <a mat-list-item routerLink="/dashboard/exams" routerLinkActive="active">
-            <mat-icon>edit_note</mat-icon>
-            <span>Exam</span>
-          </a>
-        </mat-nav-list>
-      </mat-expansion-panel>
-    </mat-nav-list>
+          <div 
+            *ngIf="sidebarOpen"
+            [class]="showContentSubmenu ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'"
+            class="overflow-hidden transition-all duration-300 ease-in-out"
+          >
+            <div class="bg-gray-800 rounded-lg mt-1 py-2 space-y-1">
+              <a 
+                routerLink="/dashboard/category/add" 
+                routerLinkActive="bg-amber-600 text-white shadow-lg"
+                class="flex items-center gap-3 px-4 py-2 ml-8 text-gray-400 hover:text-white hover:bg-gray-700 transition-all cursor-pointer rounded"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <span class="text-sm font-medium">Categories</span>
+              </a>
+              
+              <a 
+                routerLink="/dashboard/videos" 
+                routerLinkActive="bg-amber-600 text-white shadow-lg"
+                class="flex items-center gap-3 px-4 py-2 ml-8 text-gray-400 hover:text-white hover:bg-gray-700 transition-all cursor-pointer rounded"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span class="text-sm font-medium">Videos</span>
+              </a>
+              
+              <a 
+                routerLink="/dashboard/notes" 
+                routerLinkActive="bg-amber-600 text-white shadow-lg"
+                class="flex items-center gap-3 px-4 py-2 ml-8 text-gray-400 hover:text-white hover:bg-gray-700 transition-all cursor-pointer rounded"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="text-sm font-medium">Notes</span>
+              </a>
+              
+              <a 
+                routerLink="/dashboard/exams" 
+                routerLinkActive="bg-amber-600 text-white shadow-lg"
+                class="flex items-center gap-3 px-4 py-2 ml-8 text-gray-400 hover:text-white hover:bg-gray-700 transition-all cursor-pointer rounded"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span class="text-sm font-medium">Exam</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
 
-    <!-- Bottom menu -->
-    <mat-nav-list class="side-menu">
-      <!-- Temporarily comment out routes that don't exist -->
-      <!-- <a mat-list-item routerLink="/dashboard/settings" routerLinkActive="active">
-        <mat-icon>settings</mat-icon>
-        <span class="text">Settings</span>
-      </a> -->
-      <a mat-list-item (click)="logout()" class="logout">
-        <mat-icon>logout</mat-icon>
-        <span class="text">Logout</span>
-      </a>
-    </mat-nav-list>
-  </mat-sidenav>
+      <!-- Bottom menu -->
+      <div class="border-t border-gray-700 p-3">
+        <button 
+          (click)="logout()" 
+          class="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-red-900/30 hover:text-red-400 transition-all cursor-pointer rounded-lg group"
+          [title]="!sidebarOpen ? 'Logout' : ''"
+        >
+          <svg class="w-5 h-5 min-w-[20px] text-gray-400 group-hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span [class.hidden]="!sidebarOpen" class="font-medium whitespace-nowrap">Logout</span>
+        </button>
+      </div>
+    </div>
+  </aside>
 
   <!-- MAIN CONTENT AREA -->
-  <mat-sidenav-content class="main-content">
-    <!-- This is where the routed components will be displayed -->
-    <router-outlet></router-outlet>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  <main class="flex-1 bg-gray-50 overflow-auto">
+    <div class="p-6">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

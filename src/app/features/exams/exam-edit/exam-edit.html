@@ -1,36 +1,158 @@
-<div class="exam-edit-container">
-  <div class="edit-header">
-    <h2>{{ isEditMode ? 'Edit Exam' : 'Create Exam' }}</h2>
-    <div class="header-actions">
-      <button mat-button (click)="router.navigate(['/exams'])">Cancel</button>
-      <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!examForm.valid">
-        Save
-      </button>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
+            {{ isEditMode ? 'Edit Exam' : 'Create Exam' }}
+          </h1>
+          <p class="mt-1 text-sm text-gray-600">
+            {{ isEditMode ? 'Update exam details' : 'Set up a new exam for your students' }}
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-all shadow-sm"
+            (click)="router.navigate(['/dashboard/exams'])"
+            [disabled]="isLoading"
+            type="button">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancel
+          </button>
+
+          <button
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#9b6012] hover:bg-[#7d4d0e] text-white rounded-lg font-semibold transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="onSubmit()"
+            [disabled]="isLoading || !examForm.valid"
+            type="button">
+            @if (isLoading) {
+              <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Saving...</span>
+            } @else {
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              <span>{{ isEditMode ? 'Update Exam' : 'Create Exam' }}</span>
+            }
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <mat-card class="form-card">
-    <mat-card-content>
-      <form [formGroup]="examForm" class="exam-form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Title</mat-label>
-          <input matInput formControlName="title" required>
-        </mat-form-field>
+  <!-- Content Area -->
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Form Card -->
+    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div class="p-6 sm:p-8">
+        <!-- Exam Icon Header -->
+        <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-200">
+          <div class="w-14 h-14 bg-gradient-to-br from-[#9b6012] to-[#7d4d0e] rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Exam Information</h2>
+            <p class="text-sm text-gray-600 mt-1">Fill in the details below</p>
+          </div>
+        </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Description</mat-label>
-          <textarea matInput formControlName="description" rows="4" required></textarea>
-        </mat-form-field>
+        <form [formGroup]="examForm" class="space-y-6">
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              Category <span class="text-red-600">*</span>
+            </label>
+            <div class="relative">
+              <select
+                formControlName="categoryId"
+                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent transition-all appearance-none cursor-pointer"
+                [class.border-red-500]="examForm.get('categoryId')?.invalid && examForm.get('categoryId')?.touched">
+                <option value="" disabled>Select a category</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+              <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            @if (examForm.get('categoryId')?.invalid && examForm.get('categoryId')?.touched) {
+              <p class="mt-1 text-sm text-red-600">Category is required</p>
+            }
+          </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Category</mat-label>
-          <mat-select formControlName="categoryId" required>
-            <mat-option *ngFor="let category of categories" [value]="category.id">
-              {{ category.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </form>
-    </mat-card-content>
-  </mat-card>
+          <!-- Title -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              Exam Title <span class="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="title"
+              placeholder="e.g., Midterm Biochemistry Exam"
+              class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent transition-all"
+              [class.border-red-500]="examForm.get('title')?.invalid && examForm.get('title')?.touched">
+            @if (examForm.get('title')?.invalid && examForm.get('title')?.touched) {
+              <p class="mt-1 text-sm text-red-600">Title is required</p>
+            }
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              Description <span class="text-red-600">*</span>
+            </label>
+            <textarea
+              formControlName="description"
+              placeholder="Provide a detailed description of the exam..."
+              rows="6"
+              class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent transition-all resize-y"
+              [class.border-red-500]="examForm.get('description')?.invalid && examForm.get('description')?.touched"></textarea>
+            @if (examForm.get('description')?.invalid && examForm.get('description')?.touched) {
+              <p class="mt-1 text-sm text-red-600">Description is required</p>
+            }
+          </div>
+
+          <!-- Info Box -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            <div class="flex-1">
+              <h4 class="text-sm font-semibold text-blue-900 mb-1">Next Steps</h4>
+              <p class="text-sm text-blue-800">
+                After creating the exam, you'll be able to add questions and configure exam settings.
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Form Footer -->
+      <div class="bg-gray-50 px-6 sm:px-8 py-4 border-t border-gray-200 flex items-center justify-between">
+        <p class="text-sm text-gray-600">
+          <span class="text-red-600">*</span> Required fields
+        </p>
+        <div class="flex items-center gap-2 text-sm">
+          @if (!examForm.valid) {
+            <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-amber-600 font-medium">Please fill all required fields</span>
+          } @else {
+            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-green-600 font-medium">Form is valid</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

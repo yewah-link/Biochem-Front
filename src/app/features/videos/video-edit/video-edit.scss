@@ -1,606 +1,153 @@
-// Video Manager Styles
-.video-manager {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+/* src/app/features/videos/video-edit/video-edit.scss */
+
+// Define primary color variable
+$primary-color: #9b6012;
+$primary-hover: #7d4d0e;
+
+// Ensure the component takes full width
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
 }
 
-// Navigation Header
-.nav-header {
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 30px;
-  padding: 0 0 20px 0;
-
-  .nav-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .app-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #333;
-    margin: 0;
-  }
-
-  .nav-buttons {
-    display: flex;
-    gap: 12px;
-  }
-
-  .nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border: 2px solid #e0e0e0;
-    background: white;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: #007bff;
-      color: #007bff;
-    }
-
-    &.active {
-      background: #007bff;
-      border-color: #007bff;
-      color: white;
-    }
-
-    .icon {
-      font-size: 16px;
-    }
-  }
+// Line clamp utility
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-// Loading Spinner
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  p {
-    margin-top: 20px;
-    color: #666;
-    font-size: 16px;
-  }
-}
-
+// Smooth animations
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-// Messages
-.messages {
-  margin-bottom: 20px;
-
-  .alert {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 10px;
-    font-weight: 500;
-
-    &.alert-error {
-      background: #fee;
-      color: #d32f2f;
-      border: 1px solid #ffcdd2;
-    }
-
-    &.alert-success {
-      background: #e8f5e8;
-      color: #2e7d32;
-      border: 1px solid #c8e6c9;
-    }
-
-    .icon {
-      font-size: 16px;
-    }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
-// Video List View
-.video-list-view {
-  .view-header {
-    margin-bottom: 30px;
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 
-    h2 {
-      font-size: 32px;
-      font-weight: 700;
-      margin: 0 0 8px 0;
-      color: #333;
-    }
+// Aspect ratio for video thumbnails
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
 
-    .video-count {
-      color: #666;
-      font-size: 16px;
-      margin: 0;
-    }
-  }
+// Ensure proper transitions
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  .videos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
-    margin-bottom: 40px;
-  }
+// Custom styling for primary color
+.bg-\[\#9b6012\] {
+  background-color: $primary-color !important;
 
-  .video-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    }
-  }
-
-  .video-thumbnail {
-    position: relative;
-    height: 180px;
-    background: #f5f5f5;
-    cursor: pointer;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .play-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.3);
-      opacity: 0;
-      transition: opacity 0.2s ease;
-
-      .play-icon {
-        font-size: 48px;
-        color: white;
-      }
-    }
-
-    &:hover .play-overlay {
-      opacity: 1;
-    }
-  }
-
-  .video-info {
-    padding: 20px;
-
-    .video-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 0 0 12px 0;
-      color: #333;
-      cursor: pointer;
-      line-height: 1.3;
-
-      &:hover {
-        color: #007bff;
-      }
-    }
-
-    .video-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 16px;
-
-      span {
-        font-size: 13px;
-        padding: 4px 8px;
-        border-radius: 4px;
-        background: #f8f9fa;
-        color: #666;
-      }
-    }
-
-    .video-actions {
-      display: flex;
-      gap: 8px;
-
-      .action-btn {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 10px 16px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        &.play-btn {
-          background: #007bff;
-          color: white;
-
-          &:hover {
-            background: #0056b3;
-          }
-        }
-
-        &.delete-btn {
-          background: #dc3545;
-          color: white;
-
-          &:hover {
-            background: #c82333;
-          }
-        }
-
-        .icon {
-          font-size: 14px;
-        }
-      }
-    }
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 80px 20px;
-
-    .empty-icon {
-      font-size: 64px;
-      margin-bottom: 20px;
-    }
-
-    h3 {
-      font-size: 24px;
-      font-weight: 600;
-      margin: 0 0 12px 0;
-      color: #333;
-    }
-
-    p {
-      font-size: 16px;
-      color: #666;
-      margin: 0 0 30px 0;
-    }
-
-    .primary-btn {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s ease;
-
-      &:hover {
-        background: #0056b3;
-      }
-    }
+  &:hover:not(:disabled) {
+    background-color: $primary-hover !important;
   }
 }
 
-// Upload View
-.upload-view {
-  max-width: 600px;
-  margin: 0 auto;
+.text-\[\#9b6012\] {
+  color: $primary-color !important;
+}
 
-  .view-header {
-    text-align: center;
-    margin-bottom: 40px;
+.border-\[\#9b6012\] {
+  border-color: $primary-color !important;
+}
 
-    h2 {
-      font-size: 32px;
-      font-weight: 700;
-      margin: 0 0 8px 0;
-      color: #333;
-    }
-
-    p {
-      color: #666;
-      font-size: 16px;
-      margin: 0;
-    }
+// Video card hover effects enhancement
+.group:hover {
+  .group-hover\:scale-105 {
+    transform: scale(1.05);
   }
 
-  .upload-form {
-    background: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  .group-hover\:bg-opacity-40 {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
 
-    .form-group {
-      margin-bottom: 24px;
+  .group-hover\:opacity-100 {
+    opacity: 1;
+  }
 
-      .form-label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #333;
-        font-size: 14px;
-      }
-
-      .file-input-container {
-        position: relative;
-
-        .file-input {
-          position: absolute;
-          opacity: 0;
-          width: 100%;
-          height: 100%;
-          cursor: pointer;
-        }
-
-        .file-input-display {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 16px;
-          border: 2px dashed #ddd;
-          border-radius: 8px;
-          background: #fafafa;
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &:hover {
-            border-color: #007bff;
-            background: #f0f8ff;
-          }
-
-          .file-icon {
-            font-size: 20px;
-          }
-
-          .file-text {
-            font-size: 14px;
-            color: #666;
-          }
-        }
-      }
-
-      .form-textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-size: 14px;
-        font-family: inherit;
-        resize: vertical;
-
-        &:focus {
-          outline: none;
-          border-color: #007bff;
-          box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
-        }
-      }
-
-      .form-select {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-size: 14px;
-        background: white;
-
-        &:focus {
-          outline: none;
-          border-color: #007bff;
-          box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
-        }
-      }
-
-      .file-type-display {
-        .type-badge {
-          display: inline-block;
-          padding: 6px 12px;
-          background: #e3f2fd;
-          color: #1976d2;
-          border-radius: 4px;
-          font-size: 13px;
-          font-weight: 500;
-        }
-      }
-    }
-
-    .form-actions {
-      .upload-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        padding: 14px;
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s ease;
-
-        &:hover:not(:disabled) {
-          background: #0056b3;
-        }
-
-        &:disabled {
-          background: #ccc;
-          cursor: not-allowed;
-        }
-
-        .icon {
-          font-size: 16px;
-        }
-      }
-    }
+  .group-hover\:scale-110 {
+    transform: scale(1.1);
   }
 }
 
-// Player View
-.player-view {
-  .player-header {
-    margin-bottom: 20px;
-
-    .back-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      background: #f8f9fa6b;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: #e9ecef;
-        border-color: #adb5bd;
-      }
-
-      .icon {
-        font-size: 14px;
-      }
-    }
-  }
-
-  .video-player-container {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-
-    .video-player {
-      video {
-        width: 100%;
-        height: auto;
-        display: block;
-      }
-    }
-
-    .video-details {
-      padding: 30px;
-
-      .player-video-title {
-        font-size: 24px;
-        font-weight: 700;
-        margin: 0 0 20px 0;
-        color: #333;
-        line-height: 1.3;
-      }
-
-      .video-metadata {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 30px;
-
-        .meta-item {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-
-          .meta-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-
-          .meta-value {
-            font-size: 14px;
-            color: #333;
-            font-weight: 500;
-          }
-        }
-      }
-
-      .player-actions {
-        .delete-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 20px;
-          background: #dc3545;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s ease;
-
-          &:hover {
-            background: #c82333;
-          }
-
-          .icon {
-            font-size: 14px;
-          }
-        }
-      }
-    }
-  }
+// Ensure video elements are responsive
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-// Responsive Design
-@media (max-width: 768px) {
-  .video-manager {
-    padding: 15px;
-  }
+// File input styling
+input[type="file"] {
+  cursor: pointer;
+}
 
-  .nav-header {
-    .nav-container {
-      flex-direction: column;
-      gap: 20px;
-      text-align: center;
-    }
+// Focus states
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(155, 96, 18, 0.1);
+}
 
-    .nav-buttons {
-      justify-content: center;
-    }
-  }
+// Disabled state
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 
-  .videos-grid {
+// Smooth shadow transitions
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+// Sticky header
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+// Responsive grid
+@media (max-width: 640px) {
+  .grid {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
+}
 
-  .upload-view .upload-form {
-    padding: 24px;
+@media (min-width: 640px) and (max-width: 1024px) {
+  .sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .video-metadata {
-    grid-template-columns: 1fr;
-    gap: 12px;
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .xl\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

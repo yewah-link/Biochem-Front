@@ -1,72 +1,222 @@
-<div class="exam-list-container">
-  <div class="list-header">
-    <h2>Exams</h2>
-    <button mat-raised-button color="primary" (click)="createExam()">
-      <mat-icon>add</mat-icon> New Exam
-    </button>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">Exams</h1>
+          <p class="text-sm text-gray-600 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Manage your exam collection
+          </p>
+        </div>
+
+        <button
+          class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#9b6012] to-[#7d4d0e] hover:from-[#7d4d0e] hover:to-[#6a4109] text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+          (click)="createExam()"
+          type="button">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          New Exam
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Loading State -->
-  @if (isLoading) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
-      <p>Loading exams...</p>
-    </div>
-  }
+  <!-- Content Area -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-  <!-- Error State -->
-  @if (errorMessage && !isLoading) {
-    <div class="error-container">
-      <mat-icon color="warn">error</mat-icon>
-      <p>{{ errorMessage }}</p>
-      <button mat-button color="primary" (click)="retryLoad()">Retry</button>
-    </div>
-  }
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="relative w-20 h-20">
+          <div class="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+          <div class="absolute inset-0 border-4 border-[#9b6012] rounded-full border-t-transparent animate-spin"></div>
+        </div>
+        <p class="mt-6 text-gray-600 font-semibold text-lg">Loading exams...</p>
+        <p class="mt-2 text-gray-500 text-sm">Please wait while we fetch your data</p>
+      </div>
+    }
 
-  <!-- Success State with Data -->
-  @if (!isLoading && !errorMessage && exams.length > 0) {
-    <div class="exams-grid">
-      @for (exam of exams; track exam.id) {
-        <mat-card class="exam-card">
-          <mat-card-header>
-            <mat-card-title>{{ exam.title }}</mat-card-title>
-            <mat-card-subtitle>
-              <mat-chip>{{ exam.category.name }}</mat-chip>
-              <span class="date-info">{{ formatDate(exam.createdDate) }}</span>
-            </mat-card-subtitle>
-          </mat-card-header>
+    <!-- Error State -->
+    @if (errorMessage && !isLoading) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-4 shadow-lg">
+          <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="text-red-800 font-bold text-xl mb-2">Oops! Something went wrong</p>
+        <p class="text-red-600 mb-6">{{ errorMessage }}</p>
+        <button
+          class="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-50 text-[#9b6012] border-2 border-[#9b6012] rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+          (click)="retryLoad()"
+          type="button">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Try Again
+        </button>
+      </div>
+    }
 
-          <mat-card-content>
-            <p>{{ exam.description }}</p>
-          </mat-card-content>
+    <!-- Success State with Data -->
+    @if (!isLoading && !errorMessage && exams.length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (exam of exams; track exam.id) {
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden group transform hover:-translate-y-2">
 
-          <mat-card-actions>
-            <button mat-button (click)="editExam(exam)">
-              <mat-icon>edit</mat-icon> Edit
-            </button>
-            <button
-              mat-button
-              color="warn"
-              (click)="deleteExam(exam.id!)"
-              [disabled]="deletingIds.has(exam.id!)">
-              <mat-icon>delete</mat-icon>
-              {{ deletingIds.has(exam.id!) ? 'Deleting...' : 'Delete' }}
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      }
-    </div>
-  }
+            <!-- Gradient Top Bar -->
+            <div class="h-2 bg-gradient-to-r from-[#9b6012] via-[#b87215] to-[#9b6012] group-hover:h-3 transition-all duration-300"></div>
 
-  <!-- Empty State -->
-  @if (!isLoading && !errorMessage && exams.length === 0) {
-    <div class="empty-state">
-      <mat-icon>school</mat-icon>
-      <h3>No exams available</h3>
-      <p>Create your first exam to get started!</p>
-      <button mat-raised-button color="primary" (click)="createExam()">
-        <mat-icon>add</mat-icon> Create Exam
-      </button>
-    </div>
-  }
+            <div class="p-6">
+              <!-- Header -->
+              <div class="mb-5">
+                <div class="flex items-start justify-between mb-3">
+                  <h3 class="text-xl font-bold text-gray-900 group-hover:text-[#9b6012] transition-colors duration-300 flex-1 leading-tight">
+                    {{ exam.title }}
+                  </h3>
+                  <div class="ml-3 w-12 h-12 bg-gradient-to-br from-[#9b6012]/10 to-[#9b6012]/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-6 h-6 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#9b6012] to-[#7d4d0e] text-white shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    {{ exam.category.name }}
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 text-sm text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {{ formatDate(exam.createdDate) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Content -->
+              <div class="mb-6">
+                <p class="text-gray-600 text-sm leading-relaxed">{{ exam.description }}</p>
+              </div>
+
+              <!-- Questions Section -->
+              <div class="mb-6 p-4 bg-gradient-to-br from-[#9b6012]/5 to-[#9b6012]/10 rounded-xl border border-[#9b6012]/20">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                    <svg class="w-5 h-5 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-bold text-gray-900">Questions</h4>
+                    <p class="text-xs text-gray-600">Manage exam questions</p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                  <button
+                    class="inline-flex flex-col items-center justify-center gap-1.5 px-3 py-3 bg-white hover:bg-gray-50 text-[#9b6012] rounded-lg font-semibold transition-all shadow-sm hover:shadow-md border border-[#9b6012]/20"
+                    (click)="addQuestions(exam)"
+                    type="button">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="text-xs">Add</span>
+                  </button>
+
+                  <button
+                    class="inline-flex flex-col items-center justify-center gap-1.5 px-3 py-3 bg-white hover:bg-gray-50 text-blue-600 rounded-lg font-semibold transition-all shadow-sm hover:shadow-md border border-blue-200"
+                    (click)="viewQuestions(exam)"
+                    type="button">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span class="text-xs">View</span>
+                  </button>
+
+                  <button
+                    class="inline-flex flex-col items-center justify-center gap-1.5 px-3 py-3 bg-white hover:bg-gray-50 text-purple-600 rounded-lg font-semibold transition-all shadow-sm hover:shadow-md border border-purple-200"
+                    (click)="editQuestions(exam)"
+                    type="button">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span class="text-xs">Edit</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <button
+                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 text-gray-700 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md"
+                  (click)="editExam(exam)"
+                  type="button">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Exam
+                </button>
+                <button
+                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-600 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  (click)="deleteExam(exam.id!)"
+                  [disabled]="deletingIds.has(exam.id!)"
+                  type="button">
+                  @if (deletingIds.has(exam.id!)) {
+                    <div class="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Deleting...</span>
+                  } @else {
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete</span>
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading && !errorMessage && exams.length === 0) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="relative mb-8">
+          <div class="w-32 h-32 bg-gradient-to-br from-[#9b6012]/20 to-[#9b6012]/10 rounded-full flex items-center justify-center shadow-xl">
+            <svg class="w-16 h-16 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <div class="absolute -top-2 -right-2 w-8 h-8 bg-[#9b6012] rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+        </div>
+        <h3 class="text-3xl font-bold text-gray-900 mb-3">No exams available</h3>
+        <p class="text-gray-600 mb-8 text-center max-w-md">
+          Start building your exam collection now! Create your first exam and organize your study materials effectively.
+        </p>
+        <button
+          class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#9b6012] to-[#7d4d0e] hover:from-[#7d4d0e] hover:to-[#6a4109] text-white rounded-xl font-bold transition-all shadow-xl hover:shadow-2xl transform hover:scale-105"
+          (click)="createExam()"
+          type="button">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Create Your First Exam
+        </button>
+      </div>
+    }
+  </div>
 </div>
