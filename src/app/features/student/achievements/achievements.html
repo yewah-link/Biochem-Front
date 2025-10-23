@@ -1,0 +1,96 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Achievements</h1>
+      <p class="text-gray-600">Track your learning milestones and badges</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg shadow-md p-6 text-white">
+        <div class="text-4xl font-bold mb-2">{{totalPoints}}</div>
+        <div class="text-sm opacity-90">Total Points</div>
+      </div>
+      <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow-md p-6 text-white">
+        <div class="text-4xl font-bold mb-2">{{unlockedBadges}}</div>
+        <div class="text-sm opacity-90">Badges Earned</div>
+      </div>
+      <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-lg shadow-md p-6 text-white">
+        <div class="text-4xl font-bold mb-2">{{currentStreak}}</div>
+        <div class="text-sm opacity-90">Day Streak</div>
+      </div>
+      <div class="bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg shadow-md p-6 text-white">
+        <div class="text-4xl font-bold mb-2">{{rank}}</div>
+        <div class="text-sm opacity-90">Your Rank</div>
+      </div>
+    </div>
+
+    <!-- Recent Achievements -->
+    <div class="mb-10">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Achievements</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let achievement of recentAchievements" class="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-start gap-4">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center text-3xl flex-shrink-0"
+                 [class.bg-yellow-100]="achievement.rarity === 'gold'"
+                 [class.bg-gray-200]="achievement.rarity === 'silver'"
+                 [class.bg-orange-100]="achievement.rarity === 'bronze'">
+              {{achievement.icon}}
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-900 mb-1">{{achievement.title}}</h3>
+              <p class="text-sm text-gray-600 mb-2">{{achievement.description}}</p>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <span class="px-2 py-1 rounded-full"
+                      [class.bg-yellow-100]="achievement.rarity === 'gold'"
+                      [class.text-yellow-800]="achievement.rarity === 'gold'"
+                      [class.bg-gray-100]="achievement.rarity === 'silver'"
+                      [class.text-gray-800]="achievement.rarity === 'silver'"
+                      [class.bg-orange-100]="achievement.rarity === 'bronze'"
+                      [class.text-orange-800]="achievement.rarity === 'bronze'">
+                  {{achievement.rarity | titlecase}}
+                </span>
+                <span>+{{achievement.points}} pts</span>
+                <span>{{achievement.unlockedDate}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- All Badges -->
+    <div>
+      <h2 class="text-xl font-bold text-gray-900 mb-4">All Badges</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div *ngFor="let badge of allBadges" class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-xl transition-shadow"
+             [class.opacity-50]="badge.locked"
+             [class.grayscale]="badge.locked">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-4xl"
+               [class.bg-yellow-100]="!badge.locked && badge.rarity === 'gold'"
+               [class.bg-gray-200]="!badge.locked && badge.rarity === 'silver'"
+               [class.bg-orange-100]="!badge.locked && badge.rarity === 'bronze'"
+               [class.bg-gray-100]="badge.locked">
+            {{badge.icon}}
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-1 text-sm">{{badge.title}}</h3>
+          <p class="text-xs text-gray-600 mb-2">{{badge.description}}</p>
+          <div *ngIf="!badge.locked" class="text-xs text-green-600 font-medium">Unlocked!</div>
+          <div *ngIf="badge.locked && badge.progress !== undefined" class="mt-2">
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+              <div class="bg-blue-600 h-1.5 rounded-full" [style.width.%]="badge.progress"></div>
+            </div>
+            <div class="text-xs text-gray-500">{{badge.progress}}%</div>
+          </div>
+          <div *ngIf="badge.locked && badge.progress === undefined" class="text-xs text-gray-400 mt-2">
+            <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            Locked
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

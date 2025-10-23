@@ -1,65 +1,141 @@
-<div class="hero-section">
-  <div class="hero-content">
-    <h1>All the biochemistry knowledge you need in one place</h1>
-    <p>From molecular mechanisms to metabolic pathways, master the fundamentals of life sciences.</p>
+<!-- video-preview.html -->
+<div class="bg-[#f9f9f9] py-12 mb-8">
+  <div class="max-w-[1300px] mx-auto px-4">
+    <h1 class="text-[2.5rem] font-bold text-[#333] mb-4 leading-tight">All the biochemistry knowledge you need in one place</h1>
+    <p class="text-[1.2rem] text-[#666] leading-relaxed mb-8">From molecular mechanisms to metabolic pathways, master the fundamentals of life sciences.</p>
+
+    <!-- Category Tabs -->
+    @if (categoriesWithVideos$ | async; as categoryGroups) {
+      @if (categoryGroups.length > 0) {
+        <div class="relative">
+          <div
+            #tabsContainer
+            class="flex gap-4 overflow-x-auto border-b border-gray-300 relative"
+          >
+            @for (categoryData of categoryGroups; track categoryData.category.id; let i = $index) {
+              <button
+                #tabButton
+                class="relative px-4 py-3 text-sm font-semibold whitespace-nowrap transition-all duration-200 hover:text-[#9b6012]"
+                [class.text-[#9b6012]]="selectedCategoryId === categoryData.category.id"
+                [class.text-[#333]]="selectedCategoryId !== categoryData.category.id"
+                (click)="selectCategory(categoryData.category.id!, i, tabButton)"
+              >
+                {{ categoryData.category.name }}
+              </button>
+            }
+          </div>
+
+          <!-- Active underline with smooth sliding animation -->
+          <div
+            class="absolute bottom-0 h-[2px] bg-gradient-to-r from-[#9b6012] via-[#d4941e] to-[#9b6012] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(155,96,18,0.4)]"
+            style="transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1)"
+            [style.width.px]="activeUnderlineWidth"
+            [style.left.px]="activeUnderlineLeft"
+          ></div>
+        </div>
+      }
+    }
   </div>
 </div>
 
-<div class="categories-container">
+<div class="max-w-[1300px] mx-auto px-4 pb-12">
   @if (categoriesWithVideos$ | async; as categoryGroups) {
-    <div class="categories-grid">
-      @for (categoryData of categoryGroups; track categoryData.category.id) {
-        <div class="category-section">
-          <div class="category-header">
-            <h2>{{ categoryData.category.name }}</h2>
-          </div>
-
+    @for (categoryData of categoryGroups; track categoryData.category.id) {
+      @if (selectedCategoryId === categoryData.category.id) {
+        <div>
           @if (categoryData.videos.length > 0) {
-            <div class="videos-row">
-              @for (video of categoryData.videos; track video.id) {
-                <div class="video-card" (click)="openVideo(video.id!)">
-                  <div class="video-thumbnail">
-                    <!-- Thumbnail image -->
-                    <img
-                      *ngIf="shouldShowThumbnail(video)"
-                      [src]="getVideoThumbnail(video)"
-                      [alt]="video.fileName || 'Video thumbnail'"
-                      loading="lazy"
-                      (error)="onThumbnailError($event, video)"
-                    />
+            <div class="relative group/carousel">
+              <!-- Left Arrow -->
+              @if (canScrollLeft || canScrollRight) {
+                <button
+                  class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 hover:bg-gray-50 hover:scale-110 -ml-6"
+                  [class.opacity-0]="!canScrollLeft"
+                  [class.pointer-events-none]="!canScrollLeft"
+                  (click)="scrollLeft()"
+                  [disabled]="!canScrollLeft">
+                  <span class="text-2xl text-[#333]">‹</span>
+                </button>
+              }
 
-                    <!-- Placeholder if thumbnail fails -->
-                    @if (shouldShowPlaceholder(video)) {
-                      <div class="thumbnail-placeholder">
-                        🎥
+              <!-- Videos Container -->
+              <div
+                #videosContainer
+                class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+                (scroll)="onScroll($event)">
+                @for (video of categoryData.videos; track video.id) {
+                  <div class="flex-shrink-0 w-[290px] cursor-pointer transition-all duration-300 rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)] group" (click)="openVideo(video.id!)">
+                    <div class="relative w-full h-[158px] overflow-hidden bg-[#f5f5f5]">
+                      <!-- Thumbnail image -->
+                      @if (shouldShowThumbnail(video)) {
+                        <img
+                          [src]="getVideoThumbnail(video)"
+                          [alt]="video.fileName || 'Video thumbnail'"
+                          loading="lazy"
+                          class="w-full h-full object-cover object-center"
+                          (error)="onThumbnailError($event, video)"
+                        />
+                      }
+
+                      <!-- Placeholder if thumbnail fails -->
+                      @if (shouldShowPlaceholder(video)) {
+                        <div class="w-full h-full flex items-center justify-center bg-[#e9ecef] text-5xl text-[#6c757d]">
+                          🎥
+                        </div>
+                      }
+
+                      <!-- Overlay play icon -->
+                      <div class="absolute top-0 left-0 w-full h-full bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <div class="bg-white/90 w-[50px] h-[50px] rounded-full flex items-center justify-center text-xl text-[#333] pl-[3px] transition-transform duration-300 group-hover:scale-110">
+                          ▶
+                        </div>
                       </div>
-                    }
 
-                    <!-- Overlay play icon -->
-                    <div class="play-overlay">
-                      <div class="play-icon">▶</div>
+                      <!-- Bestseller Badge -->
+                      <div class="absolute top-2 left-2 bg-gradient-to-r from-[#9b6012] to-[#d4941e] text-white text-xs font-bold px-2 py-1 rounded">
+                        Bestseller
+                      </div>
+                    </div>
+
+                    <div class="p-4 bg-white">
+                      <h4 class="m-0 mb-2 text-base font-semibold leading-snug text-[#333] overflow-hidden line-clamp-2">{{ video.fileName || 'Untitled Video' }}</h4>
+                      <p class="m-0 text-[#666] text-[0.9rem] leading-snug overflow-hidden line-clamp-2 mb-2">{{ video.description }}</p>
+
+                      <div class="flex items-center gap-2 text-xs text-[#666]">
+                        <span class="flex items-center gap-1">
+                          <span class="text-[#9b6012]">★</span>
+                          <span class="font-semibold">4.5</span>
+                        </span>
+                        <span>(10,532 ratings)</span>
+                      </div>
                     </div>
                   </div>
+                }
+              </div>
 
-                  <div class="video-info">
-                    <h4 class="video-title">{{ video.fileName || 'Untitled Video' }}</h4>
-                    <p class="video-description">{{ video.description }}</p>
-                  </div>
-                </div>
+              <!-- Right Arrow -->
+              @if (canScrollLeft || canScrollRight) {
+                <button
+                  class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 hover:bg-gray-50 hover:scale-110 -mr-6"
+                  [class.opacity-0]="!canScrollRight"
+                  [class.pointer-events-none]="!canScrollRight"
+                  (click)="scrollRight()"
+                  [disabled]="!canScrollRight">
+                  <span class="text-2xl text-[#333]">›</span>
+                </button>
               }
             </div>
           } @else {
-            <div class="no-videos">
+            <div class="text-center p-8 text-[#666] bg-[#f9f9f9] rounded-lg">
               <p>No videos available in this category</p>
             </div>
           }
         </div>
       }
-    </div>
+    }
 
     @if (categoryGroups.length === 0) {
-      <div class="no-categories">
-        <h3>No categories found</h3>
+      <div class="text-center p-8 text-[#666]">
+        <h3 class="text-[#333] mb-2 text-xl font-semibold">No categories found</h3>
         <p>Start by creating some categories and uploading videos.</p>
       </div>
     }
