@@ -1,14 +1,4 @@
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CategoryDto, CategoryService } from '../../../core/category.service';
@@ -20,17 +10,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   selector: 'app-student-dashboard',
   standalone: true,
   imports: [
-    MatToolbarModule,
     CommonModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSidenavModule,
-    MatIconModule,
-    MatListModule,
-    MatMenuModule,
-    MatCardModule,
-    MatChipsModule,
     RouterLink,
     RouterLinkActive
   ],
@@ -39,6 +19,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 })
 export class StudentDashboard implements OnInit {
   mobileSearchActive = false;
+  mobileMenuOpen = false;
+  userMenuOpen = false;
   isLoggedIn = true;
   userName = 'Alex';
 
@@ -84,16 +66,16 @@ export class StudentDashboard implements OnInit {
   }
 
   getFilteredNotes(): NotesDto[] {
-  if (!this.selectedCategoryId) {
-    return this.notes;
-  }
-  return this.notes.filter(note => {
-    if (typeof note.category === 'object' && note.category.id) {
-      return note.category.id === this.selectedCategoryId;
+    if (!this.selectedCategoryId) {
+      return this.notes;
     }
-    return false;
-  });
-}
+    return this.notes.filter(note => {
+      if (typeof note.category === 'object' && note.category.id) {
+        return note.category.id === this.selectedCategoryId;
+      }
+      return false;
+    });
+  }
 
   selectCategory(category: CategoryDto): void {
     if (!category.id) return;
@@ -110,6 +92,8 @@ export class StudentDashboard implements OnInit {
 
   selectVideo(video: VideoDto): void {
     this.selectedVideo = video;
+    // Scroll to top when video is selected
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   getVideoStreamUrl(video: VideoDto): string {
@@ -161,5 +145,8 @@ export class StudentDashboard implements OnInit {
 
   logout(): void {
     this.isLoggedIn = false;
+    this.userMenuOpen = false;
+    // Add your logout logic here (e.g., clear tokens, navigate to login)
+    // this.router.navigate(['/login']);
   }
 }
