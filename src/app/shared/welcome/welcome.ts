@@ -18,21 +18,21 @@ export class Welcome implements OnInit, OnDestroy {
       image: 'assets/slide1.jpg',
       title: 'Learn Anywhere',
       description: 'Access notes, videos, and exams from any device, anytime you need them.',
-      backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      gradient: 'from-purple-600 via-purple-700 to-purple-900',
       buttonText: 'Start Learning'
     },
     {
       image: 'assets/slide2.jpg',
       title: 'Stay Organized',
       description: 'Track your progress across categories and topics with our intuitive dashboard.',
-      backgroundColor: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      gradient: 'from-pink-500 via-rose-600 to-red-600',
       buttonText: 'Get Organized'
     },
     {
       image: 'assets/slide3.jpg',
       title: 'Be Exam Ready',
       description: 'Practice with mock exams and prepare with confidence using our comprehensive resources.',
-      backgroundColor: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      gradient: 'from-cyan-500 via-blue-500 to-blue-600',
       buttonText: 'Practice Now'
     }
   ];
@@ -83,5 +83,15 @@ export class Welcome implements OnInit, OnDestroy {
   onImageError(event: any) {
     console.error('Image failed to load:', event.target.src);
     event.target.style.display = 'none';
+  }
+
+  getSlideClasses(index: number): string {
+    if (index === this.currentSlide) {
+      return 'opacity-100 translate-x-0 z-10';
+    } else if (index < this.currentSlide) {
+      return 'opacity-0 -translate-x-full';
+    } else {
+      return 'opacity-0 translate-x-full';
+    }
   }
 }

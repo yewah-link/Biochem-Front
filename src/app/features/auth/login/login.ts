@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { Auth } from '../../../core/auth/auth.service';
+import { AuthService, AuthResponse, RoleType } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterModule, FormsModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
@@ -15,10 +14,12 @@ export class Login {
   loginForm: FormGroup;
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder,
-    private authService: Auth,
+    private authService: AuthService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -27,23 +28,27 @@ export class Login {
     });
   }
 
-  onLogin() {
+  onLogin(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.errorMessage = '';
+      this.successMessage = '';
 
       const { email, password } = this.loginForm.value;
 
-      this.authService.login(email, password).subscribe({
-        next: (response) => {
+      this.authService.login({ email, password }).subscribe({
+        next: (response: AuthResponse) => {
           console.log('Login successful:', response);
+          this.successMessage = 'Login successful! Redirecting...';
 
-          // Navigate based on user role
-          this.navigateBasedOnRole(response.user.role);
+          setTimeout(() => {
+            this.navigateBasedOnRole(response.user.role);
+          }, 1000);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Login error:', error);
           this.errorMessage = error.message || 'Invalid email or password';
+          this.isLoading = false;
         },
         complete: () => {
           this.isLoading = false;
@@ -54,16 +59,13 @@ export class Login {
     }
   }
 
-  private navigateBasedOnRole(role: string) {
+  private navigateBasedOnRole(role: RoleType): void {
     switch (role) {
-      case 'ADMIN':
-        this.router.navigate(['/dashboard']);
+      case RoleType.ADMIN:
+        this.router.navigate(['/admin/dashboard']);
         break;
-      case 'STUDENT':
-        this.router.navigate(['/student']);
-        break;
-      case 'GUEST':
-        this.router.navigate(['/guest-dashboard']);
+      case RoleType.STUDENT:
+        this.router.navigate(['/student/dashboard']);
         break;
       default:
         this.router.navigate(['/dashboard']);
@@ -85,9 +87,13 @@ export class Login {
     return '';
   }
 
-  private markFormGroupTouched() {
+  private markFormGroupTouched(): void {
     Object.keys(this.loginForm.controls).forEach(key => {
       this.loginForm.get(key)?.markAsTouched();
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 }

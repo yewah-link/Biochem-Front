@@ -1,15 +1,15 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { Auth } from './auth.service';
+import { AuthService } from './auth.service';
 
 export const adminGuard: CanActivateFn = (route, state) => {
-  const auth = inject(Auth);
+  const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isLoggedIn() && auth.isAdmin()) {
-    return true; // allow access
-  } else {
-    // redirect non-admin users (or not logged in) to login or dashboard
-    return router.parseUrl('/login');
+  if (authService.isLoggedIn() && authService.isAdmin()) {
+    return true;
   }
+
+  // Redirect non-admin users to login
+  return router.parseUrl('/login');
 };
