@@ -29,30 +29,30 @@ export const routes: Routes = [
   { path: 'signup', component: Register },
   { path: 'about-us', component: AboutUs },
 
-  //  Admin Dashboard
+  // Admin Dashboard
   {
     path: 'dashboard',
     component: Dashboard,
     canActivate: [authGuard, adminGuard],
     children: [
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
-      { path: 'categories', component: CategoryList, canActivate: [adminGuard] },
-      { path: 'categories/add', component: CategoryEdit, canActivate: [adminGuard] },
-      { path: 'categories/edit/:id', component: CategoryEdit, canActivate: [adminGuard] },
-      { path: 'videos', component: VideoEdit, canActivate: [adminGuard] },
-      { path: 'videos/edit/:id', component: VideoEdit, canActivate: [adminGuard] },
+      { path: 'categories', component: CategoryList },
+      { path: 'categories/add', component: CategoryEdit },
+      { path: 'categories/edit/:id', component: CategoryEdit },
+      { path: 'videos', component: VideoEdit },
+      { path: 'videos/edit/:id', component: VideoEdit },
       { path: 'notes', component: NoteList },
-      { path: 'notes/add', component: NoteEdit, canActivate: [adminGuard] },
-      { path: 'notes/edit/:id', component: NoteEdit, canActivate: [adminGuard] },
+      { path: 'notes/add', component: NoteEdit },
+      { path: 'notes/edit/:id', component: NoteEdit },
       { path: 'exams', component: ExamList },
-      { path: 'exams/add', component: ExamEdit, canActivate: [adminGuard] },
-      { path: 'exams/edit/:id', component: ExamEdit, canActivate: [adminGuard] },
-      { path: 'exams/take/:id', component: ExamTake, canActivate: [authGuard] },
-      { path: 'exams/result/:id', component: ExamResult, canActivate: [authGuard] }
+      { path: 'exams/add', component: ExamEdit },
+      { path: 'exams/edit/:id', component: ExamEdit },
+      { path: 'exams/take/:id', component: ExamTake },
+      { path: 'exams/result/:id', component: ExamResult }
     ]
   },
 
-  //  Student Dashboard
+  // Student Dashboard
   {
     path: 'student',
     component: StudentDashboard,

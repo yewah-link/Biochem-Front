@@ -6,30 +6,97 @@
       <p class="text-gray-600">Pick up where you left off</p>
     </div>
 
+    <!-- Video Player Modal -->
+    @if (selectedVideo) {
+      <div class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+          <!-- Close Button -->
+          <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+            <h2 class="text-xl font-bold text-gray-900">{{ selectedVideo.title }}</h2>
+            <button (click)="closeVideo()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Video Player -->
+          <div class="p-6">
+            <div class="aspect-video bg-black rounded-lg overflow-hidden mb-4">
+              <video controls autoplay class="w-full h-full">
+                <source src="your-video-url.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            <!-- Video Info -->
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ selectedVideo.title }}</h3>
+                <p class="text-gray-600">{{ selectedVideo.course }}</p>
+              </div>
+
+              <div class="flex items-center gap-4 text-sm text-gray-500">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  {{ selectedVideo.duration }}
+                </span>
+                <span>{{ selectedVideo.watchProgress }}% complete</span>
+                <span>Last watched {{ selectedVideo.lastWatched }}</span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-red-600 h-2 rounded-full transition-all" [style.width.%]="selectedVideo.watchProgress"></div>
+              </div>
+
+              <!-- Navigation Buttons -->
+              <div class="flex gap-3 pt-4">
+                <button class="flex-1 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors">
+                  Continue Watching
+                </button>
+                <button class="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors">
+                  Mark as Complete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Recently Watched Section -->
     <div class="mb-10">
       <h2 class="text-xl font-bold text-gray-900 mb-4">Recently Watched</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let video of recentVideos" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
-          <div class="relative">
-            <div class="h-48 bg-gradient-to-br from-purple-400 to-pink-500"></div>
-            <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-              {{video.duration}}
+        @for (video of recentVideos; track video.id) {
+          <div (click)="openVideo(video)" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
+            <div class="relative">
+              <div class="h-48 bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                <svg class="w-16 h-16 text-white opacity-75" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+              <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                {{ video.duration }}
+              </div>
+              <!-- Progress indicator -->
+              <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
+                <div class="h-full bg-red-600" [style.width.%]="video.watchProgress"></div>
+              </div>
             </div>
-            <!-- Progress indicator -->
-            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
-              <div class="h-full bg-red-600" [style.width.%]="video.watchProgress"></div>
+            <div class="p-4">
+              <h3 class="font-semibold text-gray-900 mb-1">{{ video.title }}</h3>
+              <p class="text-sm text-gray-600 mb-2">{{ video.course }}</p>
+              <div class="flex items-center justify-between text-xs text-gray-500">
+                <span>{{ video.watchProgress }}% complete</span>
+                <span>{{ video.lastWatched }}</span>
+              </div>
             </div>
           </div>
-          <div class="p-4">
-            <h3 class="font-semibold text-gray-900 mb-1">{{video.title}}</h3>
-            <p class="text-sm text-gray-600 mb-2">{{video.course}}</p>
-            <div class="flex items-center justify-between text-xs text-gray-500">
-              <span>{{video.watchProgress}}% complete</span>
-              <span>{{video.lastWatched}}</span>
-            </div>
-          </div>
-        </div>
+        }
       </div>
     </div>
 
@@ -37,24 +104,26 @@
     <div class="mb-10">
       <h2 class="text-xl font-bold text-gray-900 mb-4">Recommended for You</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div *ngFor="let item of recommendations" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
-          <div class="h-36 bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
-            <svg class="w-12 h-12 text-white opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="p-4">
-            <h3 class="font-semibold text-gray-900 mb-1 text-sm">{{item.title}}</h3>
-            <p class="text-xs text-gray-600 mb-2">{{item.category}}</p>
-            <div class="flex items-center gap-1 text-xs text-gray-500">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        @for (item of recommendations; track item.id) {
+          <div (click)="openRecommendation(item)" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
+            <div class="h-36 bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
+              <svg class="w-12 h-12 text-white opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              {{item.duration}}
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-gray-900 mb-1 text-sm">{{ item.title }}</h3>
+              <p class="text-xs text-gray-600 mb-2">{{ item.category }}</p>
+              <div class="flex items-center gap-1 text-xs text-gray-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ item.duration }}
+              </div>
             </div>
           </div>
-        </div>
+        }
       </div>
     </div>
 
@@ -62,23 +131,26 @@
     <div class="bg-white rounded-lg shadow-md p-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">This Week's Goals</h2>
       <div class="space-y-4">
-        <div *ngFor="let goal of weeklyGoals" class="border-l-4 pl-4" [class.border-green-500]="goal.completed" [class.border-gray-300]="!goal.completed">
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <h3 class="font-medium text-gray-900 mb-1" [class.line-through]="goal.completed">{{goal.title}}</h3>
-              <p class="text-sm text-gray-600">{{goal.description}}</p>
+        @for (goal of weeklyGoals; track goal.id) {
+          <div class="border-l-4 pl-4" [class.border-green-500]="goal.completed" [class.border-gray-300]="!goal.completed">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <h3 class="font-medium text-gray-900 mb-1" [class.line-through]="goal.completed">{{ goal.title }}</h3>
+                <p class="text-sm text-gray-600">{{ goal.description }}</p>
+              </div>
+              <button (click)="toggleGoal(goal)"
+                      class="ml-4 p-2 rounded-full transition-colors"
+                      [class.bg-green-100]="goal.completed"
+                      [class.text-green-600]="goal.completed"
+                      [class.bg-gray-100]="!goal.completed"
+                      [class.text-gray-400]="!goal.completed">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
             </div>
-            <button class="ml-4 p-2 rounded-full"
-                    [class.bg-green-100]="goal.completed"
-                    [class.text-green-600]="goal.completed"
-                    [class.bg-gray-100]="!goal.completed"
-                    [class.text-gray-400]="!goal.completed">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </button>
           </div>
-        </div>
+        }
       </div>
     </div>
   </div>

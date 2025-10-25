@@ -1,9 +1,38 @@
-/* login.scss */
-:host {
-  display: block;
-  font-family: 'Inter', sans-serif;
+// login.scss - Main styles for the login component
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-input:focus {
-  outline: none;
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+// Optional: Custom scrollbar for the form if needed
+.auth-container {
+  scrollbar-width: thin;
+  scrollbar-color: #9b6012 #f1f1f1;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #9b6012;
+    border-radius: 4px;
+
+    &:hover {
+      background: #7d4d0e;
+    }
+  }
 }
