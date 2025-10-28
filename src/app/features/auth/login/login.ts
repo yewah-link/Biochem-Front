@@ -62,13 +62,13 @@ export class Login {
   private navigateBasedOnRole(role: RoleType): void {
     switch (role) {
       case RoleType.ADMIN:
-        this.router.navigate(['/admin/dashboard']);
+        this.router.navigate(['/dashboard']);
         break;
       case RoleType.STUDENT:
-        this.router.navigate(['/student/dashboard']);
+        this.router.navigate(['/student']);
         break;
       default:
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/']);
         break;
     }
   }

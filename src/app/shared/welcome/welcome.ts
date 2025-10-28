@@ -1,3 +1,4 @@
+// welcome.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -18,21 +19,21 @@ export class Welcome implements OnInit, OnDestroy {
       image: 'assets/slide1.jpg',
       title: 'Learn Anywhere',
       description: 'Access notes, videos, and exams from any device, anytime you need them.',
-      gradient: 'from-purple-600 via-purple-700 to-purple-900',
+      gradient: 'from-amber-700 via-amber-600 to-yellow-700',
       buttonText: 'Start Learning'
     },
     {
       image: 'assets/slide2.jpg',
       title: 'Stay Organized',
       description: 'Track your progress across categories and topics with our intuitive dashboard.',
-      gradient: 'from-pink-500 via-rose-600 to-red-600',
+      gradient: 'from-orange-700 via-amber-700 to-amber-800',
       buttonText: 'Get Organized'
     },
     {
       image: 'assets/slide3.jpg',
       title: 'Be Exam Ready',
       description: 'Practice with mock exams and prepare with confidence using our comprehensive resources.',
-      gradient: 'from-cyan-500 via-blue-500 to-blue-600',
+      gradient: 'from-yellow-700 via-amber-700 to-orange-700',
       buttonText: 'Practice Now'
     }
   ];

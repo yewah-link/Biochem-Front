@@ -22,6 +22,8 @@ import { Achievements } from './features/student/achievements/achievements';
 import { ContinueLearning } from './features/student/continue-learning/continue-learning';
 import { MyCourses } from './features/student/my-courses/my-courses';
 import { ProgressBar } from './features/student/progress-bar/progress-bar';
+import { CourseDetail } from './features/admin/courses/course-detail/course-detail';
+import { CourseList } from './features/admin/courses/course-list/course-list';
 
 export const routes: Routes = [
   { path: '', component: Loader },
@@ -35,10 +37,19 @@ export const routes: Routes = [
     component: Dashboard,
     canActivate: [authGuard, adminGuard],
     children: [
+
+      // Categories management routes
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
       { path: 'categories', component: CategoryList },
       { path: 'categories/add', component: CategoryEdit },
       { path: 'categories/edit/:id', component: CategoryEdit },
+
+      // ⭐ COURSES (NEW - Main feature)
+      { path: 'courses', component: CourseList },
+      { path: 'courses/create', component: CourseDetail },
+      { path: 'courses/:id', component: CourseDetail }, 
+
+
       { path: 'videos', component: VideoEdit },
       { path: 'videos/edit/:id', component: VideoEdit },
       { path: 'notes', component: NoteList },

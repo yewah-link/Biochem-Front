@@ -160,8 +160,4 @@ export class VideoPlay implements OnInit, OnDestroy {
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return (Math.round((bytes / Math.pow(1024, i)) * 100) / 100) + ' ' + sizes[i];
   }
-
-  getCategoryName(): string {
-    return this.video?.category?.name || 'Uncategorized';
-  }
 }

@@ -2,24 +2,34 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, map, catchError, of } from 'rxjs';
 
-// Interfaces - outside the service class
-export interface CategoryDto {
+/**
+ * Data Transfer Object representing a Course.
+ */
+export interface CourseDto {
   id?: number;
-  name?: string;
+  title?: string;
   description?: string;
 }
 
+/**
+ * Data Transfer Object representing a Video.
+ */
 export interface VideoDto {
   id?: number;
+  title?: string;
   description: string;
   fileName?: string;
   filePath?: string;
   thumbnailPath?: string;
   fileType: string;
   fileSize?: number;
-  category?: CategoryDto;
+  duration?: number; // Duration in seconds
+  course?: CourseDto;
 }
 
+/**
+ * Generic API response wrapper.
+ */
 interface GenericResponse<T> {
   status: string;
   message: string;
@@ -35,12 +45,15 @@ export class VideoService {
 
   constructor(private http: HttpClient) {}
 
-  // Upload a new video
-  uploadVideo(file: File, description: string, categoryId: number, fileType: string): Observable<VideoDto> {
+  /**
+   * Upload a new video and attach it to a course.
+   */
+  uploadVideo(file: File, title: string, description: string, courseId: number): Observable<VideoDto> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('title', title);
     formData.append('description', description);
-    formData.append('categoryId', categoryId.toString());
+    formData.append('courseId', courseId.toString());
 
     return this.http.post<GenericResponse<VideoDto>>(`${this.apiUrl}/upload`, formData).pipe(
       map(res => {
@@ -48,19 +61,23 @@ export class VideoService {
           this.currentVideoSubject.next(res._embedded);
           return res._embedded;
         }
-        throw new Error(res.message || 'Upload failed');
+        throw new Error(res.message || 'Video upload failed');
       })
     );
   }
 
-  // Get all videos
+  /**
+   * Fetch all videos in the system.
+   */
   getAllVideos(): Observable<VideoDto[]> {
     return this.http.get<GenericResponse<VideoDto[]>>(`${this.apiUrl}`).pipe(
       map(res => res._embedded || [])
     );
   }
 
-  // Get a single video by ID
+  /**
+   * Fetch a video by its unique ID.
+   */
   getVideoById(id: number): Observable<VideoDto> {
     return this.http.get<GenericResponse<VideoDto>>(`${this.apiUrl}/${id}`).pipe(
       map(res => {
@@ -72,14 +89,18 @@ export class VideoService {
     );
   }
 
-  // Get videos by category
-  getVideosByCategory(categoryId: number): Observable<VideoDto[]> {
-    return this.http.get<GenericResponse<VideoDto[]>>(`${this.apiUrl}/category/${categoryId}`).pipe(
+  /**
+   * Fetch all videos associated with a specific course.
+   */
+  getVideosByCourse(courseId: number): Observable<VideoDto[]> {
+    return this.http.get<GenericResponse<VideoDto[]>>(`${this.apiUrl}/course/${courseId}`).pipe(
       map(res => res._embedded || [])
     );
   }
 
-  // Delete a video by ID
+  /**
+   * Delete a video by its ID.
+   */
   deleteVideoById(id: number): Observable<void> {
     return this.http.delete<GenericResponse<void>>(`${this.apiUrl}/${id}`).pipe(
       map(res => {
@@ -89,17 +110,23 @@ export class VideoService {
     );
   }
 
-  // Get current video
+  /**
+   * Observe the currently selected or active video.
+   */
   getCurrentVideo(): Observable<VideoDto | null> {
     return this.currentVideoSubject.asObservable();
   }
 
-  // Set current video
+  /**
+   * Set the currently selected or active video.
+   */
   setCurrentVideo(video: VideoDto | null): void {
     this.currentVideoSubject.next(video);
   }
 
-  // Get video thumbnail URL - Fixed to handle undefined IDs properly
+  /**
+   * Generate a thumbnail URL for a given video.
+   */
   getVideoThumbnail(video: VideoDto): string {
     if (!video.id) {
       console.warn('Video ID is undefined for thumbnail request');
@@ -108,7 +135,9 @@ export class VideoService {
     return `${this.apiUrl}/thumbnail/${video.id}`;
   }
 
-  // Get video stream URL - Fixed to handle undefined IDs properly
+  /**
+   * Generate a streaming URL for a given video.
+   */
   getVideoStreamUrl(video: VideoDto): string {
     if (!video.id) {
       console.warn('Video ID is undefined for stream request');
@@ -117,7 +146,9 @@ export class VideoService {
     return `${this.apiUrl}/stream/${video.id}`;
   }
 
-  // Check if thumbnail exists for a video
+  /**
+   * Check if a thumbnail exists for a given video ID.
+   */
   checkThumbnailExists(videoId: number): Observable<boolean> {
     return this.http.head(`${this.apiUrl}/thumbnail/${videoId}`, {
       observe: 'response',
@@ -128,11 +159,11 @@ export class VideoService {
     );
   }
 
-  // Get video thumbnail as blob for display with proper error handling
+  /**
+   * Retrieve a video thumbnail as a Blob.
+   */
   getVideoThumbnailBlob(videoId: number): Observable<Blob | null> {
-    if (!videoId) {
-      return of(null);
-    }
+    if (!videoId) return of(null);
 
     return this.http.get(`${this.apiUrl}/thumbnail/${videoId}`, {
       responseType: 'blob',
@@ -147,11 +178,11 @@ export class VideoService {
     );
   }
 
-  // Stream video file with range support
+  /**
+   * Stream a video file with optional range support.
+   */
   streamVideoFile(videoId: number, range?: string): Observable<Blob | null> {
-    if (!videoId) {
-      return of(null);
-    }
+    if (!videoId) return of(null);
 
     const headers = new HttpHeaders({
       'Accept': 'video/mp4, video/webm, video/ogg, video/*',
@@ -169,21 +200,26 @@ export class VideoService {
     );
   }
 
-  // Format file size utility method
+  /**
+   * Format a byte size into a human-readable string.
+   */
   formatFileSize(bytes?: number): string {
     if (!bytes || bytes === 0) return 'Unknown size';
-
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
   }
 
-  // Validate video ID helper
+  /**
+   * Verify that a video object has a valid ID.
+   */
   isValidVideoId(video: VideoDto): boolean {
     return !!(video && video.id && video.id > 0);
   }
 
-  // Generate fallback thumbnail URL (could be a placeholder image)
+  /**
+   * Provide a default thumbnail placeholder if none exists.
+   */
   getFallbackThumbnailUrl(): string {
     return 'assets/images/video-placeholder.png';
   }
