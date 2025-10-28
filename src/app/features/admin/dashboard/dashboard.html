@@ -47,15 +47,21 @@
     <!-- Right group - Profile -->
     <div class="flex items-center gap-3">
       <div class="hidden md:flex flex-col items-end">
-        <span class="text-sm font-medium text-gray-800">John Doe</span>
-        <span class="text-xs text-gray-500">Administrator</span>
+        <span class="text-sm font-medium text-gray-800">{{ userDisplayName }}</span>
+        <span class="text-xs text-gray-500">{{ userRole }}</span>
       </div>
       <button class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 hover:ring-amber-500 transition-all">
-        <img 
-          src="https://secure.gravatar.com/avatar/d09eaad01aea86c51b4f892b4f8abf6f?s=100&d=wavatar&r=g"
-          alt="Profile"
-          class="w-full h-full object-cover"
-        >
+        @if (userProfilePhoto) {
+          <img 
+            [src]="userProfilePhoto"
+            [alt]="userDisplayName"
+            class="w-full h-full object-cover"
+          >
+        } @else {
+          <div class="w-full h-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-semibold text-sm">
+            {{ userInitials }}
+          </div>
+        }
       </button>
     </div>
   </div>

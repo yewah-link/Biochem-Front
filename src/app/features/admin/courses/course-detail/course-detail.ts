@@ -29,6 +29,10 @@ export class CourseDetail implements OnInit {
   activeTab: 'videos' | 'notes' | 'exams' = 'videos';
   isLoading = false;
 
+  // Drag and drop state
+  draggedVideoIndex: number | null = null;
+  dragOverIndex: number | null = null;
+
   // Form for course metadata
   courseForm: FormGroup;
 
@@ -429,4 +433,60 @@ export class CourseDetail implements OnInit {
 
     return parts.join(' ');
   }
+
+// Drag and drop handlers for video reordering
+onVideoDragStart(event: DragEvent, index: number): void {
+  this.draggedVideoIndex = index;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/html', String(index));
+  }
+}
+
+onVideoDragOver(event: DragEvent, index: number): void {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move';
+  }
+  this.dragOverIndex = index;
+}
+
+onVideoDrop(event: DragEvent, dropIndex: number): void {
+  event.preventDefault();
+  
+  if (this.draggedVideoIndex === null || !this.course?.videos) {
+    return;
+  }
+
+  const dragIndex = this.draggedVideoIndex;
+
+  // Don't do anything if dropped on itself
+  if (dragIndex === dropIndex) {
+    this.draggedVideoIndex = null;
+    this.dragOverIndex = null;
+    return;
+  }
+
+  // Reorder the videos array
+  const videos = [...this.course.videos];
+  const [draggedVideo] = videos.splice(dragIndex, 1);
+  videos.splice(dropIndex, 0, draggedVideo);
+
+  // Update the course videos
+  this.course.videos = videos;
+
+  // TODO: Call API to persist the new order
+  // You might want to add a method in your CourseService to update video order
+  console.log('New video order:', videos.map(v => v.id));
+
+  this.draggedVideoIndex = null;
+  this.dragOverIndex = null;
+}
+
+onVideoDragEnd(): void {
+  this.draggedVideoIndex = null;
+  this.dragOverIndex = null;
+}
+
+
 }

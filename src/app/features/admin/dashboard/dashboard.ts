@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService, UserDto } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,14 +15,44 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
   sidebarOpen = true;
   showCoursesSubmenu = false;
   showContentSubmenu = false;
   mobileMenuOpen = false;
   search: string = '';
+  currentUser: UserDto | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    // Subscribe to current user changes
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
+
+  get userDisplayName(): string {
+    return this.authService.getUserDisplayName();
+  }
+
+  get userRole(): string {
+    if (this.currentUser?.role) {
+      return this.currentUser.role === 'ADMIN' ? 'Administrator' : 'Student';
+    }
+    return 'User';
+  }
+
+  get userInitials(): string {
+    return this.authService.getUserInitials();
+  }
+
+  get userProfilePhoto(): string | undefined {
+    return this.currentUser?.profilePhotoUrl;
+  }
 
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
@@ -65,10 +96,15 @@ export class Dashboard {
 
   logout() {
     console.log('Logging out...');
-    // Implement your logout logic here
-    // Example: 
-    // this.authService.logout().subscribe(() => {
-    //   this.router.navigate(['/login']);
-    // });
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('Logout error:', err);
+        // Force logout even on error
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }

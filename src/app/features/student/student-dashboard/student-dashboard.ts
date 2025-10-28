@@ -1,10 +1,12 @@
-import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CategoryDto, CategoryService } from '../../../core/category.service';
 import { VideoDto, VideoService } from '../../../core/video.service';
 import { NoteService, NotesDto } from '../../../core/note.service';
+import { AuthService, UserDto } from '../../../core/auth/auth.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -17,12 +19,15 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss'
 })
-export class StudentDashboard implements OnInit {
+export class StudentDashboard implements OnInit, OnDestroy {
   mobileSearchActive = false;
   mobileMenuOpen = false;
   userMenuOpen = false;
-  isLoggedIn = true;
-  userName = 'Alex';
+  isLoggedIn = false;
+  userName = 'User';
+  userInitials = 'U';
+  currentUser: UserDto | null = null;
+  private userSubscription?: Subscription;
 
   @ViewChild('categoryTrack') categoryTrack!: ElementRef;
 
@@ -36,12 +41,64 @@ export class StudentDashboard implements OnInit {
     public categoryService: CategoryService,
     public videoService: VideoService,
     private noteService: NoteService,
+    private authService: AuthService,
+    private router: Router,
     private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
+    this.loadUserData();
     this.loadCategories();
     this.loadNotes();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription to prevent memory leaks
+    this.userSubscription?.unsubscribe();
+  }
+
+  loadUserData(): void {
+    // Subscribe to current user changes
+    this.userSubscription = this.authService.currentUser$.subscribe({
+      next: (user) => {
+        if (user) {
+          this.currentUser = user;
+          this.isLoggedIn = true;
+          this.userName = this.getUserDisplayName(user);
+          this.userInitials = this.getUserInitials(user);
+        } else {
+          this.isLoggedIn = false;
+          this.userName = 'User';
+          this.userInitials = 'U';
+        }
+      }
+    });
+
+    // Check if user is logged in on component init
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  getUserDisplayName(user: UserDto): string {
+    if (user.fullName) return user.fullName;
+    if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
+    if (user.firstName) return user.firstName;
+    if (user.email) return user.email.split('@')[0];
+    return 'User';
+  }
+
+  getUserInitials(user: UserDto): string {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+    }
+    if (user.firstName) {
+      return user.firstName.charAt(0).toUpperCase();
+    }
+    if (user.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'U';
   }
 
   loadCategories(): void {
@@ -82,8 +139,6 @@ export class StudentDashboard implements OnInit {
 
     this.selectedCategoryId = category.id;
     
-    // FIX 1: Renamed method to getVideosByCourse
-    // FIX 2 & 3: Added explicit typing for data (VideoDto[]) and err (any)
     this.videoService.getVideosByCourse(category.id).subscribe({
       next: (data: VideoDto[]) => {
         this.videos = data;
@@ -95,7 +150,6 @@ export class StudentDashboard implements OnInit {
 
   selectVideo(video: VideoDto): void {
     this.selectedVideo = video;
-    // Scroll to top when video is selected
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -147,9 +201,29 @@ export class StudentDashboard implements OnInit {
   }
 
   logout(): void {
-    this.isLoggedIn = false;
-    this.userMenuOpen = false;
-    // Add your logout logic here (e.g., clear tokens, navigate to login)
-    // this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      next: () => {
+        this.userMenuOpen = false;
+        // The authService.logout() already navigates to login
+      },
+      error: (err: any) => {
+        console.error('Logout error:', err);
+        // Force logout even if server request fails
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  // Helper methods to access user data in template
+  getRewardPoints(): number {
+    return this.currentUser?.rewardPoints || 0;
+  }
+
+  getCertificatesEarned(): number {
+    return this.currentUser?.certificatesEarned || 0;
+  }
+
+  getStudentId(): string {
+    return this.currentUser?.studentId || 'N/A';
   }
 }
