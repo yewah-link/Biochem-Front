@@ -1,39 +1,53 @@
-<!-- Main Container -->
 <div class="min-h-screen bg-gray-50">
-  <!-- Navigation Header -->
   <div class="bg-white border-b border-gray-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Video Manager</h1>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Video Manager</h1>
+          @if (returnToCourse && courseName) {
+            <p class="text-sm text-gray-600 mt-1">Uploading video for: {{ courseName }}</p>
+          }
+        </div>
 
         <div class="flex gap-3">
-          <button
-            [class]="currentView === 'list' ?
-              'inline-flex items-center gap-2 px-4 py-2 bg-[#9b6012] text-white rounded-lg font-medium transition-all' :
-              'inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all'"
-            (click)="switchToView('list')">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
-            Video List
-          </button>
+          @if (returnToCourse && courseId) {
+            <button
+              class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all"
+              (click)="cancelAndReturn()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Course
+            </button>
+          } @else {
+            <button
+              [class]="currentView === 'list'
+                ? 'inline-flex items-center gap-2 px-4 py-2 bg-[#9b6012] text-white rounded-lg font-medium transition-all'
+                : 'inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all'"
+              (click)="switchToView('list')">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              Video List
+            </button>
 
-          <button
-            [class]="currentView === 'upload' ?
-              'inline-flex items-center gap-2 px-4 py-2 bg-[#9b6012] text-white rounded-lg font-medium transition-all' :
-              'inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all'"
-            (click)="switchToView('upload')">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            Upload Video
-          </button>
+            <button
+              [class]="currentView === 'upload'
+                ? 'inline-flex items-center gap-2 px-4 py-2 bg-[#9b6012] text-white rounded-lg font-medium transition-all'
+                : 'inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all'"
+              (click)="switchToView('upload')">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              Upload Video
+            </button>
+          }
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Loading Spinner -->
   @if (isLoading) {
     <div class="flex flex-col items-center justify-center py-20">
       <div class="relative w-16 h-16">
@@ -44,14 +58,15 @@
     </div>
   }
 
-  <!-- Messages -->
   @if (!isLoading) {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       @if (errorMessage) {
-        <div class="flex items-center justify-between p-4 mb-4 bg-red-50 border border-red-200 rounded-lg" role="alert">
+        <div class="flex items-center justify-between p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
           <div class="flex items-center gap-3">
             <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clip-rule="evenodd" />
             </svg>
             <span class="text-red-800 font-medium">{{ errorMessage }}</span>
           </div>
@@ -64,10 +79,12 @@
       }
 
       @if (successMessage) {
-        <div class="flex items-center justify-between p-4 mb-4 bg-green-50 border border-green-200 rounded-lg" role="alert">
+        <div class="flex items-center justify-between p-4 mb-4 bg-green-50 border border-green-200 rounded-lg">
           <div class="flex items-center gap-3">
             <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clip-rule="evenodd" />
             </svg>
             <span class="text-green-800 font-medium">{{ successMessage }}</span>
           </div>
@@ -81,7 +98,6 @@
     </div>
   }
 
-  <!-- Video List View -->
   @if (currentView === 'list' && !isLoading) {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-6">
@@ -93,15 +109,16 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           @for (video of videos; track video.id) {
             <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">
-              <!-- Video Thumbnail -->
               <div class="relative aspect-video bg-gray-900 cursor-pointer overflow-hidden" (click)="playVideo(video)">
                 <img
                   [src]="getVideoThumbnail(video)"
                   [alt]="video.description"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
 
-                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-                  <div class="w-14 h-14 rounded-full bg-white bg-opacity-90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:scale-110">
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
+                  <div
+                    class="w-14 h-14 rounded-full bg-white bg-opacity-90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:scale-110">
                     <svg class="w-6 h-6 text-[#9b6012] ml-1" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
@@ -109,17 +126,14 @@
                 </div>
               </div>
 
-              <!-- Video Info -->
               <div class="p-4">
-                <h3 class="font-semibold text-gray-900 text-sm line-clamp-2 mb-2 cursor-pointer hover:text-[#9b6012] transition-colors"
-                    (click)="playVideo(video)">
-                  {{ video.description }}
+                <h3
+                  class="font-semibold text-gray-900 text-sm line-clamp-2 mb-2 cursor-pointer hover:text-[#9b6012] transition-colors"
+                  (click)="playVideo(video)">
+                  {{ video.title }}
                 </h3>
 
                 <div class="flex flex-wrap gap-2 mb-3">
-                  <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[#9b6012]/10 text-[#9b6012]">
-                    {{ getCategoryName(video.category) }}
-                  </span>
                   <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
                     {{ formatFileSize(video.fileSize) }}
                   </span>
@@ -138,7 +152,8 @@
                     class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium rounded-lg transition-colors"
                     (click)="deleteVideo(video.id!)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
@@ -147,20 +162,21 @@
           }
         </div>
       } @else {
-        <!-- Empty State -->
         <div class="text-center py-20">
           <div class="w-24 h-24 bg-[#9b6012]/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg class="w-12 h-12 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
           <h3 class="text-2xl font-bold text-gray-900 mb-2">No videos uploaded yet</h3>
-          <p class="text-gray-600 mb-8 max-w-md mx-auto">Start by uploading your first video to share your content with learners</p>
+          <p class="text-gray-600 mb-8 max-w-md mx-auto">Start by uploading your first video</p>
           <button
             class="inline-flex items-center gap-2 px-6 py-3 bg-[#9b6012] hover:bg-[#7d4d0e] text-white rounded-lg font-semibold transition-all shadow-sm"
             (click)="switchToView('upload')">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             Upload Your First Video
           </button>
@@ -169,7 +185,6 @@
     </div>
   }
 
-  <!-- Upload View -->
   @if (currentView === 'upload' && !isLoading) {
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="text-center mb-8">
@@ -178,7 +193,18 @@
       </div>
 
       <div class="bg-white rounded-lg shadow-sm p-8">
-        <!-- File Upload -->
+        <div class="mb-6">
+          <label for="title" class="block text-sm font-semibold text-gray-900 mb-2">Video Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            [(ngModel)]="uploadForm.title"
+            placeholder="A short, catchy title for your video"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent"
+            required>
+        </div>
+
         <div class="mb-6">
           <label class="block text-sm font-semibold text-gray-900 mb-2">Video File</label>
           <div class="relative">
@@ -187,10 +213,12 @@
               id="fileInput"
               accept="video/*"
               (change)="onFileSelected($event)"
-              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#9b6012] hover:bg-[#9b6012]/5 transition-all cursor-pointer">
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+            <div
+              class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#9b6012] hover:bg-[#9b6012]/5 transition-all cursor-pointer">
               <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
               <p class="text-sm text-gray-600 mb-1">
                 @if (selectedFile) {
@@ -204,115 +232,72 @@
           </div>
         </div>
 
-        <!-- Description -->
         <div class="mb-6">
           <label for="description" class="block text-sm font-semibold text-gray-900 mb-2">Video Description</label>
           <textarea
             id="description"
+            name="description"
             [(ngModel)]="uploadForm.description"
             placeholder="What will students learn from this video?"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent resize-none"
             rows="4"></textarea>
         </div>
 
-        <!-- Category Selection -->
-        <div class="mb-6">
-          <label for="category" class="block text-sm font-semibold text-gray-900 mb-2">Category</label>
-          <select
-            id="category"
-            [(ngModel)]="uploadForm.categoryId"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent bg-white">
-            @for (category of categories; track category.id) {
-              <option [value]="category.id">{{ category.name }}</option>
-            }
-          </select>
-        </div>
+        @if (isLoading && uploadProgress > 0) {
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-sm font-semibold text-gray-900">Upload Progress</label>
+              <span class="text-sm font-semibold text-[#9b6012]">{{ uploadProgress }}%</span>
+            </div>
 
-        <!-- File Type Display -->
+            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div
+                class="h-full bg-[#9b6012] transition-all duration-300 ease-out rounded-full"
+                [style.width.%]="uploadProgress">
+              </div>
+            </div>
+
+            <p class="text-xs text-gray-600 mt-2 text-center">
+              @if (uploadProgress < 100) {
+                Uploading video... Please don't close this page.
+              } @else {
+                Processing complete! Redirecting...
+              }
+            </p>
+          </div>
+        }
+
         @if (selectedFile) {
           <div class="mb-6">
-            <label class="block text-sm font-semibold text-gray-900 mb-2">File Type</label>
-            <div class="inline-flex items-center px-3 py-1 rounded-md bg-blue-50 text-blue-700 text-sm font-medium">
-              {{ uploadForm.fileType }}
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Selected File</label>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 text-blue-700 text-sm font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              {{ selectedFile.name }}
             </div>
           </div>
         }
 
-        <!-- Upload Button -->
-        <button
-          class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#9b6012] hover:bg-[#7d4d0e] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-all shadow-sm"
-          (click)="uploadVideo()"
-          [disabled]="!selectedFile || !uploadForm.description.trim()">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-          Upload Video
-        </button>
-      </div>
-    </div>
-  }
+        <div class="flex gap-3">
+          <button
+            class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#9b6012] hover:bg-[#7d4d0e] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-all shadow-sm"
+            (click)="uploadVideo()"
+            [disabled]="!selectedFile || !uploadForm.title.trim() || !uploadForm.description.trim()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            Upload Video
+          </button>
 
-  <!-- Video Player View -->
-  @if (currentView === 'play' && currentVideo && !isLoading) {
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <button
-        class="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-        (click)="switchToView('list')">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Videos
-      </button>
-
-      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <!-- Video Player -->
-        <div class="bg-black aspect-video">
-          <video
-            controls
-            class="w-full h-full"
-            [src]="getVideoStreamUrl(currentVideo)">
-            Your browser does not support the video tag.
-          </video>
-        </div>
-
-        <!-- Video Details -->
-        <div class="p-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ currentVideo.description }}</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div>
-              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Category</p>
-              <p class="text-sm font-medium text-gray-900">{{ getCategoryName(currentVideo.category) }}</p>
-            </div>
-
-            <div>
-              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">File Size</p>
-              <p class="text-sm font-medium text-gray-900">{{ formatFileSize(currentVideo.fileSize) }}</p>
-            </div>
-
-            <div>
-              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Format</p>
-              <p class="text-sm font-medium text-gray-900">{{ currentVideo.fileType }}</p>
-            </div>
-
-            @if (currentVideo.fileName) {
-              <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">File Name</p>
-                <p class="text-sm font-medium text-gray-900 truncate">{{ currentVideo.fileName }}</p>
-              </div>
-            }
-          </div>
-
-          <div class="pt-6 border-t border-gray-200">
+          @if (returnToCourse && courseId) {
             <button
-              class="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
-              (click)="deleteVideo(currentVideo.id!)">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete Video
+              class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-all shadow-sm"
+              (click)="cancelAndReturn()">
+              Cancel
             </button>
-          </div>
+          }
         </div>
       </div>
     </div>

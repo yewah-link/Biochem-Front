@@ -2,182 +2,19 @@
   height: 100%;
 }
 
-.sidenav {
-  width: 250px;
+/* Most styling is handled by Tailwind classes */
+
+/* Smooth transition for sidenav */
+.transform {
+  transition-property: transform;
 }
 
-/* Navbar wrapper */
-.navbar {
-  background-color: #ffffff;
-  color: #333;
-  box-shadow: 0 2px 6px rgba(39, 54, 102, 0.15);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  padding: 0 16px;
-  height: 64px; /* consistent height */
-}
-
-/* Normal navbar (the flex container) */
-.normal-navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 100%;
-}
-
-/* Brand */
-.brand {
-  font-weight: bold;
-  font-size: 20px;
-  color: #9b6012;
-  white-space: nowrap;
-  display: flex;
-  align-items: center; /* vertical alignment */
-}
-
-/* Desktop search */
-.search-container {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 50px;
-  padding: 0 12px;
-  max-width: 500px;
-  margin: 0 auto; /* Center the search bar */
-}
-
-.search-input {
-  flex: 1;
-  border: none;
+/* Focus states for better accessibility */
+input:focus {
   outline: none;
-  padding: 9px 12px;
-  font-size: 16px;
-  background: transparent;
 }
 
-.search-icon {
-  color: #666;
+/* Ensure buttons maintain proper spacing */
+button {
+  white-space: nowrap;
 }
-
-/* Nav links (desktop) */
-.nav-links {
-  display: flex;
-  gap: 12px;
-  align-items: center; /* aligns About, Login, Signup with brand */
-}
-
-.nav-links button {
-  text-transform: none;
-  border-radius: 4px;
-  font-weight: 550;
-}
-
-.login-btn {
-  border-color: #9b6012 !important;
-  color: #9b6012 !important;
-  text-transform: none;
-}
-
-.signup-btn {
-  text-transform: none;
-  color: #fff !important;
-  background-color: #9b6012 !important;
-  border-radius: 4px;
-}
-
-/* Hidden utility */
-.hidden {
-  display: none !important;
-}
-
-/* Mobile search */
-.mobile-search {
-  display: none;
-  width: 100%;
-  align-items: center;
-  gap: 8px;
-}
-
-.mobile-search.active {
-  display: flex;
-}
-
-.mobile-search-input {
-  flex: 1;
-  padding: 9px 12px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 50px;
-}
-
-
-
-/* Responsive rules */
-@media (max-width: 768px) {
-  /* Hide desktop elements */
-  .search-container,
-  .nav-links {
-    display: none;
-  }
-
-  /* Show mobile buttons */
-  .mobile-search-btn,
-  .menu-btn {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  /* Mobile layout: menu (left), brand (center), search (right) */
-  .normal-navbar {
-    justify-content: flex-start; /* Start with menu button */
-  }
-
-  .brand {
-    margin: 0; /* Remove auto margin */
-  }
-
-  .spacer {
-    display: block; /* Show spacer on mobile */
-    flex: 1; /* Push search button to the right */
-  }
-}
-
-@media (min-width: 769px) {
-  /* Hide mobile-only */
-  .mobile-search-btn,
-  .menu-btn {
-    display: none;
-  }
-
-  /* Hide spacer on desktop */
-  .spacer {
-    display: none;
-  }
-
-  /* Desktop layout: create 3 sections with search taking most space */
-  .normal-navbar {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .brand {
-    justify-self: start;
-  }
-
-  .search-container {
-    justify-self: stretch;
-    margin: 0;
-    width: 80%; /* Takes 80% of available space */
-    max-width: none;
-    justify-self: center;
-  }
-
-  .nav-links {
-    justify-self: end;
-  }
-} 

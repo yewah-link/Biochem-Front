@@ -52,16 +52,16 @@ export class StudentDashboard implements OnInit {
           this.selectCategory(this.categories[0]);
         }
       },
-      error: (err) => console.error('Failed to load categories:', err)
+      error: (err: any) => console.error('Failed to load categories:', err)
     });
   }
 
   loadNotes(): void {
     this.noteService.getAllNotes().subscribe({
-      next: (notes) => {
+      next: (notes: NotesDto[]) => {
         this.notes = notes;
       },
-      error: (err) => console.error('Failed to load notes:', err)
+      error: (err: any) => console.error('Failed to load notes:', err)
     });
   }
 
@@ -81,12 +81,15 @@ export class StudentDashboard implements OnInit {
     if (!category.id) return;
 
     this.selectedCategoryId = category.id;
-    this.videoService.getVideosByCategory(category.id).subscribe({
-      next: (data) => {
+    
+    // FIX 1: Renamed method to getVideosByCourse
+    // FIX 2 & 3: Added explicit typing for data (VideoDto[]) and err (any)
+    this.videoService.getVideosByCourse(category.id).subscribe({
+      next: (data: VideoDto[]) => {
         this.videos = data;
         this.selectedVideo = null;
       },
-      error: (err) => console.error('Failed to load videos by category:', err)
+      error: (err: any) => console.error('Failed to load videos by category:', err)
     });
   }
 

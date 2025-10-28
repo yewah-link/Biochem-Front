@@ -1,4 +1,3 @@
-// video-preview.component.ts
 import {
   Component,
   OnInit,
@@ -89,13 +88,14 @@ export class VideoPreview implements OnInit {
       this.selectedCategoryId = categories[0].id;
 
       const categoryVideoRequests = categories.map((category: CategoryDto) =>
-        this.videoService.getVideosByCategory(category.id!).pipe(
+        // FIX: Using the new 'getVideosByCourse' method
+        this.videoService.getVideosByCourse(category.id!).pipe( 
           map((videos: VideoDto[]) => ({
             category: category,
             videos: videos.map((video) => this.initializeExtendedVideo(video))
           })),
           catchError((error) => {
-            console.error(`Error loading videos for category ${category.id}:`, error);
+            console.error(`Error loading videos for course ${category.id}:`, error);
             return of({
               category: category,
               videos: []
