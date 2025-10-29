@@ -2,34 +2,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDividerModule } from '@angular/material/divider';
 import { CommonModule } from '@angular/common';
 import { NotesDto, NoteService } from '../../../core/note.service';
-import { CategoryDto, CategoryService } from '../../../core/category.service';
+import { CourseDto, CourseService } from '../../../core/course.service';
 
 @Component({
   selector: 'app-note-edit',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    MatProgressSpinnerModule,
-    MatChipsModule,
-    MatDividerModule
+    ReactiveFormsModule
   ],
   templateUrl: './note-edit.html',
   styleUrl: './note-edit.scss'
@@ -37,19 +19,25 @@ import { CategoryDto, CategoryService } from '../../../core/category.service';
 export class NoteEdit implements OnInit {
   noteForm!: FormGroup;
   note: NotesDto | null = null;
-  categories: CategoryDto[] = [];
   selectedFile: File | null = null;
-  isLoading = false;
+  
+  // Edit mode properties
   isEditMode = false;
   noteId: number | null = null;
-  preSelectedCategoryId: number | null = null;
+  
+  // Course-specific properties (REQUIRED)
+  courseId: number | null = null;
+  courseName: string = '';
+  
+  // View states
+  isLoading = false;
   errorMessage = '';
   successMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private noteService: NoteService,
-    private categoryService: CategoryService,
+    private courseService: CourseService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -57,41 +45,50 @@ export class NoteEdit implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadCategories();
-
-    // Get route parameters
+    // Check route params for note ID (for edit mode)
+    // If ID exists in URL (/dashboard/notes/:id), it's edit mode
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.noteId = +params['id'];
         this.isEditMode = true;
-        this.loadNote();
-      }
-      if (params['categoryId']) {
-        this.preSelectedCategoryId = +params['categoryId'];
-        this.noteForm.patchValue({ categoryId: this.preSelectedCategoryId });
+        console.log('Edit mode - Note ID:', this.noteId);
+      } else {
+        console.log('Create mode - No note ID');
       }
     });
+
+    // Check query parameters - courseId is REQUIRED
+    this.route.queryParams.subscribe(params => {
+      if (!params['courseId']) {
+        this.errorMessage = 'Course ID is required. Redirecting...';
+        setTimeout(() => {
+          this.router.navigate(['/dashboard/courses']);
+        }, 2000);
+        return;
+      }
+
+      this.courseId = +params['courseId'];
+      this.noteForm.patchValue({ courseId: this.courseId });
+
+      if (params['courseName']) {
+        this.courseName = params['courseName'];
+      }
+
+      console.log('Course context:', { courseId: this.courseId, courseName: this.courseName });
+    });
+
+    // Load note for editing if in edit mode
+    if (this.isEditMode && this.noteId) {
+      this.loadNote();
+    }
   }
 
   private initForm(): void {
     this.noteForm = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(200)]],
       content: ['', [Validators.required, Validators.maxLength(5000)]],
-      categoryId: ['', Validators.required]
-    });
-  }
-
-  loadCategories(): void {
-    this.categoryService.getAll().subscribe({
-      next: (response) => {
-        if (response.status === 'SUCCESS') {
-          this.categories = response._embedded;
-        }
-      },
-      error: (error) => {
-        console.error('Failed to load categories:', error);
-        this.errorMessage = 'Failed to load categories';
-      }
+      courseId: ['', Validators.required],
+      orderIndex: [null]
     });
   }
 
@@ -105,15 +102,16 @@ export class NoteEdit implements OnInit {
         this.noteForm.patchValue({
           title: note.title,
           content: note.content,
-          categoryId: note.category?.id || ''
+          courseId: note.courseId,
+          orderIndex: note.orderIndex
         });
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading note:', error);
-        this.errorMessage = 'Failed to load note';
+        this.errorMessage = 'Failed to load note: ' + error.message;
         this.isLoading = false;
-        this.router.navigate(['/notes']);
+        this.backToCourse();
       }
     });
   }
@@ -130,11 +128,11 @@ export class NoteEdit implements OnInit {
       }
 
       // Validate file type
-      const allowedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif', '.xls', '.xlsx', '.ppt', '.pptx'];
+      const allowedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.xls', '.xlsx', '.ppt', '.pptx', '.rtf', '.odt', '.ods', '.odp'];
       const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
 
       if (!allowedExtensions.includes(fileExtension)) {
-        this.errorMessage = 'File type not supported. Please choose a valid document or image file.';
+        this.errorMessage = 'File type not supported. Please choose a valid document file.';
         return;
       }
 
@@ -158,6 +156,11 @@ export class NoteEdit implements OnInit {
       return;
     }
 
+    if (!this.courseId) {
+      this.errorMessage = 'Course ID is required';
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
@@ -166,21 +169,15 @@ export class NoteEdit implements OnInit {
     const noteData: NotesDto = {
       title: formValue.title,
       content: formValue.content,
-      category: { id: formValue.categoryId }
+      courseId: this.courseId,
+      orderIndex: formValue.orderIndex
     };
-
-    // If editing existing note, include the ID
-    if (this.isEditMode && this.noteId) {
-      noteData.id = this.noteId;
-    }
 
     let saveObservable;
 
     if (this.isEditMode && this.noteId) {
       // UPDATE existing note
-      saveObservable = this.selectedFile
-        ? this.noteService.createNoteWithDocument(noteData, this.selectedFile)
-        : this.noteService.updateNote(this.noteId, noteData);
+      saveObservable = this.noteService.updateNote(this.noteId, noteData);
     } else {
       // CREATE new note
       saveObservable = this.selectedFile
@@ -194,9 +191,8 @@ export class NoteEdit implements OnInit {
         this.successMessage = `Note ${action} successfully!`;
         this.isLoading = false;
 
-        // Navigate after delay
         setTimeout(() => {
-          this.router.navigate(['/notes']);
+          this.backToCourse();
         }, 1500);
       },
       error: (error) => {
@@ -207,15 +203,15 @@ export class NoteEdit implements OnInit {
     });
   }
 
-  onCancel(): void {
-    if (this.isEditMode && this.noteId) {
-      this.router.navigate(['/notes', this.noteId]);
+  backToCourse(): void {
+    if (this.courseId) {
+      this.router.navigate(['/dashboard/courses', this.courseId]);
     } else {
-      this.router.navigate(['/notes']);
+      this.router.navigate(['/dashboard/courses']);
     }
   }
 
-  // ✅ Use NoteService helpers instead of duplicates
+  // Use NoteService helpers
   getFileIcon(filename: string): string {
     return this.noteService.getFileIcon(filename);
   }
@@ -240,7 +236,8 @@ export class NoteEdit implements OnInit {
 
   private getFieldDisplayName(field: string): string {
     switch (field) {
-      case 'categoryId': return 'Category';
+      case 'courseId': return 'Course';
+      case 'orderIndex': return 'Order';
       default: return field.charAt(0).toUpperCase() + field.slice(1);
     }
   }
@@ -251,7 +248,7 @@ export class NoteEdit implements OnInit {
   }
 
   get pageTitle(): string {
-    return this.isEditMode ? 'Edit Note' : 'Create Note';
+    return this.isEditMode ? 'Edit Note' : 'Create New Note';
   }
 
   get submitButtonText(): string {

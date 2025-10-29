@@ -57,7 +57,7 @@ export class NoteList implements OnInit {
   loadNotes(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     this.noteService.getAllNotes().subscribe({
       next: (notes) => {
         this.notes = notes;
@@ -70,10 +70,6 @@ export class NoteList implements OnInit {
       }
     });
   }
-
-  // ===============================================
-  // NAVIGATION
-  // ===============================================
 
   /**
    * Navigate to create new note page
@@ -91,10 +87,6 @@ export class NoteList implements OnInit {
     }
   }
 
-  // ===============================================
-  // CRUD OPERATIONS
-  // ===============================================
-
   /**
    * Delete a note by ID
    */
@@ -105,12 +97,12 @@ export class NoteList implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     this.noteService.deleteNote(noteId).subscribe({
       next: () => {
         this.successMessage = 'Note deleted successfully!';
         this.loadNotes();
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
           this.clearMessages();
@@ -132,18 +124,18 @@ export class NoteList implements OnInit {
       next: ({ blob, filename }) => {
         // Create a temporary URL for the blob
         const url = window.URL.createObjectURL(blob);
-        
+
         // Create a temporary anchor element and trigger download
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
-        
+
         // Cleanup
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
-        
+
         this.successMessage = 'Document downloaded successfully!';
         setTimeout(() => {
           this.clearMessages();
@@ -199,19 +191,19 @@ export class NoteList implements OnInit {
    */
   formatDate(date?: string | Date): string {
     if (!date) return 'No date';
-    
+
     try {
       const d = new Date(date);
-      
+
       // Check if date is valid
       if (isNaN(d.getTime())) {
         return 'Invalid date';
       }
-      
-      return d.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
+
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
       });
     } catch (error) {
       console.error('Error formatting date:', error);
@@ -240,10 +232,10 @@ export class NoteList implements OnInit {
    */
   getFormattedContent(content?: string): SafeHtml {
     if (!content) return '';
-    
+
     // Replace newlines with <br> tags for HTML display
     const formatted = content.replace(/\n/g, '<br>');
-    
+
     // Sanitize and return safe HTML
     return this.sanitizer.bypassSecurityTrustHtml(formatted);
   }
