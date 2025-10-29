@@ -8,22 +8,14 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { CategoryDto, CategoryService } from '../../core/category.service';
-import { VideoDto, VideoService } from '../../core/video.service';
-import { Observable, BehaviorSubject, forkJoin, map, catchError, of } from 'rxjs';
+import { CourseDto, CourseService } from '../../core/course.service';
+import { Observable, BehaviorSubject, map } from 'rxjs';
 
-// Extended VideoDto interface to track thumbnail states
-interface ExtendedVideoDto extends VideoDto {
+// Extended CourseDto interface to track thumbnail states
+interface ExtendedCourseDto extends CourseDto {
   thumbnailFailed?: boolean;
   thumbnailLoaded?: boolean;
   showPlaceholder?: boolean;
-  thumbnailUrl?: string;
-  streamUrl?: string;
-}
-
-interface CategoryWithVideos {
-  category: CategoryDto;
-  videos: ExtendedVideoDto[];
 }
 
 @Component({
@@ -35,143 +27,43 @@ interface CategoryWithVideos {
 })
 export class VideoPreview implements OnInit {
   @ViewChild('videosContainer') videosContainer!: ElementRef<HTMLDivElement>;
-  @ViewChild('tabsContainer') tabsContainer!: ElementRef<HTMLDivElement>;
 
-  private categoriesWithVideosSubject = new BehaviorSubject<CategoryWithVideos[]>([]);
-  categoriesWithVideos$: Observable<CategoryWithVideos[]> = this.categoriesWithVideosSubject.asObservable();
+  private coursesSubject = new BehaviorSubject<ExtendedCourseDto[]>([]);
+  courses$: Observable<ExtendedCourseDto[]> = this.coursesSubject.asObservable();
 
-  selectedCategoryId: number | undefined;
   canScrollLeft = false;
   canScrollRight = false;
 
-  // Underline animation state
-  activeUnderlineWidth = 0;
-  activeUnderlineLeft = 0;
-
   constructor(
-    private videoService: VideoService,
-    private categoryService: CategoryService,
+    private courseService: CourseService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loadData();
+    this.loadCourses();
   }
 
   @HostListener('window:resize')
   onResize() {
-    this.updateUnderlinePosition();
+    this.checkScroll();
   }
 
-  private loadData(): void {
-    this.categoryService.getAll().subscribe({
-      next: (response) => {
-        if (response.status === 'SUCCESS' && response._embedded) {
-          const categories = response._embedded;
-          this.loadVideosForCategories(categories);
-        } else {
-          console.error('Failed to load categories:', response.message);
-          this.categoriesWithVideosSubject.next([]);
-        }
+  private loadCourses(): void {
+    this.courseService.getAllCourses().subscribe({
+      next: (courses: CourseDto[]) => {
+        const extendedCourses = courses.map(course => this.initializeExtendedCourse(course));
+        this.coursesSubject.next(extendedCourses);
+        this.preloadThumbnails(extendedCourses);
+        setTimeout(() => {
+          this.checkScroll();
+        }, 100);
       },
       error: (error) => {
-        console.error('Error loading categories:', error);
-        this.categoriesWithVideosSubject.next([]);
+        console.error('Error loading courses:', error);
+        this.coursesSubject.next([]);
       }
     });
-  }
-
-  private loadVideosForCategories(categories: CategoryDto[]): void {
-    if (categories.length > 0) {
-      // Set first category as selected by default
-      this.selectedCategoryId = categories[0].id;
-
-      const categoryVideoRequests = categories.map((category: CategoryDto) =>
-        // FIX: Using the new 'getVideosByCourse' method
-        this.videoService.getVideosByCourse(category.id!).pipe( 
-          map((videos: VideoDto[]) => ({
-            category: category,
-            videos: videos.map((video) => this.initializeExtendedVideo(video))
-          })),
-          catchError((error) => {
-            console.error(`Error loading videos for course ${category.id}:`, error);
-            return of({
-              category: category,
-              videos: []
-            });
-          })
-        )
-      );
-
-      forkJoin(categoryVideoRequests).subscribe({
-        next: (categoriesWithVideos: CategoryWithVideos[]) => {
-          this.categoriesWithVideosSubject.next(categoriesWithVideos);
-          this.preloadThumbnails(categoriesWithVideos);
-          setTimeout(() => {
-            this.checkScroll();
-            this.initUnderlinePosition();
-          }, 100);
-        },
-        error: (error) => {
-          console.error('Error loading videos:', error);
-          this.categoriesWithVideosSubject.next([]);
-        }
-      });
-    } else {
-      this.categoriesWithVideosSubject.next([]);
-    }
-  }
-
-  // Initialize underline under the first tab
-  private initUnderlinePosition(): void {
-    if (!this.tabsContainer || !this.selectedCategoryId) return;
-    const buttons = Array.from(this.tabsContainer.nativeElement.querySelectorAll('button'));
-    const categoryName = this.getCategoryNameById(this.selectedCategoryId);
-    if (!categoryName) return;
-    const activeButton = buttons.find((btn) =>
-      btn.textContent?.trim()
-        .toLowerCase()
-        .includes(categoryName.toLowerCase())
-    );
-    if (activeButton) this.moveUnderline(activeButton as HTMLElement);
-  }
-
-  selectCategory(categoryId: number, index?: number, tabButton?: HTMLElement): void {
-    this.selectedCategoryId = categoryId;
-
-    if (tabButton) {
-      this.moveUnderline(tabButton);
-    }
-
-    // Reset scroll position and check scroll arrows
-    setTimeout(() => {
-      if (this.videosContainer) {
-        this.videosContainer.nativeElement.scrollLeft = 0;
-        this.checkScroll();
-      }
-    }, 0);
-  }
-
-  // Move underline smoothly
-  private moveUnderline(tabButton: HTMLElement): void {
-    const container = this.tabsContainer.nativeElement;
-    const containerRect = container.getBoundingClientRect();
-    const rect = tabButton.getBoundingClientRect();
-
-    this.activeUnderlineWidth = rect.width;
-    this.activeUnderlineLeft = rect.left - containerRect.left + container.scrollLeft;
-    this.cdr.detectChanges();
-  }
-
-  // Update underline when layout changes
-  private updateUnderlinePosition(): void {
-    if (!this.tabsContainer || !this.selectedCategoryId) return;
-    const buttons = Array.from(this.tabsContainer.nativeElement.querySelectorAll('button'));
-    const activeButton = buttons.find((btn) =>
-      btn.classList.contains('text-[#9b6012]')
-    );
-    if (activeButton) this.moveUnderline(activeButton as HTMLElement);
   }
 
   scrollLeft(): void {
@@ -202,98 +94,69 @@ export class VideoPreview implements OnInit {
     }
   }
 
-  private initializeExtendedVideo(video: VideoDto): ExtendedVideoDto {
-    const extendedVideo: ExtendedVideoDto = {
-      ...video,
+  private initializeExtendedCourse(course: CourseDto): ExtendedCourseDto {
+    const extendedCourse: ExtendedCourseDto = {
+      ...course,
       thumbnailFailed: false,
       thumbnailLoaded: false,
-      showPlaceholder: false
+      showPlaceholder: !course.thumbnailUrl
     };
 
-    if (this.videoService.isValidVideoId(video)) {
-      extendedVideo.thumbnailUrl = this.videoService.getVideoThumbnail(video);
-      extendedVideo.streamUrl = this.videoService.getVideoStreamUrl(video);
-    } else {
-      extendedVideo.showPlaceholder = true;
-    }
-
-    return extendedVideo;
+    return extendedCourse;
   }
 
-  private preloadThumbnails(categoriesWithVideos: CategoryWithVideos[]): void {
-    categoriesWithVideos.forEach((categoryData) => {
-      categoryData.videos.forEach((video) => {
-        if (video.id && !video.thumbnailFailed) {
-          this.videoService.getVideoThumbnailBlob(video.id).subscribe({
-            next: (blob) => {
-              if (blob) {
-                video.thumbnailLoaded = true;
-              } else {
-                this.handleThumbnailFailure(video);
-              }
-              this.cdr.detectChanges();
-            },
-            error: () => {
-              this.handleThumbnailFailure(video);
-              this.cdr.detectChanges();
-            }
-          });
-        }
-      });
+  private preloadThumbnails(courses: ExtendedCourseDto[]): void {
+    courses.forEach((course) => {
+      if (course.thumbnailUrl && !course.thumbnailFailed) {
+        // Preload thumbnail image
+        const img = new Image();
+        img.onload = () => {
+          course.thumbnailLoaded = true;
+          this.cdr.detectChanges();
+        };
+        img.onerror = () => {
+          this.handleThumbnailFailure(course);
+          this.cdr.detectChanges();
+        };
+        img.src = course.thumbnailUrl;
+      }
     });
   }
 
-  private handleThumbnailFailure(video: ExtendedVideoDto): void {
-    video.thumbnailFailed = true;
-    video.thumbnailLoaded = false;
-    video.showPlaceholder = true;
+  private handleThumbnailFailure(course: ExtendedCourseDto): void {
+    course.thumbnailFailed = true;
+    course.thumbnailLoaded = false;
+    course.showPlaceholder = true;
   }
 
-  getVideoThumbnail(video: ExtendedVideoDto): string {
-    return video.thumbnailUrl || this.videoService.getFallbackThumbnailUrl();
+  getVideoThumbnail(course: ExtendedCourseDto): string {
+    return course.thumbnailUrl || this.getFallbackImageUrl();
   }
 
-  onThumbnailError(_: Event, video: ExtendedVideoDto): void {
-    this.handleThumbnailFailure(video);
+  onThumbnailError(_: Event, course: ExtendedCourseDto): void {
+    this.handleThumbnailFailure(course);
   }
 
-  trackByVideoId(_: number, video: VideoDto): number | undefined {
-    return video.id;
-  }
-
-  trackByCategoryId(_: number, categoryData: CategoryWithVideos): number | undefined {
-    return categoryData.category.id;
+  trackByVideoId(_: number, course: CourseDto): number | undefined {
+    return course.id;
   }
 
   openVideo(id: number | undefined): void {
     if (id) {
-      this.router.navigate(['/video', id]);
+      // Navigate to course detail page
+      this.router.navigate(['/dashboard/courses', id]);
     }
   }
 
-  viewAllVideos(categoryId: number | undefined): void {
-    if (categoryId) {
-      this.router.navigate(['/category', categoryId]);
-    }
+  shouldShowThumbnail(course: ExtendedCourseDto): boolean {
+    return !!course.thumbnailUrl && !course.thumbnailFailed && !course.showPlaceholder;
   }
 
-  shouldShowThumbnail(video: ExtendedVideoDto): boolean {
-    return !!video.thumbnailUrl && !video.thumbnailFailed && !video.showPlaceholder;
-  }
-
-  shouldShowPlaceholder(video: ExtendedVideoDto): boolean {
-    return !!video.showPlaceholder || !video.thumbnailUrl;
+  shouldShowPlaceholder(course: ExtendedCourseDto): boolean {
+    return !!course.showPlaceholder || !course.thumbnailUrl;
   }
 
   getFallbackImageUrl(): string {
-    return this.videoService.getFallbackThumbnailUrl();
-  }
-
-  // Helper for category name lookup
-  private getCategoryNameById(categoryId: number | undefined): string | null {
-    if (!categoryId) return null;
-    const categories = this.categoriesWithVideosSubject.value;
-    const found = categories.find((c) => c.category.id === categoryId);
-    return found ? found.category.name : null;
+    return 'assets/images/course-placeholder.png';
   }
 }

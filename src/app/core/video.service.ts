@@ -17,14 +17,15 @@ export interface CourseDto {
 export interface VideoDto {
   id?: number;
   title?: string;
-  description: string;
+  description?: string;
   fileName?: string;
   filePath?: string;
   thumbnailPath?: string;
-  fileType: string;
+  fileType?: string;
   fileSize?: number;
-  duration?: number; // Duration in seconds
+  durationSeconds?: number;
   course?: CourseDto;
+  orderIndex?: number;
 }
 
 /**
@@ -62,6 +63,20 @@ export class VideoService {
           return res._embedded;
         }
         throw new Error(res.message || 'Video upload failed');
+      })
+    );
+  }
+
+  /**
+   * Update an existing video's metadata.
+   */
+  updateVideo(id: number, video: VideoDto): Observable<VideoDto> {
+    return this.http.put<GenericResponse<VideoDto>>(`${this.apiUrl}/${id}`, video).pipe(
+      map(res => {
+        if (res.status === 'SUCCESS' && res._embedded) {
+          return res._embedded;
+        }
+        throw new Error(res.message || 'Video update failed');
       })
     );
   }
@@ -177,6 +192,19 @@ export class VideoService {
       })
     );
   }
+
+  /**
+   * Reorder videos within a course.
+   */
+  reorderVideos(courseId: number, videoIds: number[]): Observable<VideoDto[]> {
+    return this.http.put<GenericResponse<VideoDto[]>>(
+      `${this.apiUrl}/course/${courseId}/reorder`,
+      videoIds
+    ).pipe(
+      map(res => res._embedded || [])
+    );
+  }
+
 
   /**
    * Stream a video file with optional range support.

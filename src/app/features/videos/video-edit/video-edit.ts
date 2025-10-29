@@ -12,24 +12,25 @@ import { VideoDto, VideoService } from '../../../core/video.service';
   styleUrl: './video-edit.scss'
 })
 export class VideoEdit implements OnInit {
-  videos: VideoDto[] = [];
-  currentVideo: VideoDto | null = null;
   selectedFile: File | null = null;
 
-  // Course-specific properties
+  // Edit mode properties
+  isEditingVideo = false;
+  editingVideo: VideoDto | null = null;
+  editingVideoId: number | null = null;
+
+  // Course-specific properties (REQUIRED)
   courseId: number | null = null;
   courseName: string = '';
-  returnToCourse = false;
 
   // Form data
   uploadForm = {
     title: '',
     description: '',
-    courseId: 1
+    courseId: 0
   };
 
   // View states
-  currentView: 'list' | 'upload' = 'list';
   isLoading = false;
   errorMessage = '';
   successMessage = '';
@@ -42,51 +43,87 @@ export class VideoEdit implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Check route params for video ID (for edit mode)
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.editingVideoId = parseInt(params['id'], 10);
+        this.isEditingVideo = true;
+      }
+    });
+
+    // Check query parameters - courseId is REQUIRED
     this.route.queryParams.subscribe(params => {
-      if (params['courseId']) {
-        this.courseId = parseInt(params['courseId'], 10);
-        this.uploadForm.courseId = this.courseId;
-        this.returnToCourse = true;
-
-        if (params['courseName']) {
-          this.courseName = params['courseName'];
-        }
+      if (!params['courseId']) {
+        this.errorMessage = 'Course ID is required. Redirecting...';
+        setTimeout(() => {
+          this.router.navigate(['/dashboard/courses']);
+        }, 2000);
+        return;
       }
 
-      this.currentView = params['mode'] === 'upload' ? 'upload' : 'list';
-    });
+      this.courseId = parseInt(params['courseId'], 10);
+      this.uploadForm.courseId = this.courseId;
 
-    this.loadVideos();
-  }
-
-  loadVideos(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    this.videoService.getAllVideos().subscribe({
-      next: (videos) => {
-        this.videos = videos;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.errorMessage = 'Failed to load videos: ' + error.message;
-        this.isLoading = false;
+      if (params['courseName']) {
+        this.courseName = params['courseName'];
       }
     });
-  }
 
-  switchToView(view: 'list' | 'upload'): void {
-    this.currentView = view;
-    this.errorMessage = '';
-    this.successMessage = '';
-    if (view === 'list') {
-      this.resetUploadForm();
+    // Load video for editing if in edit mode
+    if (this.isEditingVideo && this.editingVideoId) {
+      this.loadVideoForEdit(this.editingVideoId);
     }
   }
 
-  playVideo(video: VideoDto): void {
-    this.currentVideo = video;
-    this.videoService.setCurrentVideo(video);
+  loadVideoForEdit(videoId: number): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.videoService.getVideoById(videoId).subscribe({
+      next: (video) => {
+        this.editingVideo = { ...video }; // Create a copy to edit
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to load video: ' + error.message;
+        this.isLoading = false;
+      }
+    });
+  }
+
+  saveVideoChanges(): void {
+    if (!this.editingVideo || !this.editingVideoId) {
+      this.errorMessage = 'No video to save';
+      return;
+    }
+
+    // Check if title and description exist and are not empty after trimming
+    const title = this.editingVideo.title?.trim() || '';
+    const description = this.editingVideo.description?.trim() || '';
+
+    if (!title || !description) {
+      this.errorMessage = 'Please fill in all required fields';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.videoService.updateVideo(this.editingVideoId, this.editingVideo).subscribe({
+      next: (updatedVideo: VideoDto) => {
+        this.successMessage = 'Video updated successfully!';
+        this.isLoading = false;
+
+        setTimeout(() => {
+          this.backToCourse();
+        }, 1500);
+      },
+      error: (error: Error) => {
+        this.errorMessage = 'Failed to update video: ' + error.message;
+        this.isLoading = false;
+      }
+    });
   }
 
   onFileSelected(event: any): void {
@@ -125,13 +162,7 @@ export class VideoEdit implements OnInit {
           this.isLoading = false;
 
           setTimeout(() => {
-            if (this.returnToCourse && this.courseId) {
-              this.router.navigate(['/dashboard/courses', this.courseId]);
-            } else {
-              this.loadVideos();
-              this.switchToView('list');
-            }
-            this.uploadProgress = 0;
+            this.backToCourse();
           }, 1500);
         }
       },
@@ -143,32 +174,11 @@ export class VideoEdit implements OnInit {
     });
   }
 
-  deleteVideo(id: number): void {
-    if (!confirm('Are you sure you want to delete this video?')) return;
-
-    this.isLoading = true;
-    this.videoService.deleteVideoById(id).subscribe({
-      next: () => {
-        this.successMessage = 'Video deleted successfully!';
-        this.loadVideos();
-        this.isLoading = false;
-
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
-      },
-      error: (error) => {
-        this.errorMessage = 'Delete failed: ' + error.message;
-        this.isLoading = false;
-      }
-    });
-  }
-
-  cancelAndReturn(): void {
-    if (this.returnToCourse && this.courseId) {
+  backToCourse(): void {
+    if (this.courseId) {
       this.router.navigate(['/dashboard/courses', this.courseId]);
     } else {
-      this.switchToView('list');
+      this.router.navigate(['/dashboard/courses']);
     }
   }
 
@@ -176,26 +186,29 @@ export class VideoEdit implements OnInit {
     return this.videoService.formatFileSize(bytes);
   }
 
-  getVideoThumbnail(video: VideoDto): string {
-    return this.videoService.getVideoThumbnail(video);
+  formatDuration(seconds: number): string {
+    if (!seconds || seconds === 0) return 'N/A';
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    const parts: string[] = [];
+
+    if (hours > 0) {
+      parts.push(`${hours}h`);
+    }
+    if (minutes > 0) {
+      parts.push(`${minutes}m`);
+    }
+    if (secs > 0 || parts.length === 0) {
+      parts.push(`${secs}s`);
+    }
+
+    return parts.join(' ');
   }
 
   getVideoStreamUrl(video: VideoDto): string {
     return this.videoService.getVideoStreamUrl(video);
-  }
-
-  private resetUploadForm(): void {
-    this.uploadForm = {
-      title: '',
-      description: '',
-      courseId: this.courseId || 1
-    };
-    this.selectedFile = null;
-    this.uploadProgress = 0;
-
-    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
   }
 }

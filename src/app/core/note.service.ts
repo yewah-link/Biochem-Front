@@ -1,27 +1,24 @@
-// note.service.ts
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, map } from 'rxjs';
+// ========================================
+// FILE 1: note.service.ts (COMPLETE)
+// ========================================
 
-export interface CategoryDto {
-  id: number;
-  name?: string;
-  description?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, BehaviorSubject, map } from 'rxjs';
 
 export interface NotesDto {
   id?: number;
   title: string;
   content: string;
-  category: CategoryDto;
   filePath?: string;
   fileType?: string;
   fileName?: string;
   fileSize?: number;
+  orderIndex?: number;
   createdAt?: Date;
   updatedAt?: Date;
+  courseId: number;
+  courseTitle?: string;
 }
 
 interface GenericResponseV2<T> {
@@ -41,11 +38,21 @@ export class NoteService {
 
   // ------------------- CREATE -------------------
 
-  createNote(note: NotesDto, selectedFile: File | null = null): Observable<NotesDto> {
-    if (!note.category || !note.category.id) {
-      throw new Error('Category is required');
+  createNote(note: NotesDto): Observable<NotesDto> {
+    if (!note.courseId) {
+      throw new Error('Course ID is required');
     }
-    return this.http.post<GenericResponseV2<NotesDto>>(this.apiUrl, note).pipe(
+
+    const formData = new FormData();
+    formData.append('title', note.title);
+    formData.append('content', note.content);
+    formData.append('courseId', note.courseId.toString());
+
+    if (note.orderIndex != null) {
+      formData.append('orderIndex', note.orderIndex.toString());
+    }
+
+    return this.http.post<GenericResponseV2<NotesDto>>(this.apiUrl, formData).pipe(
       map(res => {
         if (res.status === 'SUCCESS' && res._embedded) {
           this.currentNoteSubject.next(res._embedded);
@@ -57,17 +64,21 @@ export class NoteService {
   }
 
   createNoteWithDocument(note: NotesDto, documentFile?: File): Observable<NotesDto> {
-    if (!note.category || !note.category.id) {
-      throw new Error('Category is required');
+    if (!note.courseId) {
+      throw new Error('Course ID is required');
     }
 
     const formData = new FormData();
     formData.append('title', note.title);
     formData.append('content', note.content);
-    formData.append('category.id', note.category.id.toString());
+    formData.append('courseId', note.courseId.toString());
+
+    if (note.orderIndex != null) {
+      formData.append('orderIndex', note.orderIndex.toString());
+    }
 
     if (documentFile) {
-      formData.append('documentFile', documentFile);
+      formData.append('file', documentFile);
     }
 
     return this.http.post<GenericResponseV2<NotesDto>>(`${this.apiUrl}/with-document`, formData).pipe(
@@ -105,23 +116,32 @@ export class NoteService {
     );
   }
 
-  getNotesByCategory(categoryId: number): Observable<NotesDto[]> {
-    return this.http.get<GenericResponseV2<NotesDto[]>>(`${this.apiUrl}/category/${categoryId}`).pipe(
+  getNotesByCourse(courseId: number): Observable<NotesDto[]> {
+    return this.http.get<GenericResponseV2<NotesDto[]>>(`${this.apiUrl}/course/${courseId}`).pipe(
       map(res => {
         if (res.status === 'SUCCESS') return res._embedded || [];
         if (res.status === 'ERROR' && res.message.includes('No notes found')) return [];
-        throw new Error(res.message || 'Failed to fetch notes by category');
+        throw new Error(res.message || 'Failed to fetch notes by course');
       })
     );
   }
 
   // ------------------- UPDATE -------------------
 
-  updateNote(id: number, note: NotesDto, selectedFile: File | null = null): Observable<NotesDto> {
-    if (!note.category || !note.category.id) {
-      throw new Error('Category is required');
+  updateNote(id: number, note: Partial<NotesDto>): Observable<NotesDto> {
+    const formData = new FormData();
+
+    if (note.title) {
+      formData.append('title', note.title);
     }
-    return this.http.put<GenericResponseV2<NotesDto>>(`${this.apiUrl}/${id}`, note).pipe(
+    if (note.content) {
+      formData.append('content', note.content);
+    }
+    if (note.orderIndex != null) {
+      formData.append('orderIndex', note.orderIndex.toString());
+    }
+
+    return this.http.put<GenericResponseV2<NotesDto>>(`${this.apiUrl}/${id}`, formData).pipe(
       map(res => {
         if (res.status === 'SUCCESS' && res._embedded) {
           this.currentNoteSubject.next(res._embedded);
@@ -184,8 +204,8 @@ export class NoteService {
 
   // ------------------- HELPER -------------------
 
-  createNoteWithCategoryId(title: string, content: string, categoryId: number, documentFile?: File): Observable<NotesDto> {
-    const note: NotesDto = { title, content, category: { id: categoryId } };
+  createNoteWithCourseId(title: string, content: string, courseId: number, documentFile?: File, orderIndex?: number): Observable<NotesDto> {
+    const note: NotesDto = { title, content, courseId, orderIndex };
     return documentFile ? this.createNoteWithDocument(note, documentFile) : this.createNote(note);
   }
 
@@ -222,6 +242,10 @@ export class NoteService {
       case 'mp3':
       case 'wav': return 'audiotrack';
       case 'txt': return 'notes';
+      case 'rtf': return 'text_format';
+      case 'odt':
+      case 'ods':
+      case 'odp': return 'article';
       default: return 'insert_drive_file';
     }
   }

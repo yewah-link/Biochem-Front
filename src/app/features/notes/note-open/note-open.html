@@ -1,161 +1,193 @@
-<div class="note-view-container">
+<div class="max-w-5xl mx-auto p-6">
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="isLoading">
-    <mat-spinner diameter="50"></mat-spinner>
-    <p>Loading note...</p>
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-700 mb-4"></div>
+    <p class="text-gray-600">Loading note...</p>
   </div>
 
   <!-- Error State -->
-  <div class="error-state" *ngIf="!isLoading && !note">
-    <mat-icon class="error-icon">error_outline</mat-icon>
-    <h3>Note not found</h3>
-    <p>The note you're looking for doesn't exist or may have been deleted.</p>
-    <button mat-raised-button color="primary" (click)="onBackToList()">
-      <mat-icon>arrow_back</mat-icon>
+  <div *ngIf="!isLoading && !note" class="flex flex-col items-center justify-center py-12">
+    <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <h3 class="text-xl font-semibold text-gray-900 mb-2">Note not found</h3>
+    <p class="text-gray-600 mb-6">The note you're looking for doesn't exist or may have been deleted.</p>
+    <button
+      (click)="onBackToList()"
+      class="px-6 py-2 bg-amber-700 text-white rounded-md font-medium hover:bg-amber-800 transition flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
       Back to Notes
     </button>
   </div>
 
   <!-- Note Content -->
-  <div class="note-content" *ngIf="!isLoading && note">
+  <div *ngIf="!isLoading && note" class="bg-white rounded-lg shadow-lg">
     <!-- Header -->
-    <div class="note-header">
-      <div class="header-left">
-        <button mat-icon-button
-                matTooltip="Back to notes"
-                (click)="onBackToList()">
-          <mat-icon>arrow_back</mat-icon>
-        </button>
+    <div class="border-b border-gray-200 p-6">
+      <div class="flex justify-between items-start">
+        <div class="flex items-start gap-4 flex-1">
+          <button
+            (click)="onBackToList()"
+            class="p-2 hover:bg-gray-100 rounded-lg transition"
+            title="Back to notes">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+          </button>
 
-        <div class="title-section">
-          <h1 class="note-title">{{ note.title }}</h1>
-          <mat-chip class="category-chip" *ngIf="note.category">
-            <mat-icon matChipAvatar>folder</mat-icon>
-            {{ note.category.name }}
-          </mat-chip>
+          <div class="flex-1">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ note.title }}</h1>
+            <!-- Removed category chip as notes don't have categories -->
+            <div *ngIf="note.courseTitle" class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              </svg>
+              {{ note.courseTitle }}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="header-actions">
-        <button mat-icon-button
-                matTooltip="Edit note"
-                (click)="onEditNote()">
-          <mat-icon>edit</mat-icon>
-        </button>
-
-        <button mat-icon-button
-                matTooltip="Download attachment"
-                *ngIf="note.fileName"
-                (click)="onDownloadDocument()">
-          <mat-icon>download</mat-icon>
-        </button>
-
-        <button mat-icon-button
-                [matMenuTriggerFor]="noteMenu"
-                matTooltip="More options">
-          <mat-icon>more_vert</mat-icon>
-        </button>
-
-        <mat-menu #noteMenu="matMenu">
-          <button mat-menu-item (click)="onEditNote()">
-            <mat-icon>edit</mat-icon>
-            <span>Edit Note</span>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="onEditNote()"
+            class="p-2 hover:bg-gray-100 rounded-lg transition"
+            title="Edit note">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
           </button>
-          <button mat-menu-item
-                  *ngIf="note.fileName"
-                  (click)="onDownloadDocument()">
-            <mat-icon>download</mat-icon>
-            <span>Download Attachment</span>
+
+          <button
+            *ngIf="note.fileName"
+            (click)="onDownloadDocument()"
+            class="p-2 hover:bg-gray-100 rounded-lg transition"
+            title="Download attachment">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
           </button>
-          <mat-divider></mat-divider>
-          <button mat-menu-item
-                  class="delete-action"
-                  (click)="onDeleteNote()">
-            <mat-icon>delete</mat-icon>
-            <span>Delete Note</span>
+
+          <button
+            (click)="onDeleteNote()"
+            class="p-2 hover:bg-red-50 rounded-lg transition"
+            title="Delete note">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
           </button>
-        </mat-menu>
+        </div>
       </div>
     </div>
 
     <!-- Meta Information -->
-    <div class="note-meta">
-      <div class="meta-item">
-        <mat-icon class="meta-icon">schedule</mat-icon>
-        <span class="meta-label">Created:</span>
-        <span class="meta-value">{{ formatDate(note.createdAt) }}</span>
-      </div>
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+      <div class="flex flex-wrap gap-6">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-sm font-semibold text-gray-600">Created:</span>
+          <span class="text-sm text-gray-900">{{ formatDate(note.createdAt) }}</span>
+        </div>
 
-      <div class="meta-item" *ngIf="note.updatedAt && note.updatedAt !== note.createdAt">
-        <mat-icon class="meta-icon">update</mat-icon>
-        <span class="meta-label">Updated:</span>
-        <span class="meta-value">{{ formatDate(note.updatedAt) }}</span>
-      </div>
+        <div *ngIf="note.updatedAt && note.updatedAt !== note.createdAt" class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span class="text-sm font-semibold text-gray-600">Updated:</span>
+          <span class="text-sm text-gray-900">{{ formatDate(note.updatedAt) }}</span>
+        </div>
 
-      <div class="meta-item" *ngIf="note.fileName">
-        <mat-icon class="meta-icon">{{ getFileIcon(note.fileName) }}</mat-icon>
-        <span class="meta-label">Attachment:</span>
-        <span class="meta-value file-link" (click)="onDownloadDocument()">
-          {{ note.fileName }}
-          <small *ngIf="note.fileSize">({{ formatFileSize(note.fileSize) }})</small>
-        </span>
+        <div *ngIf="note.fileName" class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+          </svg>
+          <span class="text-sm font-semibold text-gray-600">Attachment:</span>
+          <span
+            (click)="onDownloadDocument()"
+            class="text-sm text-amber-700 hover:text-amber-800 cursor-pointer underline">
+            {{ note.fileName }}
+            <span *ngIf="note.fileSize" class="text-gray-500 font-normal ml-1">({{ formatFileSize(note.fileSize) }})</span>
+          </span>
+        </div>
       </div>
     </div>
-
-    <mat-divider class="content-divider"></mat-divider>
 
     <!-- Note Body -->
-    <div class="note-body">
-      <div class="content-text" [innerHTML]="getFormattedContent()"></div>
+    <div class="px-6 py-8">
+      <div class="prose max-w-none text-gray-900 whitespace-pre-wrap leading-relaxed" [innerHTML]="getFormattedContent()"></div>
     </div>
 
-    <!-- Attachment Preview (if applicable) -->
-    <div class="attachment-section" *ngIf="note.fileName">
-      <mat-card class="attachment-card">
-        <mat-card-header>
-          <mat-icon mat-card-avatar>{{ getFileIcon(note.fileName) }}</mat-icon>
-          <mat-card-title>{{ note.fileName }}</mat-card-title>
-          <mat-card-subtitle *ngIf="note.fileSize">
-            {{ formatFileSize(note.fileSize) }}
-          </mat-card-subtitle>
-        </mat-card-header>
-
-        <mat-card-actions align="end">
-          <button mat-button (click)="onDownloadDocument()">
-            <mat-icon>download</mat-icon>
+    <!-- Attachment Preview -->
+    <div *ngIf="note.fileName" class="px-6 pb-6">
+      <div class="border border-gray-200 rounded-lg p-4 max-w-md bg-gray-50">
+        <div class="flex items-start gap-4">
+          <div class="p-3 bg-amber-100 rounded-lg">
+            <svg class="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-semibold text-gray-900 truncate">{{ note.fileName }}</h4>
+            <p *ngIf="note.fileSize" class="text-sm text-gray-500">{{ formatFileSize(note.fileSize) }}</p>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button
+            (click)="onDownloadDocument()"
+            class="flex-1 px-4 py-2 bg-amber-700 text-white text-sm rounded-md hover:bg-amber-800 transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
             Download
           </button>
-          <button mat-button *ngIf="isImageFile(note.fileName)" (click)="onPreviewAttachment()">
-            <mat-icon>visibility</mat-icon>
+          <button
+            *ngIf="isImageFile(note.fileName)"
+            (click)="onPreviewAttachment()"
+            class="flex-1 px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700 transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
             Preview
           </button>
-        </mat-card-actions>
-      </mat-card>
+        </div>
+      </div>
     </div>
 
     <!-- Action Bar -->
-    <div class="action-bar">
-      <div class="action-left">
-        <button mat-stroked-button (click)="onBackToList()">
-          <mat-icon>arrow_back</mat-icon>
+    <div class="border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-lg">
+      <div class="flex justify-between items-center">
+        <button
+          (click)="onBackToList()"
+          class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
           Back to Notes
         </button>
-      </div>
 
-      <div class="action-right">
-        <button mat-button
-                color="warn"
-                (click)="onDeleteNote()">
-          <mat-icon>delete</mat-icon>
-          Delete
-        </button>
+        <div class="flex gap-2">
+          <button
+            (click)="onDeleteNote()"
+            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Delete
+          </button>
 
-        <button mat-raised-button
-                color="primary"
-                (click)="onEditNote()">
-          <mat-icon>edit</mat-icon>
-          Edit Note
-        </button>
+          <button
+            (click)="onEditNote()"
+            class="px-6 py-2 bg-amber-700 text-white rounded-md hover:bg-amber-800 transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Edit Note
+          </button>
+        </div>
       </div>
     </div>
   </div>

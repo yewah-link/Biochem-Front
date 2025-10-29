@@ -17,13 +17,16 @@ import { ExamTake } from './features/exams/exam-take/exam-take';
 import { ExamEdit } from './features/exams/exam-edit/exam-edit';
 import { StudentDashboard } from './features/student/student-dashboard/student-dashboard';
 
-// Import your new student-learning components
+// Import student-learning components
 import { Achievements } from './features/student/achievements/achievements';
 import { ContinueLearning } from './features/student/continue-learning/continue-learning';
 import { MyCourses } from './features/student/my-courses/my-courses';
 import { ProgressBar } from './features/student/progress-bar/progress-bar';
+
+// Import course components
 import { CourseDetail } from './features/admin/courses/course-detail/course-detail';
 import { CourseList } from './features/admin/courses/course-list/course-list';
+import { CourseForm } from './features/admin/courses/course-form/course-form';
 
 export const routes: Routes = [
   { path: '', component: Loader },
@@ -32,36 +35,39 @@ export const routes: Routes = [
   { path: 'about-us', component: AboutUs },
 
   // Admin Dashboard
-  {
-    path: 'dashboard',
-    component: Dashboard,
-    canActivate: [authGuard, adminGuard],
-    children: [
+{
+  path: 'dashboard',
+  component: Dashboard,
+  canActivate: [authGuard, adminGuard],
+  children: [
+    // Categories management routes
+    { path: '', redirectTo: 'categories', pathMatch: 'full' },
+    { path: 'categories', component: CategoryList },
+    { path: 'categories/add', component: CategoryEdit },
+    { path: 'categories/edit/:id', component: CategoryEdit },
 
-      // Categories management routes
-      { path: '', redirectTo: 'categories', pathMatch: 'full' },
-      { path: 'categories', component: CategoryList },
-      { path: 'categories/add', component: CategoryEdit },
-      { path: 'categories/edit/:id', component: CategoryEdit },
+    // Courses
+    { path: 'courses', component: CourseList },
+    { path: 'courses/create', component: CourseForm },
+    { path: 'courses/:id', component: CourseDetail },
 
-      // ⭐ COURSES (NEW - Main feature)
-      { path: 'courses', component: CourseList },
-      { path: 'courses/create', component: CourseDetail },
-      { path: 'courses/:id', component: CourseDetail }, 
+    // Video routes - Must be accessed with courseId query param
+    { path: 'videos', component: VideoEdit },  
+    { path: 'videos/:id', component: VideoEdit },  
 
+    // ✅ Note routes - 
+    { path: 'notes', component: NoteEdit },  
+    { path: 'notes/:id', component: NoteEdit },  
+    { path: 'notes-list', component: NoteList },  
 
-      { path: 'videos', component: VideoEdit },
-      { path: 'videos/edit/:id', component: VideoEdit },
-      { path: 'notes', component: NoteList },
-      { path: 'notes/add', component: NoteEdit },
-      { path: 'notes/edit/:id', component: NoteEdit },
-      { path: 'exams', component: ExamList },
-      { path: 'exams/add', component: ExamEdit },
-      { path: 'exams/edit/:id', component: ExamEdit },
-      { path: 'exams/take/:id', component: ExamTake },
-      { path: 'exams/result/:id', component: ExamResult }
-    ]
-  },
+    // Exams
+    { path: 'exams', component: ExamList },
+    { path: 'exams/add', component: ExamEdit },
+    { path: 'exams/edit/:id', component: ExamEdit },
+    { path: 'exams/take/:id', component: ExamTake },
+    { path: 'exams/result/:id', component: ExamResult }
+  ]
+},
 
   // Student Dashboard
   {
