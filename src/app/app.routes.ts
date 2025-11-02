@@ -22,6 +22,7 @@ import { Achievements } from './features/student/achievements/achievements';
 import { ContinueLearning } from './features/student/continue-learning/continue-learning';
 import { MyCourses } from './features/student/my-courses/my-courses';
 import { ProgressBar } from './features/student/progress-bar/progress-bar';
+import { CourseEnrollment } from './features/student/course-enrollment/course-enrollment';
 
 // Import course components
 import { CourseDetail } from './features/admin/courses/course-detail/course-detail';
@@ -35,39 +36,39 @@ export const routes: Routes = [
   { path: 'about-us', component: AboutUs },
 
   // Admin Dashboard
-{
-  path: 'dashboard',
-  component: Dashboard,
-  canActivate: [authGuard, adminGuard],
-  children: [
-    // Categories management routes
-    { path: '', redirectTo: 'categories', pathMatch: 'full' },
-    { path: 'categories', component: CategoryList },
-    { path: 'categories/add', component: CategoryEdit },
-    { path: 'categories/edit/:id', component: CategoryEdit },
+  {
+    path: 'dashboard',
+    component: Dashboard,
+    canActivate: [authGuard, adminGuard],
+    children: [
+      // Categories management routes
+      { path: '', redirectTo: 'categories', pathMatch: 'full' },
+      { path: 'categories', component: CategoryList },
+      { path: 'categories/add', component: CategoryEdit },
+      { path: 'categories/edit/:id', component: CategoryEdit },
 
-    // Courses
-    { path: 'courses', component: CourseList },
-    { path: 'courses/create', component: CourseForm },
-    { path: 'courses/:id', component: CourseDetail },
+      // Courses
+      { path: 'courses', component: CourseList },
+      { path: 'courses/create', component: CourseForm },
+      { path: 'courses/:id', component: CourseDetail },
 
-    // Video routes - Must be accessed with courseId query param
-    { path: 'videos', component: VideoEdit },  
-    { path: 'videos/:id', component: VideoEdit },  
+      // Video routes - Must be accessed with courseId query param
+      { path: 'videos', component: VideoEdit },
+      { path: 'videos/:id', component: VideoEdit },
 
-    // ✅ Note routes - 
-    { path: 'notes', component: NoteEdit },  
-    { path: 'notes/:id', component: NoteEdit },  
-    { path: 'notes-list', component: NoteList },  
+      // Note routes
+      { path: 'notes', component: NoteEdit },
+      { path: 'notes/:id', component: NoteEdit },
+      { path: 'notes-list', component: NoteList },
 
-    // Exams
-    { path: 'exams', component: ExamList },
-    { path: 'exams/add', component: ExamEdit },
-    { path: 'exams/edit/:id', component: ExamEdit },
-    { path: 'exams/take/:id', component: ExamTake },
-    { path: 'exams/result/:id', component: ExamResult }
-  ]
-},
+      // Exams
+      { path: 'exams', component: ExamList },
+      { path: 'exams/add', component: ExamEdit },
+      { path: 'exams/edit/:id', component: ExamEdit },
+      { path: 'exams/take/:id', component: ExamTake },
+      { path: 'exams/result/:id', component: ExamResult }
+    ]
+  },
 
   // Student Dashboard
   {
@@ -82,6 +83,9 @@ export const routes: Routes = [
       { path: 'continue-learning', component: ContinueLearning },
       { path: 'achievements', component: Achievements },
       { path: 'progress', component: ProgressBar },
+
+      // Course enrollment with courseId parameter
+      { path: 'course/:id/enroll', component: CourseEnrollment },
 
       // Existing student routes
       { path: 'topics', component: NoteList },

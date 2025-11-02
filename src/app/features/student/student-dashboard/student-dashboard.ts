@@ -1,12 +1,11 @@
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { CourseDto, CourseService } from '../../../core/course.service';
-import { VideoDto, VideoService } from '../../../core/video.service';
-import { NoteService, NotesDto } from '../../../core/note.service';
+import { CourseDto, CourseService, CategoryDto } from '../../../core/course.service';
 import { AuthService, UserDto } from '../../../core/auth/auth.service';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
+import { MyCourses } from '../my-courses/my-courses';
+import { Footer } from '../../../shared/footer/footer';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -14,7 +13,9 @@ import { Subscription } from 'rxjs';
   imports: [
     CommonModule,
     RouterLink,
-    RouterLinkActive
+    RouterLinkActive,
+    MyCourses,
+    Footer
   ],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss'
@@ -29,24 +30,15 @@ export class StudentDashboard implements OnInit, OnDestroy {
   currentUser: UserDto | null = null;
   private userSubscription?: Subscription;
 
-  @ViewChild('categoryTrack') categoryTrack!: ElementRef;
-
-  // ✅ Keep both old and new names for template compatibility
-  categories: CourseDto[] = [];
   courses: CourseDto[] = [];
-  videos: VideoDto[] = [];
-  notes: NotesDto[] = [];
+  filteredCourses: CourseDto[] = [];
+  categories: CategoryDto[] = [];
   selectedCategoryId: number | null = null;
-  selectedCourseId: number | null = null;
-  selectedVideo: VideoDto | null = null;
 
   constructor(
     public courseService: CourseService,
-    public videoService: VideoService,
-    private noteService: NoteService,
     private authService: AuthService,
-    private router: Router,
-    private sanitizer: DomSanitizer
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -101,143 +93,65 @@ export class StudentDashboard implements OnInit, OnDestroy {
   }
 
   loadCourses(): void {
-    this.courseService.getAllCourses().subscribe({
-      next: (response: any) => {
-        if (response.status === 'SUCCESS') {
-          this.courses = response._embedded || [];
-          this.categories = this.courses; // ✅ Keep both for template compatibility
-          if (this.courses.length > 0) {
-            this.selectCourse(this.courses[0]);
-          }
-        }
+    this.courseService.getPublishedCourses().subscribe({
+      next: (coursesData: CourseDto[]) => {
+        this.courses = coursesData;
+        this.filteredCourses = coursesData;
+        this.extractCategories();
       },
       error: (err: any) => console.error('Failed to load courses:', err)
     });
   }
 
-  // ✅ Keep both methods for template compatibility
-  selectCategory(category: CourseDto): void {
-    this.selectCourse(category);
-  }
+  extractCategories(): void {
+    const categoryMap = new Map<number, CategoryDto>();
 
-  selectCourse(course: CourseDto): void {
-    if (!course.id) return;
-
-    this.selectedCourseId = course.id;
-    this.selectedCategoryId = course.id; // ✅ Keep both for template compatibility
-
-    this.videoService.getVideosByCourse(course.id).subscribe({
-      next: (data: VideoDto[]) => {
-        this.videos = data;
-        this.selectedVideo = null;
-      },
-      error: (err: any) => console.error('Failed to load videos by course:', err)
+    this.courses.forEach(course => {
+      if (course.category && course.category.id) {
+        categoryMap.set(course.category.id, course.category);
+      }
     });
 
-    this.noteService.getNotesByCourse(course.id).subscribe({
-      next: (data: NotesDto[]) => {
-        this.notes = data;
-      },
-      error: (err: any) => console.error('Failed to load notes by course:', err)
-    });
+    this.categories = Array.from(categoryMap.values());
   }
 
-  selectVideo(video: VideoDto): void {
-    this.selectedVideo = video;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  filterByCategory(categoryId: number | null): void {
+    this.selectedCategoryId = categoryId;
 
-  getVideoStreamUrl(video: VideoDto): string {
-    return this.videoService.getVideoStreamUrl(video);
-  }
-
-  getVideoThumbnail(video: VideoDto): string {
-    return this.videoService.getVideoThumbnail(video);
-  }
-
-  // ✅ Keep both methods for template compatibility
-  scrollCategories(direction: 'left' | 'right'): void {
-    this.scrollCourses(direction);
-  }
-
-  scrollCourses(direction: 'left' | 'right'): void {
-    const element = this.categoryTrack.nativeElement;
-    const scrollAmount = 150;
-    element.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth'
-    });
-  }
-
-  getRecommendedVideos(): VideoDto[] {
-    return this.videos.filter(video => video.id !== this.selectedVideo?.id);
-  }
-
-  // ✅ Keep for template compatibility
-  getFilteredNotes(): NotesDto[] {
-    return this.notes;
-  }
-
-  // ✅ Keep both methods for template compatibility
-  getCategoryName(category?: any): string {
-    return this.getCourseName(category);
-  }
-
-  getCourseName(courseIdOrObj?: number | any): string {
-    if (!courseIdOrObj) return 'Uncategorized';
-
-    let courseId: number | undefined;
-
-    if (typeof courseIdOrObj === 'number') {
-      courseId = courseIdOrObj;
-    } else if (typeof courseIdOrObj === 'object' && courseIdOrObj.id) {
-      courseId = courseIdOrObj.id;
+    if (categoryId === null) {
+      // Show all courses
+      this.filteredCourses = this.courses;
+    } else {
+      // Filter by selected category
+      this.filteredCourses = this.courses.filter(
+        course => course.category?.id === categoryId
+      );
     }
-
-    if (!courseId) return 'Unknown';
-
-    const course = this.courses.find(c => c.id === courseId);
-    return course?.title || 'Unknown';
   }
 
-  truncateText(text: string, length: number = 100): string {
-    return text.length > length ? text.substring(0, length) + '...' : text;
+  isCategorySelected(categoryId: number | null): boolean {
+    return this.selectedCategoryId === categoryId;
   }
 
-  getFormattedContent(content?: string): SafeHtml {
-    if (!content) return '';
-    const formatted = content.replace(/\n/g, '<br>');
-    return this.sanitizer.bypassSecurityTrustHtml(formatted);
+  enrollInCourse(course: CourseDto): void {
+    if (course.id) {
+      this.router.navigate(['/student/course', course.id, 'enroll']);
+    }
   }
 
-  hasDocument(note: NotesDto): boolean {
-    return !!note.filePath;
+  getCourseImage(course: CourseDto): string {
+    return course.thumbnailUrl || 'assets/images/course-placeholder.png';
   }
 
-  downloadDocument(note: NotesDto): void {
-    if (!note.id) return;
-
-    this.noteService.downloadDocument(note.id).subscribe({
-      next: ({ blob, filename }) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => console.error('Failed to download document:', err)
-    });
+  getCategoryName(course: CourseDto): string {
+    return course.category?.name || 'General';
   }
 
-  getFileIcon(fileName?: string): string {
-    return this.noteService.getFileIcon(fileName || '');
-  }
-
-  formatFileSize(bytes?: number): string {
-    return this.noteService.formatFileSize(bytes);
+  scrollToMyCourses(): void {
+    const myCoursesElement = document.querySelector('app-my-courses');
+    if (myCoursesElement) {
+      myCoursesElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   logout(): void {
@@ -262,5 +176,48 @@ export class StudentDashboard implements OnInit, OnDestroy {
 
   getStudentId(): string {
     return this.currentUser?.studentId || 'N/A';
+  }
+
+  // Helper methods for course properties
+  isNewCourse(course: CourseDto): boolean {
+    if ((course as any).isNew) {
+      return (course as any).isNew;
+    }
+
+    if (course.createdAt) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return new Date(course.createdAt) > thirtyDaysAgo;
+    }
+
+    return false;
+  }
+
+  getCourseLevel(course: CourseDto): string {
+    return (course as any).level || 'Intermediate';
+  }
+
+  getCourseRating(course: CourseDto): string {
+    return (course as any).rating?.toFixed(1) || '4.8';
+  }
+
+  getCourseReviews(course: CourseDto): string {
+    const reviews = (course as any).reviews || (course as any).reviewCount;
+    if (!reviews) return '2.4k';
+
+    if (reviews >= 1000) {
+      return `${(reviews / 1000).toFixed(1)}k`;
+    }
+    return reviews.toString();
+  }
+
+  getCourseStudents(course: CourseDto): string {
+    const students = (course as any).students || (course as any).enrolledStudents || (course as any).studentCount;
+    if (!students) return '12.5k';
+
+    if (students >= 1000) {
+      return `${(students / 1000).toFixed(1)}k`;
+    }
+    return students.toString();
   }
 }

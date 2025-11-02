@@ -13,24 +13,11 @@
 
         <!-- Desktop Navigation -->
         <nav class="hidden lg:flex items-center gap-1">
-          <a routerLink="/student/dashboard" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">
-            Dashboard
-          </a>
-          <a routerLink="/student/my-courses" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">
-            My Courses
-          </a>
-          <a routerLink="/student/continue-learning" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">
-            Continue Learning
-          </a>
-          <a routerLink="/student/tests" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">
-            Tests
-          </a>
-          <a routerLink="/student/progress" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">
-            Progress
-          </a>
-          <a routerLink="/student/achievements" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">
-            Achievements
-          </a>
+          <a routerLink="/student/dashboard" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">Dashboard</a>
+          <a routerLink="/student/continue-learning" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">Continue Learning</a>
+          <a routerLink="/student/tests" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">Tests</a>
+          <a routerLink="/student/progress" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">Progress</a>
+          <a routerLink="/student/achievements" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors text-gray-700 font-medium">Achievements</a>
         </nav>
       </div>
 
@@ -128,7 +115,6 @@
       <div class="lg:hidden border-t border-gray-200 bg-white shadow-lg">
         <nav class="flex flex-col p-4 space-y-1">
           <a routerLink="/student/dashboard" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors">Dashboard</a>
-          <a routerLink="/student/my-courses" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors">My Courses</a>
           <a routerLink="/student/continue-learning" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors">Continue Learning</a>
           <a routerLink="/student/tests" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors">Tests</a>
           <a routerLink="/student/progress" routerLinkActive="bg-amber-50 text-[#9b6012]" class="px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors">Progress</a>
@@ -139,8 +125,8 @@
   </header>
 
   <!-- Hero Section with User Stats -->
-  <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100">
-    <div class="max-w-7xl mx-auto px-6 py-8">
+  <div class="py-8 px-4" style="background: linear-gradient(to bottom right, #f5ede4, #faf6f1, #f0e6d9);">
+    <div class="max-w-7xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Welcome Card -->
         <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center gap-4 border border-amber-100">
@@ -194,57 +180,27 @@
 
       <!-- My Learning Button -->
       <div class="mt-6 flex justify-center">
-        <button class="px-8 py-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-[#9b6012] font-semibold border border-amber-200 hover:scale-105 transform">
+        <button (click)="scrollToMyCourses()" class="px-8 py-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-3 text-[#9b6012] font-semibold border border-amber-200 hover:scale-105 transform group">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
           </svg>
           My Learning
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Course Bar (Changed from Category Bar) -->
-  <div class="bg-gradient-to-r from-[#9b6012] via-amber-700 to-[#9b6012] shadow-lg sticky top-[73px] z-40">
-    <div class="flex items-center justify-center px-4 py-4">
-      <button (click)="scrollCategories('left')" class="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-      </button>
-
-      <div #categoryTrack class="flex gap-2 overflow-x-auto scrollbar-hide mx-4 max-w-5xl">
-        @for (course of courses; track course.id) {
-          <button (click)="selectCategory(course)"
-                  [class.bg-white]="selectedCategoryId === course.id"
-                  [class.text-[#9b6012]]="selectedCategoryId === course.id"
-                  [class.shadow-lg]="selectedCategoryId === course.id"
-                  [class.font-bold]="selectedCategoryId === course.id"
-                  class="px-5 py-2.5 text-white whitespace-nowrap rounded-full hover:bg-white hover:bg-opacity-20 transition-all">
-            {{ course.title }}
-          </button>
-        }
-      </div>
-
-      <button (click)="scrollCategories('right')" class="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
   <!-- Main Content Area -->
-  <main class="flex-1 bg-gradient-to-b from-gray-50 to-white">
-    <div class="max-w-7xl mx-auto p-6">
+  <main class="flex-1" style="background: linear-gradient(to bottom, #f5ede4, #faf6f1, #f0e6d9);">
+    <div class="max-w-7xl mx-auto px-4 py-8">
       <!-- Degree Programs Hero -->
-      <section class="bg-gradient-to-br from-purple-100 via-pink-50 to-purple-50 rounded-3xl shadow-xl overflow-hidden mb-12 border border-purple-100">
+      <section class="bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 rounded-3xl shadow-xl overflow-hidden mb-12 border border-purple-200">
         <div class="flex flex-col lg:flex-row items-center">
           <div class="flex-1 p-8 lg:p-12">
-            <h2 class="text-4xl lg:text-5xl font-bold text-purple-900 mb-6">Degree Programs</h2>
+            <h2 class="text-4xl lg:text-5xl font-bold text-purple-900 mb-6"> Programs</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div class="bg-white bg-opacity-80 backdrop-blur-sm rounded-2xl p-5 flex items-center gap-3 shadow-md hover:shadow-lg transition-shadow">
@@ -283,14 +239,6 @@
                 <span class="font-semibold text-gray-800">Accredited Universities</span>
               </div>
             </div>
-
-            <div class="flex flex-wrap gap-3 items-center bg-white bg-opacity-50 backdrop-blur-sm rounded-xl p-4">
-              <span class="text-sm font-semibold text-gray-700">Partner Universities:</span>
-              <span class="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full">Abertay University</span>
-              <span class="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full">UCAM</span>
-              <span class="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full">Unimarconi</span>
-              <span class="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full">IU International</span>
-            </div>
           </div>
 
           <div class="lg:w-1/2 relative h-96 lg:h-full">
@@ -300,6 +248,10 @@
         </div>
       </section>
 
+
+      <!-- My Courses Component -->
+      <app-my-courses class="mb-12"></app-my-courses>
+
       <!-- Top Recommendations -->
       <section class="mb-12">
         <div class="flex items-center gap-3 mb-8">
@@ -308,126 +260,146 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          @for (video of videos.slice(0, 4); track video.id) {
-            <div (click)="selectVideo(video)" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all transform hover:-translate-y-2 border border-gray-100">
+          @for (course of courses.slice(0, 4); track course.id) {
+            <div (click)="enrollInCourse(course)" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all transform hover:-translate-y-2 border border-gray-100">
               <div class="relative">
-                <img [src]="videoService.getVideoThumbnail(video) || videoService.getFallbackThumbnailUrl()"
-                     alt="Course thumbnail"
+                <img [src]="getCourseImage(course)"
+                     [alt]="course.title"
                      class="w-full h-48 object-cover" />
-                <span class="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Free Learning</span>
-                <div class="absolute bottom-3 left-3 bg-black bg-opacity-80 text-white text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                  <span class="font-mono">100d 04h 09m 11s</span>
-                </div>
+                <span class="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Free Course</span>
                 <span class="absolute bottom-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">100% Off</span>
               </div>
               <div class="p-5">
-                <h3 class="text-sm font-semibold text-gray-900 line-clamp-2 leading-relaxed">{{ video.description }}</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{{ course.title }}</h3>
+                <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ course.description }}</p>
+                <div class="mt-4 flex items-center justify-between">
+                  <span class="text-xs text-gray-500">
+                    <span class="font-semibold">{{ course.estimatedHours || 42 }}</span> hours
+                  </span>
+                  <button class="text-purple-600 hover:text-purple-700 font-semibold text-sm">
+                    View Details →
+                  </button>
+                </div>
               </div>
             </div>
           }
         </div>
 
-        @if (videos.length === 0) {
+
+        @if (courses.length === 0) {
           <div class="text-center py-16 bg-white rounded-2xl shadow-md">
             <svg class="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
             </svg>
             <p class="text-gray-500 text-lg">No courses available yet. Check back soon!</p>
           </div>
         }
       </section>
 
-      <!-- Videos Section -->
-      <section class="mb-12">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-          <svg class="w-8 h-8 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          Learning Videos
-        </h2>
+      <!-- Available Courses Section -->
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-14 h-14 bg-gradient-to-br from-[#9b6012] to-amber-800 rounded-2xl flex items-center justify-center shadow-lg">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <h2 class="text-3xl font-bold bg-gradient-to-r from-[#9b6012] to-amber-800 bg-clip-text text-transparent">Available Courses</h2>
+        </div>
+      </div>
 
-        <!-- Video Player Mode -->
-        @if (selectedVideo) {
-          <div class="flex flex-col lg:flex-row gap-6">
-            <div class="flex-1">
-              <div class="bg-black rounded-2xl overflow-hidden shadow-2xl">
-                <video controls class="w-full h-96"
-                       [src]="getVideoStreamUrl(selectedVideo)"
-                       [poster]="getVideoThumbnail(selectedVideo)">
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-              <div class="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                <h3 class="text-2xl font-bold text-gray-900 mb-3">{{ selectedVideo.description }}</h3>
-                <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                  <span class="flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                      <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                    </svg>
-                    1.2k views
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    15:30 min
-                  </span>
-                </div>
-                <button (click)="selectedVideo = null" class="mt-2 text-[#9b6012] hover:text-amber-800 font-semibold flex items-center gap-2 group">
-                  <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                  </svg>
-                  Back to all videos
+      <!-- Course Category Tabs -->
+      <div class="flex flex-wrap gap-3 mb-8">
+        <!-- All Courses Button -->
+        <button 
+          (click)="filterByCategory(null)"
+          [class]="isCategorySelected(null) 
+            ? 'px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all'
+            : 'px-6 py-2.5 bg-white text-gray-700 rounded-full font-medium shadow-md hover:shadow-lg hover:bg-blue-50 transition-all'">
+          All Courses ({{ courses.length }})
+        </button>
+        
+        <!-- Dynamic Category Buttons -->
+        @for (category of categories; track category.id) {
+          <button 
+            (click)="filterByCategory(category.id!)"
+            [class]="isCategorySelected(category.id!) 
+              ? 'px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all'
+              : 'px-6 py-2.5 bg-white text-gray-700 rounded-full font-medium shadow-md hover:shadow-lg hover:bg-blue-50 transition-all'">
+            {{ category.name }}
+          </button>
+        }
+      </div>
+
+      <!-- Courses Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        @for (course of filteredCourses; track course.id) {
+          <div (click)="enrollInCourse(course)" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all transform hover:-translate-y-2 border border-gray-100">
+            <div class="relative">
+              <img [src]="getCourseImage(course)"
+                   [alt]="course.title"
+                   class="w-full h-48 object-cover" />
+              <span class="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Free Course</span>
+              <span class="absolute bottom-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">100% Off</span>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{{ course.title }}</h3>
+              <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ course.description }}</p>
+              <div class="mt-4 flex items-center justify-between">
+                <span class="text-xs text-gray-500">
+                  <span class="font-semibold">{{ course.estimatedHours || 42 }}</span> hours
+                </span>
+                <button class="text-purple-600 hover:text-purple-700 font-semibold text-sm">
+                  View Details →
                 </button>
               </div>
             </div>
-
-            <!-- Recommended Videos -->
-            <aside class="lg:w-96">
-              <h4 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-[#9b6012]" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                  <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-                </svg>
-                Up Next
-              </h4>
-              <div class="space-y-3 max-h-[600px] overflow-y-auto">
-                @for (video of getRecommendedVideos(); track video.id) {
-                  <div (click)="selectVideo(video)"
-                       class="flex gap-3 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-amber-50 hover:border-[#9b6012] transition-all hover:shadow-md">
-                    <img [src]="videoService.getVideoThumbnail(video) || videoService.getFallbackThumbnailUrl()"
-                         alt="Thumbnail"
-                         class="w-32 h-20 object-cover rounded-lg flex-shrink-0" />
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">{{ video.description }}</p>
-                      <span class="text-xs text-gray-500">15:30 min</span>
-                    </div>
-                  </div>
-                }
-              </div>
-            </aside>
           </div>
         }
+      </div>
 
-        <!-- Video Grid Mode -->
-        @if (!selectedVideo && videos.length > 4) {
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @for (video of videos; track video.id) {
-              <div (click)="selectVideo(video)"
-                   class="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:shadow-xl transition-all transform hover:-translate-y-1">
-                <img [src]="videoService.getVideoThumbnail(video) || videoService.getFallbackThumbnailUrl()"
-                     alt="Thumbnail"
-                     class="w-full h-40 object-cover" />
-                <div class="p-4">
-                  <p class="text-sm font-semibold text-gray-900 line-clamp-2">{{ video.description }}</p>
-                </div>
-              </div>
+      <!-- Load More Button -->
+      @if (filteredCourses.length > 0) {
+        <div class="mt-10 text-center">
+          <button class="px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 transform border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600">
+            Load More Courses
+          </button>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (filteredCourses.length === 0) {
+        <div class="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div class="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">
+            @if (selectedCategoryId === null) {
+              No Courses Available
+            } @else {
+              No Courses in This Category
             }
-          </div>
-        }
-      </section>
+          </h3>
+          <p class="text-gray-500 text-lg mb-6">
+            @if (selectedCategoryId === null) {
+              Check back soon for new exciting courses!
+            } @else {
+              Try selecting a different category or view all courses.
+            }
+          </p>
+          @if (selectedCategoryId !== null) {
+            <button 
+              (click)="filterByCategory(null)"
+              class="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 transform">
+              View All Courses
+            </button>
+          }
+        </div>
+      }
+    </section>
 
       <!-- Notes Hero Section -->
       <section class="bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-100 rounded-3xl shadow-xl p-8 lg:p-12 mb-12 border border-amber-200">
@@ -483,121 +455,12 @@
         </div>
       </section>
 
-      <!-- Notes Section -->
-      <section class="mb-12">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-          <svg class="w-8 h-8 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          Study Notes
-        </h2>
-
-        @if (notes.length > 0) {
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @for (note of notes; track note.id) {
-              <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-1 border border-gray-100">
-                <div class="p-6">
-                  <div class="mb-4">
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ note.title }}</h3>
-                    <span class="inline-block px-4 py-1.5 bg-gradient-to-r from-[#9b6012] to-amber-700 text-white text-xs font-semibold rounded-full shadow-md">
-                      {{ getCourseName(note.courseId) }}
-                    </span>
-                  </div>
-
-                  <div class="text-gray-700 text-sm mb-4 leading-relaxed line-clamp-3" [innerHTML]="getFormattedContent(note.content)"></div>
-
-                  @if (note.fileName) {
-                    <div class="flex items-center gap-2 text-gray-600 text-sm mt-4 pt-4 border-t border-gray-200">
-                      <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-[#9b6012]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                        </svg>
-                      </div>
-                      <span class="font-medium truncate">{{ note.fileName }}</span>
-                    </div>
-                  }
-
-                  @if (hasDocument(note)) {
-                    <button (click)="downloadDocument(note)" class="mt-4 w-full px-4 py-2 bg-[#9b6012] hover:bg-amber-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                      </svg>
-                      Download
-                    </button>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-        }
-
-        @if (notes.length === 0) {
-          <div class="text-center py-16 bg-white rounded-2xl shadow-md">
-            <svg class="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <p class="text-gray-500 text-lg">No notes available for this course yet.</p>
-          </div>
-        }
-      </section>
-
-      <!-- Test Section -->
-      <section class="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 rounded-3xl shadow-2xl p-8 lg:p-12 text-white mb-12 overflow-hidden relative">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
-        <div class="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
-
-        <div class="flex flex-col lg:flex-row gap-8 items-center relative z-10">
-          <div class="lg:w-1/2">
-            <img src="assets/tests.jfif" alt="Take Tests" class="w-full h-72 object-cover rounded-2xl shadow-2xl border-4 border-white border-opacity-20" />
-          </div>
-          <div class="flex-1">
-            <h2 class="text-4xl font-bold mb-4 flex items-center gap-3">
-              <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-              </svg>
-              Ready to Test Your Knowledge?
-            </h2>
-            <p class="text-lg mb-6 opacity-95 leading-relaxed">
-              Challenge yourself with our comprehensive biochemistry tests. Evaluate your understanding,
-              identify areas for improvement, and track your progress over time.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
-              <div class="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-sm p-3 rounded-xl">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span>Topic-based assessments</span>
-              </div>
-              <div class="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-sm p-3 rounded-xl">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span>Instant feedback</span>
-              </div>
-              <div class="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-sm p-3 rounded-xl">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span>Detailed explanations</span>
-              </div>
-              <div class="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-sm p-3 rounded-xl">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span>Progress tracking</span>
-              </div>
-            </div>
-            <button routerLink="/student/tests"
-                    class="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-700 font-bold rounded-full transition-all shadow-2xl hover:shadow-3xl hover:scale-105 transform">
-              Take Test Now
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </section>
     </div>
   </main>
+
+
+  <!-- Footer Component -->
+  <app-footer></app-footer>
+
 </div>
+
