@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ContinueLearning } from './continue-learning';
-
+import { Learning } from './learning';
 describe('ContinueLearaning', () => {
-  let component: ContinueLearning;
-  let fixture: ComponentFixture<ContinueLearning>;
+  let component: Learning;
+  let fixture: ComponentFixture<Learning>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ContinueLearning]
+      imports: [Learning]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ContinueLearning);
+    fixture = TestBed.createComponent(Learning);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

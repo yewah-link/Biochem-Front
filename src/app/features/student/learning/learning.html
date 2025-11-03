@@ -1,0 +1,273 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">Loading your learning dashboard...</p>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @if (!isLoading) {
+    <div class="flex h-screen">
+      <!-- Left Sidebar - Video List -->
+      <div class="w-80 bg-white border-r border-gray-200 overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+          <h2 class="text-xl font-bold text-gray-900">{{ currentCourse?.title || 'Course Videos' }}</h2>
+          @if (currentEnrollment && currentEnrollment.progressPercentage !== undefined) {
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-sm text-gray-600 mb-1">
+                <span>Course Progress</span>
+                <span class="font-medium">{{ currentEnrollment.progressPercentage }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full transition-all" [style.width.%]="currentEnrollment.progressPercentage"></div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Video List -->
+        <div class="p-4 space-y-2">
+          @for (video of courseVideos; track video.id) {
+            <div (click)="selectVideo(video)" 
+                 class="p-4 rounded-lg cursor-pointer transition-all hover:bg-gray-50 border"
+                 [class.bg-blue-50]="selectedVideo?.id === video.id"
+                 [class.border-blue-200]="selectedVideo?.id === video.id"
+                 [class.border-gray-200]="selectedVideo?.id !== video.id">
+              <div class="flex items-start gap-3">
+                <!-- Video Thumbnail -->
+                <div class="w-24 h-16 rounded bg-gradient-to-br from-purple-400 to-pink-500 flex-shrink-0 relative overflow-hidden">
+                  @if (getThumbnailUrl(video)) {
+                    <img [src]="getThumbnailUrl(video)" [alt]="video.title" class="w-full h-full object-cover">
+                  }
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    @if (video.isCompleted) {
+                      <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
+                    } @else {
+                      <svg class="w-8 h-8 text-white opacity-75" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    }
+                  </div>
+                  <!-- Duration Badge -->
+                  <div class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs px-1.5 py-0.5 rounded">
+                    {{ formatDuration(video.durationSeconds) }}
+                  </div>
+                </div>
+
+                <!-- Video Info -->
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                    {{ video.title }}
+                  </h3>
+                  @if (video.description) {
+                    <p class="text-xs text-gray-600 line-clamp-2 mb-2">{{ video.description }}</p>
+                  }
+                  
+                  <!-- Progress Bar -->
+                  @if (video.watchProgress && video.watchProgress > 0) {
+                    <div class="mb-1">
+                      <div class="w-full bg-gray-200 rounded-full h-1">
+                        <div class="bg-blue-600 h-1 rounded-full" [style.width.%]="video.watchProgress"></div>
+                      </div>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ video.watchProgress }}% complete</span>
+                  } @else {
+                    <span class="text-xs text-gray-500">Not started</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (courseVideos.length === 0) {
+            <div class="text-center py-8 text-gray-500">
+              <svg class="w-16 h-16 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <p>No videos available</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Right Content Area -->
+      <div class="flex-1 overflow-y-auto">
+        @if (selectedVideo) {
+          <!-- Video Player Section -->
+          <div class="bg-black">
+            <div class="max-w-6xl mx-auto">
+              <div class="aspect-video bg-black">
+                <video controls autoplay class="w-full h-full">
+                  <source [src]="getVideoUrl(selectedVideo)" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Details -->
+          <div class="max-w-6xl mx-auto p-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ selectedVideo.title }}</h1>
+              <p class="text-gray-600 mb-4">{{ currentCourse?.title }}</p>
+
+              <div class="flex items-center gap-6 text-sm text-gray-600 mb-4">
+                <span class="flex items-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  {{ formatDuration(selectedVideo.durationSeconds) }}
+                </span>
+                @if (selectedVideo.watchProgress) {
+                  <span>{{ selectedVideo.watchProgress }}% complete</span>
+                }
+                @if (selectedVideo.lastWatched) {
+                  <span>Last watched {{ selectedVideo.lastWatched }}</span>
+                }
+              </div>
+
+              <!-- Progress Bar -->
+              @if (selectedVideo.watchProgress) {
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+                  <div class="bg-blue-600 h-2 rounded-full transition-all" [style.width.%]="selectedVideo.watchProgress"></div>
+                </div>
+              }
+
+              @if (selectedVideo.description) {
+                <div class="mb-6">
+                  <h3 class="font-semibold text-gray-900 mb-2">Description</h3>
+                  <p class="text-gray-700 leading-relaxed">{{ selectedVideo.description }}</p>
+                </div>
+              }
+
+              <!-- Action Buttons -->
+              <div class="flex gap-3">
+                <button (click)="continueWatching()" 
+                        class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                  Continue Watching
+                </button>
+                <button (click)="markVideoAsCompleted(selectedVideo)" 
+                        class="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors"
+                        [class.bg-green-50]="selectedVideo.isCompleted"
+                        [class.border-green-300]="selectedVideo.isCompleted">
+                  {{ selectedVideo.isCompleted ? 'Completed ✓' : 'Mark as Complete' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <!-- Welcome/Dashboard View -->
+          <div class="p-6 max-w-7xl mx-auto">
+            <div class="mb-8">
+              <h1 class="text-3xl font-bold text-gray-900 mb-2">Continue Learning</h1>
+              <p class="text-gray-600">Pick up where you left off</p>
+            </div>
+
+            <!-- Recently Watched Section -->
+            @if (recentVideos.length > 0) {
+              <div class="mb-10">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Recently Watched</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  @for (video of recentVideos; track video.id) {
+                    <div (click)="selectVideo(video)" 
+                         class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
+                      <div class="relative">
+                        <div class="h-48 bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                          @if (getThumbnailUrl(video)) {
+                            <img [src]="getThumbnailUrl(video)" [alt]="video.title" class="w-full h-full object-cover">
+                          } @else {
+                            <svg class="w-16 h-16 text-white opacity-75" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          }
+                        </div>
+                        <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                          {{ formatDuration(video.durationSeconds) }}
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
+                          <div class="h-full bg-blue-600" [style.width.%]="video.watchProgress"></div>
+                        </div>
+                      </div>
+                      <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-1">{{ video.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-2">{{ currentCourse?.title }}</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                          <span>{{ video.watchProgress }}% complete</span>
+                          <span>{{ video.lastWatched }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Recommended Courses -->
+            @if (recommendedCourses.length > 0) {
+              <div class="mb-10">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Recommended for You</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  @for (course of recommendedCourses; track course.id) {
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+                      <div class="h-36 bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
+                        @if (getCourseThumbnailUrl(course)) {
+                          <img [src]="getCourseThumbnailUrl(course)" [alt]="course.title" class="w-full h-full object-cover">
+                        }
+                      </div>
+                      <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-1 text-sm line-clamp-2">{{ course.title }}</h3>
+                        <p class="text-xs text-gray-600 mb-3 line-clamp-2">{{ course.description }}</p>
+                        <button (click)="enrollInCourse(course)" 
+                                class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                          Enroll Now
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Learning Goals -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-4">This Week's Goals</h2>
+              <div class="space-y-4">
+                @for (goal of weeklyGoals; track goal.id) {
+                  <div class="border-l-4 pl-4" 
+                       [class.border-green-500]="goal.completed" 
+                       [class.border-gray-300]="!goal.completed">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h3 class="font-medium text-gray-900 mb-1" 
+                            [class.line-through]="goal.completed">
+                          {{ goal.title }}
+                        </h3>
+                        <p class="text-sm text-gray-600">{{ goal.description }}</p>
+                      </div>
+                      <button (click)="toggleGoal(goal)"
+                              class="ml-4 p-2 rounded-full transition-colors"
+                              [class.bg-green-100]="goal.completed"
+                              [class.text-green-600]="goal.completed"
+                              [class.bg-gray-100]="!goal.completed"
+                              [class.text-gray-400]="!goal.completed">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
