@@ -19,10 +19,11 @@ import { StudentDashboard } from './features/student/student-dashboard/student-d
 
 // Import student-learning components
 import { Achievements } from './features/student/achievements/achievements';
-import { ContinueLearning } from './features/student/continue-learning/continue-learning';
-import { MyCourses } from './features/student/my-courses/my-courses';
 import { ProgressBar } from './features/student/progress-bar/progress-bar';
 import { CourseEnrollment } from './features/student/course-enrollment/course-enrollment';
+import { Learning } from './features/student/learning/learning';
+// MyCourses is imported implicitly via StudentDashboard, but keeping the component import standard for consistency
+import { MyCourses } from './features/student/my-courses/my-courses';
 
 // Import course components
 import { CourseDetail } from './features/admin/courses/course-detail/course-detail';
@@ -70,24 +71,26 @@ export const routes: Routes = [
     ]
   },
 
-  // Student Dashboard
+  // Student Routes - Restructured for proper navigation
   {
     path: 'student',
-    component: StudentDashboard,
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'my-courses', pathMatch: 'full' },
+      // Default redirect to dashboard
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      // Main student dashboard page
+      { path: 'dashboard', component: StudentDashboard },
 
       // Student learning routes
-      { path: 'my-courses', component: MyCourses },
-      { path: 'continue-learning', component: ContinueLearning },
+      { path: 'course/:id/view', component: Learning },
       { path: 'achievements', component: Achievements },
       { path: 'progress', component: ProgressBar },
 
       // Course enrollment with courseId parameter
       { path: 'course/:id/enroll', component: CourseEnrollment },
 
-      // Existing student routes
+      // Topics and tests
       { path: 'topics', component: NoteList },
       { path: 'tests', component: ExamList },
       { path: 'tests/take/:id', component: ExamTake },

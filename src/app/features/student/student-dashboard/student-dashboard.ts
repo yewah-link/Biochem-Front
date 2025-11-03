@@ -35,6 +35,10 @@ export class StudentDashboard implements OnInit, OnDestroy {
   categories: CategoryDto[] = [];
   selectedCategoryId: number | null = null;
 
+  // Track enrolled course IDs and their categories
+  enrolledCourseIds: number[] = [];
+  enrolledCategoryIds: number[] = []; // ✨ NEW PROPERTY
+
   constructor(
     public courseService: CourseService,
     private authService: AuthService,
@@ -93,6 +97,8 @@ export class StudentDashboard implements OnInit, OnDestroy {
   }
 
   loadCourses(): void {
+    // Note: In a real app, this would be an API call.
+    // Assuming courseService.getPublishedCourses() returns an Observable<CourseDto[]>.
     this.courseService.getPublishedCourses().subscribe({
       next: (coursesData: CourseDto[]) => {
         this.courses = coursesData;
@@ -119,10 +125,8 @@ export class StudentDashboard implements OnInit, OnDestroy {
     this.selectedCategoryId = categoryId;
 
     if (categoryId === null) {
-      // Show all courses
       this.filteredCourses = this.courses;
     } else {
-      // Filter by selected category
       this.filteredCourses = this.courses.filter(
         course => course.category?.id === categoryId
       );
@@ -133,14 +137,62 @@ export class StudentDashboard implements OnInit, OnDestroy {
     return this.selectedCategoryId === categoryId;
   }
 
+  // Handler for enrolled course IDs from my-courses component
+  onEnrolledCoursesLoaded(courseIds: number[]): void {
+    this.enrolledCourseIds = courseIds;
+
+    // ✨ NEW LOGIC: Determine the categories of the enrolled courses
+    const categoryIds = this.courses
+      .filter(course => course.id && courseIds.includes(course.id))
+      .map(course => course.category?.id)
+      .filter((id): id is number => id !== undefined); // Filter out undefined/null IDs
+
+    // Remove duplicates
+    this.enrolledCategoryIds = [...new Set(categoryIds)];
+
+    console.log('📚 Enrolled course IDs received:', this.enrolledCourseIds);
+    console.log('✨ Enrolled Category IDs (for personalization):', this.enrolledCategoryIds);
+    console.log('⭐ Recommended courses count:', this.getRecommendedCourses().length);
+  }
+
+  // Get recommended courses (excluding enrolled ones, prioritizing same category)
+  getRecommendedCourses(): CourseDto[] {
+    // 1. Get courses that the student is NOT enrolled in
+    const availableCourses = this.courses.filter(course =>
+      course.id && !this.enrolledCourseIds.includes(course.id)
+    );
+
+    // 2. Separate relevant courses (same category as enrolled courses)
+    const highlyRelevant = availableCourses.filter(course =>
+      course.category?.id && this.enrolledCategoryIds.includes(course.category.id)
+    );
+
+    // 3. Separate general/other courses
+    const generalRecommendations = availableCourses.filter(course =>
+      !course.category?.id || !this.enrolledCategoryIds.includes(course.category.id)
+    );
+
+    // 4. Combine them, prioritizing highly relevant courses, and slice to top 4.
+    const recommended: CourseDto[] = [
+      ...highlyRelevant,
+      ...generalRecommendations
+    ].slice(0, 4);
+
+    return recommended;
+  }
+
   enrollInCourse(course: CourseDto): void {
     if (course.id) {
       this.router.navigate(['/student/course', course.id, 'enroll']);
+      console.log('Navigating to course enrollment:', course.id);
+    } else {
+      console.error('Course ID is missing for course:', course.title);
     }
   }
 
+  // --- Display Helpers (from original code) ---
   getCourseImage(course: CourseDto): string {
-    return course.thumbnailUrl || 'assets/images/course-placeholder.png';
+    return (course as any).thumbnailUrl || 'assets/images/course-placeholder.png';
   }
 
   getCategoryName(course: CourseDto): string {
@@ -178,46 +230,4 @@ export class StudentDashboard implements OnInit, OnDestroy {
     return this.currentUser?.studentId || 'N/A';
   }
 
-  // Helper methods for course properties
-  isNewCourse(course: CourseDto): boolean {
-    if ((course as any).isNew) {
-      return (course as any).isNew;
-    }
-
-    if (course.createdAt) {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return new Date(course.createdAt) > thirtyDaysAgo;
-    }
-
-    return false;
-  }
-
-  getCourseLevel(course: CourseDto): string {
-    return (course as any).level || 'Intermediate';
-  }
-
-  getCourseRating(course: CourseDto): string {
-    return (course as any).rating?.toFixed(1) || '4.8';
-  }
-
-  getCourseReviews(course: CourseDto): string {
-    const reviews = (course as any).reviews || (course as any).reviewCount;
-    if (!reviews) return '2.4k';
-
-    if (reviews >= 1000) {
-      return `${(reviews / 1000).toFixed(1)}k`;
-    }
-    return reviews.toString();
-  }
-
-  getCourseStudents(course: CourseDto): string {
-    const students = (course as any).students || (course as any).enrolledStudents || (course as any).studentCount;
-    if (!students) return '12.5k';
-
-    if (students >= 1000) {
-      return `${(students / 1000).toFixed(1)}k`;
-    }
-    return students.toString();
-  }
 }
