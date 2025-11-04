@@ -1,9 +1,9 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-white">
   <!-- Loading State -->
   @if (isLoading) {
     <div class="flex items-center justify-center min-h-screen">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9b6012] mx-auto mb-4"></div>
         <p class="text-gray-600">Loading your learning dashboard...</p>
       </div>
     </div>
@@ -11,262 +11,249 @@
 
   <!-- Main Content -->
   @if (!isLoading) {
-    <div class="flex h-screen">
-      <!-- Left Sidebar - Video List -->
-      <div class="w-80 bg-white border-r border-gray-200 overflow-y-auto">
-        <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 class="text-xl font-bold text-gray-900">{{ currentCourse?.title || 'Course Videos' }}</h2>
-          @if (currentEnrollment && currentEnrollment.progressPercentage !== undefined) {
-            <div class="mt-3">
-              <div class="flex items-center justify-between text-sm text-gray-600 mb-1">
-                <span>Course Progress</span>
-                <span class="font-medium">{{ currentEnrollment.progressPercentage }}%</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="bg-blue-600 h-2 rounded-full transition-all" [style.width.%]="currentEnrollment.progressPercentage"></div>
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- Video List -->
-        <div class="p-4 space-y-2">
-          @for (video of courseVideos; track video.id) {
-            <div (click)="selectVideo(video)" 
-                 class="p-4 rounded-lg cursor-pointer transition-all hover:bg-gray-50 border"
-                 [class.bg-blue-50]="selectedVideo?.id === video.id"
-                 [class.border-blue-200]="selectedVideo?.id === video.id"
-                 [class.border-gray-200]="selectedVideo?.id !== video.id">
-              <div class="flex items-start gap-3">
-                <!-- Video Thumbnail -->
-                <div class="w-24 h-16 rounded bg-gradient-to-br from-purple-400 to-pink-500 flex-shrink-0 relative overflow-hidden">
-                  @if (getThumbnailUrl(video)) {
-                    <img [src]="getThumbnailUrl(video)" [alt]="video.title" class="w-full h-full object-cover">
-                  }
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    @if (video.isCompleted) {
-                      <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                      </svg>
-                    } @else {
-                      <svg class="w-8 h-8 text-white opacity-75" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    }
-                  </div>
-                  <!-- Duration Badge -->
-                  <div class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs px-1.5 py-0.5 rounded">
-                    {{ formatDuration(video.durationSeconds) }}
-                  </div>
-                </div>
-
-                <!-- Video Info -->
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
-                    {{ video.title }}
-                  </h3>
-                  @if (video.description) {
-                    <p class="text-xs text-gray-600 line-clamp-2 mb-2">{{ video.description }}</p>
-                  }
-                  
-                  <!-- Progress Bar -->
-                  @if (video.watchProgress && video.watchProgress > 0) {
-                    <div class="mb-1">
-                      <div class="w-full bg-gray-200 rounded-full h-1">
-                        <div class="bg-blue-600 h-1 rounded-full" [style.width.%]="video.watchProgress"></div>
-                      </div>
-                    </div>
-                    <span class="text-xs text-gray-500">{{ video.watchProgress }}% complete</span>
-                  } @else {
-                    <span class="text-xs text-gray-500">Not started</span>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-
-          @if (courseVideos.length === 0) {
-            <div class="text-center py-8 text-gray-500">
-              <svg class="w-16 h-16 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-              </svg>
-              <p>No videos available</p>
-            </div>
-          }
+    <!-- Top Bar -->
+    <div class="bg-white border-b border-gray-200 px-6 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3 text-sm text-gray-600">
+          <a href="#" class="hover:text-[#9b6012]">Home</a>
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+          </svg>
+          <span class="font-semibold">{{ currentCourse?.title || 'Basics of Digital Marketing' }}</span>
         </div>
       </div>
+    </div>
 
-      <!-- Right Content Area -->
-      <div class="flex-1 overflow-y-auto">
-        @if (selectedVideo) {
-          <!-- Video Player Section -->
-          <div class="bg-black">
-            <div class="max-w-6xl mx-auto">
-              <div class="aspect-video bg-black">
-                <video controls autoplay class="w-full h-full">
+    <div class="flex max-w-[1400px] mx-auto flex-col lg:flex-row" style="height: calc(100vh - 49px);">
+      <!-- Main Content Area -->
+      <div class="flex-1 overflow-y-auto order-2 lg:order-1 h-full">
+        <div class="px-6 py-4">
+          <!-- Back Button and Title -->
+          <button class="text-gray-600 hover:text-[#9b6012] flex items-center gap-2 text-sm mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to course home
+          </button>
+
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-[#9b6012] text-white text-xs font-bold flex items-center justify-center">
+                {{ getCurrentLessonNumber() }}
+              </span>
+              <span class="font-bold text-[#9b6012]">{{ selectedVideo?.title || 'Select a video' }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-gray-600 font-medium">
+                LESSON {{ getCurrentLessonNumber() }} / {{ courseVideos.length }}
+              </span>
+              <button
+                (click)="navigateToPreviousVideo()"
+                [disabled]="!hasPreviousVideo()"
+                class="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <button
+                (click)="navigateToNextVideo()"
+                [disabled]="!hasNextVideo()"
+                class="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button class="px-5 py-2 bg-[#9b6012] hover:bg-[#7d4f0e] text-white font-medium rounded-md transition-colors mb-4 inline-flex items-center gap-2">
+            Share
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+            </svg>
+          </button>
+
+          <!-- Video Player -->
+          <div class="bg-black mb-4 rounded-lg overflow-hidden">
+            <div class="aspect-video">
+              @if (selectedVideo) {
+                <video
+                  #videoPlayer
+                  controls
+                  class="w-full h-full"
+                  (timeupdate)="onVideoTimeUpdate($event)"
+                  (loadedmetadata)="onVideoLoaded($event)"
+                  (ended)="onVideoEnded($event)"
+                  (error)="onVideoError($event)">
                   <source [src]="getVideoUrl(selectedVideo)" type="video/mp4">
                   Your browser does not support the video tag.
                 </video>
-              </div>
+              } @else {
+                <div class="w-full h-full flex items-center justify-center text-white">
+                  <p>No video selected</p>
+                </div>
+              }
             </div>
           </div>
 
-          <!-- Video Details -->
-          <div class="max-w-6xl mx-auto p-6">
-            <div class="bg-white rounded-lg shadow-sm p-6">
-              <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ selectedVideo.title }}</h1>
-              <p class="text-gray-600 mb-4">{{ currentCourse?.title }}</p>
-
-              <div class="flex items-center gap-6 text-sm text-gray-600 mb-4">
-                <span class="flex items-center gap-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  {{ formatDuration(selectedVideo.durationSeconds) }}
-                </span>
-                @if (selectedVideo.watchProgress) {
-                  <span>{{ selectedVideo.watchProgress }}% complete</span>
+          <!-- Video Info -->
+          @if (selectedVideo) {
+            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-4 text-sm text-gray-600">
+                @if (selectedVideo.durationSeconds) {
+                  <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ formatDuration(selectedVideo.durationSeconds) }}</span>
+                  </div>
                 }
-                @if (selectedVideo.lastWatched) {
-                  <span>Last watched {{ selectedVideo.lastWatched }}</span>
+                @if (selectedVideo.fileSize) {
+                  <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span>{{ formatFileSize(selectedVideo.fileSize) }}</span>
+                  </div>
                 }
-              </div>
-
-              <!-- Progress Bar -->
-              @if (selectedVideo.watchProgress) {
-                <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
-                  <div class="bg-blue-600 h-2 rounded-full transition-all" [style.width.%]="selectedVideo.watchProgress"></div>
-                </div>
-              }
-
-              @if (selectedVideo.description) {
-                <div class="mb-6">
-                  <h3 class="font-semibold text-gray-900 mb-2">Description</h3>
-                  <p class="text-gray-700 leading-relaxed">{{ selectedVideo.description }}</p>
-                </div>
-              }
-
-              <!-- Action Buttons -->
-              <div class="flex gap-3">
-                <button (click)="continueWatching()" 
-                        class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-                  Continue Watching
-                </button>
-                <button (click)="markVideoAsCompleted(selectedVideo)" 
-                        class="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors"
-                        [class.bg-green-50]="selectedVideo.isCompleted"
-                        [class.border-green-300]="selectedVideo.isCompleted">
-                  {{ selectedVideo.isCompleted ? 'Completed ✓' : 'Mark as Complete' }}
-                </button>
-              </div>
-            </div>
-          </div>
-        } @else {
-          <!-- Welcome/Dashboard View -->
-          <div class="p-6 max-w-7xl mx-auto">
-            <div class="mb-8">
-              <h1 class="text-3xl font-bold text-gray-900 mb-2">Continue Learning</h1>
-              <p class="text-gray-600">Pick up where you left off</p>
-            </div>
-
-            <!-- Recently Watched Section -->
-            @if (recentVideos.length > 0) {
-              <div class="mb-10">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Recently Watched</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  @for (video of recentVideos; track video.id) {
-                    <div (click)="selectVideo(video)" 
-                         class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
-                      <div class="relative">
-                        <div class="h-48 bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
-                          @if (getThumbnailUrl(video)) {
-                            <img [src]="getThumbnailUrl(video)" [alt]="video.title" class="w-full h-full object-cover">
-                          } @else {
-                            <svg class="w-16 h-16 text-white opacity-75" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z"/>
-                            </svg>
-                          }
-                        </div>
-                        <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-                          {{ formatDuration(video.durationSeconds) }}
-                        </div>
-                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
-                          <div class="h-full bg-blue-600" [style.width.%]="video.watchProgress"></div>
-                        </div>
-                      </div>
-                      <div class="p-4">
-                        <h3 class="font-semibold text-gray-900 mb-1">{{ video.title }}</h3>
-                        <p class="text-sm text-gray-600 mb-2">{{ currentCourse?.title }}</p>
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                          <span>{{ video.watchProgress }}% complete</span>
-                          <span>{{ video.lastWatched }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- Recommended Courses -->
-            @if (recommendedCourses.length > 0) {
-              <div class="mb-10">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Recommended for You</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  @for (course of recommendedCourses; track course.id) {
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-                      <div class="h-36 bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
-                        @if (getCourseThumbnailUrl(course)) {
-                          <img [src]="getCourseThumbnailUrl(course)" [alt]="course.title" class="w-full h-full object-cover">
-                        }
-                      </div>
-                      <div class="p-4">
-                        <h3 class="font-semibold text-gray-900 mb-1 text-sm line-clamp-2">{{ course.title }}</h3>
-                        <p class="text-xs text-gray-600 mb-3 line-clamp-2">{{ course.description }}</p>
-                        <button (click)="enrollInCourse(course)" 
-                                class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-                          Enroll Now
-                        </button>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- Learning Goals -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-              <h2 class="text-xl font-bold text-gray-900 mb-4">This Week's Goals</h2>
-              <div class="space-y-4">
-                @for (goal of weeklyGoals; track goal.id) {
-                  <div class="border-l-4 pl-4" 
-                       [class.border-green-500]="goal.completed" 
-                       [class.border-gray-300]="!goal.completed">
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 mb-1" 
-                            [class.line-through]="goal.completed">
-                          {{ goal.title }}
-                        </h3>
-                        <p class="text-sm text-gray-600">{{ goal.description }}</p>
-                      </div>
-                      <button (click)="toggleGoal(goal)"
-                              class="ml-4 p-2 rounded-full transition-colors"
-                              [class.bg-green-100]="goal.completed"
-                              [class.text-green-600]="goal.completed"
-                              [class.bg-gray-100]="!goal.completed"
-                              [class.text-gray-400]="!goal.completed">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                      </button>
-                    </div>
+                @if (selectedVideo.isCompleted) {
+                  <div class="flex items-center gap-1 text-green-600">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Completed</span>
                   </div>
                 }
               </div>
             </div>
+          }
+
+          <!-- Tabs -->
+          <div class="border-b border-gray-200 mb-4">
+            <div class="flex gap-8">
+              <button class="pb-2 border-b-2 border-[#9b6012] text-[#9b6012] font-semibold text-sm">
+                Essential Reading
+              </button>
+            </div>
           </div>
-        }
+
+          <!-- Content -->
+          <div class="prose max-w-none">
+            <h2 class="text-xl font-bold text-gray-900 mb-3 uppercase">
+              {{ selectedVideo?.title || 'USE OF DIGITAL MARKETING TO INCREASE SALES' }}
+            </h2>
+
+            @if (selectedVideo?.description) {
+              <p class="text-gray-700 leading-relaxed text-justify mb-4 text-sm">
+                {{ selectedVideo?.description }}
+              </p>
+            }
+
+            <p class="text-gray-700 leading-relaxed text-justify mb-4 text-sm">
+              Many readers would believe that their company is unable to use digital marketing techniques. It is, in fact, a myth. Digital Marketing techniques are applicable for both Large Scale and Small-Scale Businesses. As a result, all business owners must be aware of this and implement appropriate Digital Marketing Techniques to boost sales. <strong>The list of uses of digital marketing to increase sales are as follows:</strong>
+            </p>
+
+            <p class="text-gray-700 leading-relaxed text-justify mb-4 text-sm">
+              <strong>Start by Creating Value:</strong> It is important for any business organization to create value for their customers. Through digital marketing, there are a few ways to provide them with something useful. Modern marketing ideas like Content Marketing and Inbound Marketing are certainly familiar to customers nowadays. A company should not only focus on high quality products or services, but also on valuable content. These tactics will help to improve sales and make the brand more desirable. For example, online flash deals, seasonal sales, and limited-time campaigns.
+            </p>
+
+            <button class="text-[#9b6012] hover:text-[#7d4f0e] font-semibold flex items-center gap-2 text-sm mb-4">
+              Show More
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="w-full lg:w-80 bg-white border-l-0 lg:border-l border-t lg:border-t-0 border-gray-200 flex flex-col order-1 lg:order-2 h-full overflow-hidden">
+        <!-- Progress -->
+        <div class="p-5 border-b border-gray-200">
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-bold text-gray-900">
+                {{ getCompletedCount() }} / {{ courseVideos.length }} COMPLETED
+              </span>
+              <svg class="w-5 h-5 text-[#9b6012]" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div
+                class="h-2 rounded-full bg-gradient-to-r from-[#9b6012] to-[#c97f1a]"
+                [style.width.%]="getProgressPercentage()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Course Modules -->
+        <div class="flex-1 overflow-y-auto">
+          <div class="p-5">
+            <div class="mb-4">
+              <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Course Content</h3>
+            </div>
+
+            <div class="space-y-3">
+              @for (video of courseVideos; track video.id; let i = $index) {
+                <button
+                  (click)="selectVideo(video)"
+                  class="w-full text-left flex items-start gap-3 py-2 px-3 rounded-md hover:bg-gray-50 transition-colors"
+                  [class.bg-[#9b60121a]]="selectedVideo?.id === video.id"
+                  [class.text-[#9b6012]]="selectedVideo?.id === video.id">
+
+                  @if (video.isCompleted) {
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                  } @else {
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5"
+                         [class.text-gray-400]="selectedVideo?.id !== video.id"
+                         [class.text-[#9b6012]]="selectedVideo?.id === video.id"
+                         fill="none"
+                         stroke="currentColor"
+                         viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  }
+
+                  <div class="flex-1">
+                    <span class="text-sm block">{{ i + 1 }}. {{ video.title }}</span>
+                    @if (video.durationSeconds) {
+                      <span class="text-xs text-gray-500 block mt-1">
+                        {{ formatDuration(video.durationSeconds) }}
+                      </span>
+                    }
+                  </div>
+                </button>
+              }
+
+              @if (courseVideos.length === 0) {
+                <p class="text-sm text-gray-500 py-4">No lectures available</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Buttons -->
+        <div class="p-5 pb-6 border-t border-gray-200 space-y-3 bg-white flex-shrink-0">
+          <button class="w-full px-4 py-2.5 bg-[#9b6012] hover:bg-[#7d4f0e] text-white font-medium rounded-md transition-colors flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+            </svg>
+            Retake Quiz
+          </button>
+          <button class="w-full px-4 py-2.5 bg-[#9b6012] hover:bg-[#7d4f0e] text-white font-medium rounded-md transition-colors flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+            </svg>
+            Start Quiz
+          </button>
+        </div>
       </div>
     </div>
   }

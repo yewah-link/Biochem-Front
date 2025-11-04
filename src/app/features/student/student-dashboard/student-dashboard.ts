@@ -37,7 +37,11 @@ export class StudentDashboard implements OnInit, OnDestroy {
 
   // Track enrolled course IDs and their categories
   enrolledCourseIds: number[] = [];
-  enrolledCategoryIds: number[] = []; // ✨ NEW PROPERTY
+  enrolledCategoryIds: number[] = [];
+
+  // Track loading states
+  private coursesLoaded = false;
+  private enrollmentsLoaded = false;
 
   constructor(
     public courseService: CourseService,
@@ -46,6 +50,7 @@ export class StudentDashboard implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    console.log('🚀 StudentDashboard: Initializing...');
     this.loadUserData();
     this.loadCourses();
   }
@@ -62,6 +67,7 @@ export class StudentDashboard implements OnInit, OnDestroy {
           this.isLoggedIn = true;
           this.userName = this.getUserDisplayName(user);
           this.userInitials = this.getUserInitials(user);
+          console.log('👤 Current user loaded:', user.email);
         } else {
           this.isLoggedIn = false;
           this.userName = 'User';
@@ -97,15 +103,26 @@ export class StudentDashboard implements OnInit, OnDestroy {
   }
 
   loadCourses(): void {
-    // Note: In a real app, this would be an API call.
-    // Assuming courseService.getPublishedCourses() returns an Observable<CourseDto[]>.
+    console.log('📚 Loading all published courses...');
     this.courseService.getPublishedCourses().subscribe({
       next: (coursesData: CourseDto[]) => {
         this.courses = coursesData;
         this.filteredCourses = coursesData;
         this.extractCategories();
+        this.coursesLoaded = true;
+
+        console.log('✅ Courses loaded:', this.courses.length);
+        console.log('📋 Course IDs:', this.courses.map(c => ({ id: c.id, title: c.title })));
+
+        // Update recommendations if enrollments already loaded
+        if (this.enrollmentsLoaded) {
+          this.logRecommendations();
+        }
       },
-      error: (err: any) => console.error('Failed to load courses:', err)
+      error: (err: any) => {
+        console.error('❌ Failed to load courses:', err);
+        this.coursesLoaded = true; // Still mark as loaded to prevent blocking
+      }
     });
   }
 
@@ -119,6 +136,7 @@ export class StudentDashboard implements OnInit, OnDestroy {
     });
 
     this.categories = Array.from(categoryMap.values());
+    console.log('🏷️ Categories extracted:', this.categories.length);
   }
 
   filterByCategory(categoryId: number | null): void {
@@ -131,6 +149,7 @@ export class StudentDashboard implements OnInit, OnDestroy {
         course => course.category?.id === categoryId
       );
     }
+    console.log('🔍 Filtered courses:', this.filteredCourses.length);
   }
 
   isCategorySelected(categoryId: number | null): boolean {
@@ -139,60 +158,125 @@ export class StudentDashboard implements OnInit, OnDestroy {
 
   // Handler for enrolled course IDs from my-courses component
   onEnrolledCoursesLoaded(courseIds: number[]): void {
-    this.enrolledCourseIds = courseIds;
+    console.log('📨 Received enrolled course IDs from my-courses:', courseIds);
 
-    // ✨ NEW LOGIC: Determine the categories of the enrolled courses
+    this.enrolledCourseIds = courseIds;
+    this.enrollmentsLoaded = true;
+
+    // Determine the categories of the enrolled courses
     const categoryIds = this.courses
       .filter(course => course.id && courseIds.includes(course.id))
       .map(course => course.category?.id)
-      .filter((id): id is number => id !== undefined); // Filter out undefined/null IDs
+      .filter((id): id is number => id !== undefined);
 
     // Remove duplicates
     this.enrolledCategoryIds = [...new Set(categoryIds)];
 
-    console.log('📚 Enrolled course IDs received:', this.enrolledCourseIds);
-    console.log('✨ Enrolled Category IDs (for personalization):', this.enrolledCategoryIds);
-    console.log('⭐ Recommended courses count:', this.getRecommendedCourses().length);
+    console.log('✅ Enrolled course IDs stored:', this.enrolledCourseIds);
+    console.log('🏷️ Enrolled category IDs:', this.enrolledCategoryIds);
+
+    // Log recommendations for debugging
+    if (this.coursesLoaded) {
+      this.logRecommendations();
+    }
   }
 
-  // Get recommended courses (excluding enrolled ones, prioritizing same category)
+  // Helper method to log recommendations for debugging
+  private logRecommendations(): void {
+    const recommendations = this.getRecommendedCourses();
+    console.log('⭐ RECOMMENDATIONS UPDATE:');
+    console.log('   Total courses:', this.courses.length);
+    console.log('   Enrolled courses:', this.enrolledCourseIds.length);
+    console.log('   Recommended courses:', recommendations.length);
+    console.log('   Recommendations:', recommendations.map(c => ({
+      id: c.id,
+      title: c.title,
+      category: c.category?.name
+    })));
+  }
+
+  // Get recommended courses (ONLY courses the user is NOT enrolled in)
   getRecommendedCourses(): CourseDto[] {
-    // 1. Get courses that the student is NOT enrolled in
-    const availableCourses = this.courses.filter(course =>
-      course.id && !this.enrolledCourseIds.includes(course.id)
-    );
+    // If courses not loaded yet, return empty array
+    if (!this.coursesLoaded) {
+      console.log('⏳ Courses not loaded yet');
+      return [];
+    }
 
-    // 2. Separate relevant courses (same category as enrolled courses)
-    const highlyRelevant = availableCourses.filter(course =>
-      course.category?.id && this.enrolledCategoryIds.includes(course.category.id)
-    );
+    // Filter out all enrolled courses
+    const notEnrolledCourses = this.courses.filter(course => {
+      // Make sure course has an ID
+      if (!course.id) {
+        console.log('⚠️ Course without ID found:', course.title);
+        return false;
+      }
 
-    // 3. Separate general/other courses
-    const generalRecommendations = availableCourses.filter(course =>
-      !course.category?.id || !this.enrolledCategoryIds.includes(course.category.id)
-    );
+      // Check if NOT in enrolled list
+      const isNotEnrolled = !this.enrolledCourseIds.includes(course.id);
 
-    // 4. Combine them, prioritizing highly relevant courses, and slice to top 4.
-    const recommended: CourseDto[] = [
-      ...highlyRelevant,
-      ...generalRecommendations
-    ].slice(0, 4);
+      if (!isNotEnrolled) {
+        console.log('❌ Filtering out enrolled course:', course.id, course.title);
+      }
 
-    return recommended;
+      return isNotEnrolled;
+    });
+
+    console.log('🔍 Filtering recommendations:');
+    console.log('   Total courses:', this.courses.length);
+    console.log('   Enrolled courses:', this.enrolledCourseIds.length);
+    console.log('   Available courses (not enrolled):', notEnrolledCourses.length);
+
+    // If no courses available (user enrolled in all), return empty array
+    if (notEnrolledCourses.length === 0) {
+      console.log('🎉 User enrolled in all courses!');
+      return [];
+    }
+
+    // If user has enrolled in courses with specific categories, prioritize similar courses
+    if (this.enrolledCategoryIds.length > 0) {
+      // Courses in the same categories as enrolled courses
+      const sameCategoryCourses = notEnrolledCourses.filter(course =>
+        course.category?.id && this.enrolledCategoryIds.includes(course.category.id)
+      );
+
+      // Other courses
+      const otherCourses = notEnrolledCourses.filter(course =>
+        !course.category?.id || !this.enrolledCategoryIds.includes(course.category.id)
+      );
+
+      console.log('🎯 Same category courses:', sameCategoryCourses.length);
+      console.log('📚 Other courses:', otherCourses.length);
+
+      // Combine: prioritize same category, then others, limit to 4
+      const recommendations = [...sameCategoryCourses, ...otherCourses].slice(0, 4);
+      console.log('⭐ Final recommendations (with category priority):', recommendations.length);
+      return recommendations;
+    }
+
+    // If no enrolled courses yet, just return first 4 available courses
+    const recommendations = notEnrolledCourses.slice(0, 4);
+    console.log('⭐ Final recommendations (no enrollments yet):', recommendations.length);
+    return recommendations;
   }
 
   enrollInCourse(course: CourseDto): void {
     if (course.id) {
+      console.log('🎓 Navigating to enroll in course:', course.id, course.title);
       this.router.navigate(['/student/course', course.id, 'enroll']);
-      console.log('Navigating to course enrollment:', course.id);
     } else {
-      console.error('Course ID is missing for course:', course.title);
+      console.error('❌ Course ID is missing for course:', course.title);
+      alert('Unable to enroll. Course ID is missing.');
     }
   }
 
-  // --- Display Helpers (from original code) ---
   getCourseImage(course: CourseDto): string {
-    return (course as any).thumbnailUrl || 'assets/images/course-placeholder.png';
+    // Try thumbnailUrl first, then fallback to a data URI placeholder
+    if ((course as any).thumbnailUrl) {
+      return (course as any).thumbnailUrl;
+    }
+
+    // Return a data URI SVG placeholder as fallback
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzliNjAxMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmZmZmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db3Vyc2UgSW1hZ2U8L3RleHQ+PC9zdmc+';
   }
 
   getCategoryName(course: CourseDto): string {
@@ -229,5 +313,4 @@ export class StudentDashboard implements OnInit, OnDestroy {
   getStudentId(): string {
     return this.currentUser?.studentId || 'N/A';
   }
-
 }
