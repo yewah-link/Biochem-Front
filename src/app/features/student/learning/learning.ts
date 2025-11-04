@@ -2,19 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { CourseEnrollmentDto, CourseEnrollmentService } from '../../../core/course-enrollment.service';
 import { VideosDto, CourseService, CourseDto } from '../../../core/course.service';
-
+import { AuthService } from '../../../core/auth/auth.service';
 
 interface VideoWithProgress extends VideosDto {
   watchProgress?: number;
   lastWatched?: string;
   isCompleted?: boolean;
-}
-
-interface WeeklyGoal {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
 }
 
 @Component({
@@ -33,52 +26,30 @@ export class Learning implements OnInit {
   // Course videos from the selected course
   courseVideos: VideoWithProgress[] = [];
 
-  // Recently watched videos across all courses
-  recentVideos: VideoWithProgress[] = [];
-
-  // Recommended courses
-  recommendedCourses: CourseDto[] = [];
-
-  weeklyGoals: WeeklyGoal[] = [
-    {
-      id: 1,
-      title: 'Complete Current Course Module',
-      description: 'Finish all videos in the current section',
-      completed: false
-    },
-    {
-      id: 2,
-      title: 'Watch 5 Videos This Week',
-      description: 'Stay consistent with your learning',
-      completed: false
-    },
-    {
-      id: 3,
-      title: 'Take Practice Test',
-      description: 'Test your knowledge on completed modules',
-      completed: false
-    },
-    {
-      id: 4,
-      title: 'Review Course Notes',
-      description: 'Go through all saved notes from this week',
-      completed: false
-    }
-  ];
-
-  userId: number = 1; // Should come from auth service
+  userId: number | null = null;
   isLoading: boolean = true;
 
   constructor(
     private courseService: CourseService,
-    private enrollmentService: CourseEnrollmentService
+    private enrollmentService: CourseEnrollmentService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadUserLearningData();
+    // Get the current logged-in user ID
+    const currentUser = this.authService.getCurrentUserValue();
+    if (currentUser?.id) {
+      this.userId = currentUser.id;
+      this.loadUserLearningData();
+    } else {
+      console.error('No user logged in');
+      this.isLoading = false;
+    }
   }
 
   private loadUserLearningData(): void {
+    if (!this.userId) return;
+
     this.isLoading = true;
 
     // Load user's enrolled courses
@@ -87,7 +58,7 @@ export class Learning implements OnInit {
         this.enrolledCourses = enrollments;
 
         // Load in-progress courses for recent videos
-        this.enrollmentService.getInProgressCourses(this.userId).subscribe({
+        this.enrollmentService.getInProgressCourses(this.userId!).subscribe({
           next: (inProgress) => {
             if (inProgress.length > 0) {
               // Get the most recent course
@@ -104,9 +75,6 @@ export class Learning implements OnInit {
             this.isLoading = false;
           }
         });
-
-        // Load recommended courses
-        this.loadRecommendedCourses();
       },
       error: (err) => {
         console.error('Error loading enrollments:', err);
@@ -117,18 +85,17 @@ export class Learning implements OnInit {
 
   private loadCourseVideos(): void {
     if (!this.currentCourse?.id) return;
-    
+
     // Fetch the full course details with videos
     this.courseService.getCourseById(this.currentCourse.id).subscribe({
       next: (course) => {
         this.currentCourse = course;
-        
+
         if (!course.videos || course.videos.length === 0) {
           this.courseVideos = [];
-          this.recentVideos = [];
           return;
         }
-        
+
         // Sort videos by orderIndex
         this.courseVideos = [...course.videos]
           .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
@@ -138,69 +105,114 @@ export class Learning implements OnInit {
             lastWatched: this.getRandomLastWatched(),
             isCompleted: Math.random() > 0.5 // Should come from backend
           }));
-        
-        // Set recent videos (last 3 watched)
-        this.recentVideos = this.courseVideos
-          .filter(v => v.watchProgress && v.watchProgress > 0)
-          .slice(0, 3);
+
+        // Auto-select the first video
+        if (this.courseVideos.length > 0) {
+          this.selectedVideo = this.courseVideos[0];
+        }
       },
       error: (err) => {
         console.error('Error loading course videos:', err);
         this.courseVideos = [];
-        this.recentVideos = [];
-      }
-    });
-  }
-
-  private loadRecommendedCourses(): void {
-    this.courseService.getPublishedCourses().subscribe({
-      next: (courses) => {
-        // Filter out already enrolled courses
-        const enrolledIds = this.enrolledCourses.map(e => e.courseId);
-        this.recommendedCourses = courses
-          .filter(c => c.id && !enrolledIds.includes(c.id))
-          .slice(0, 4);
-      },
-      error: (err) => {
-        console.error('Error loading recommended courses:', err);
       }
     });
   }
 
   selectVideo(video: VideoWithProgress): void {
     this.selectedVideo = video;
-    document.body.style.overflow = 'hidden';
   }
 
-  closeVideo(): void {
-    this.selectedVideo = null;
-    document.body.style.overflow = 'auto';
+  // Get current lesson number based on selected video
+  getCurrentLessonNumber(): number {
+    if (!this.selectedVideo) return 1;
+    const index = this.courseVideos.findIndex(v => v.id === this.selectedVideo?.id);
+    return index >= 0 ? index + 1 : 1;
   }
 
-  enrollInCourse(course: CourseDto): void {
-    if (!course.id) return;
+  // Check if there's a previous video
+  hasPreviousVideo(): boolean {
+    if (!this.selectedVideo || this.courseVideos.length === 0) return false;
+    const currentIndex = this.courseVideos.findIndex(v => v.id === this.selectedVideo?.id);
+    return currentIndex > 0;
+  }
 
-    this.enrollmentService.enrollInCourse(this.userId, course.id).subscribe({
-      next: (enrollment) => {
-        console.log('Enrolled in course:', enrollment);
-        this.loadUserLearningData();
-      },
-      error: (err) => {
-        console.error('Error enrolling in course:', err);
+  // Check if there's a next video
+  hasNextVideo(): boolean {
+    if (!this.selectedVideo || this.courseVideos.length === 0) return false;
+    const currentIndex = this.courseVideos.findIndex(v => v.id === this.selectedVideo?.id);
+    return currentIndex < this.courseVideos.length - 1;
+  }
+
+  // Navigate to previous video
+  navigateToPreviousVideo(): void {
+    if (!this.hasPreviousVideo()) return;
+    const currentIndex = this.courseVideos.findIndex(v => v.id === this.selectedVideo?.id);
+    if (currentIndex > 0) {
+      this.selectVideo(this.courseVideos[currentIndex - 1]);
+    }
+  }
+
+  // Navigate to next video
+  navigateToNextVideo(): void {
+    if (!this.hasNextVideo()) return;
+    const currentIndex = this.courseVideos.findIndex(v => v.id === this.selectedVideo?.id);
+    if (currentIndex < this.courseVideos.length - 1) {
+      this.selectVideo(this.courseVideos[currentIndex + 1]);
+    }
+  }
+
+  // Get completed count for progress display
+  getCompletedCount(): number {
+    return this.courseVideos.filter(v => v.isCompleted).length;
+  }
+
+  // Get progress percentage
+  getProgressPercentage(): number {
+    if (this.courseVideos.length === 0) return 0;
+    return (this.getCompletedCount() / this.courseVideos.length) * 100;
+  }
+
+  // Video event handlers
+  onVideoTimeUpdate(event: Event): void {
+    const video = event.target as HTMLVideoElement;
+    if (this.selectedVideo && video.duration) {
+      const progress = (video.currentTime / video.duration) * 100;
+      this.selectedVideo.watchProgress = progress;
+
+      // Auto-mark as completed at 90% watched
+      if (progress >= 90 && !this.selectedVideo.isCompleted) {
+        this.selectedVideo.isCompleted = true;
+        // TODO: Save completion status to backend
       }
-    });
+    }
   }
 
-  toggleGoal(goal: WeeklyGoal): void {
-    goal.completed = !goal.completed;
-    this.saveGoalProgress(goal);
+  onVideoLoaded(event: Event): void {
+    const video = event.target as HTMLVideoElement;
+    console.log('Video loaded, duration:', video.duration);
   }
 
-  private saveGoalProgress(goal: WeeklyGoal): void {
-    // Save to backend or local storage
-    console.log('Goal updated:', goal);
+  onVideoEnded(event: Event): void {
+    if (this.selectedVideo) {
+      this.selectedVideo.isCompleted = true;
+      // TODO: Save completion status to backend
+
+      // Auto-play next video if available
+      if (this.hasNextVideo()) {
+        setTimeout(() => {
+          this.navigateToNextVideo();
+        }, 2000);
+      }
+    }
   }
 
+  onVideoError(event: Event): void {
+    console.error('Video playback error:', event);
+    const video = event.target as HTMLVideoElement;
+    console.error('Error details:', video.error);
+  }
+
+  // Utility methods
   private getRandomLastWatched(): string {
     const options = ['2 hours ago', '1 day ago', '2 days ago', '3 days ago', 'Yesterday'];
     return options[Math.floor(Math.random() * options.length)];
@@ -210,27 +222,22 @@ export class Learning implements OnInit {
     return this.courseService.formatDuration(durationSeconds);
   }
 
+  formatFileSize(bytes?: number): string {
+    if (!bytes) return 'Unknown size';
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (Math.round((bytes / Math.pow(1024, i)) * 100) / 100) + ' ' + sizes[i];
+  }
+
   getVideoUrl(video: VideoWithProgress): string {
+    // Use the video streaming URL from your backend
+    if (video.id) {
+      return `http://localhost:8080/api/videos/stream/${video.id}`;
+    }
     return video.filePath || '';
   }
 
   getThumbnailUrl(video: VideoWithProgress): string {
     return video.thumbnailPath || 'assets/images/video-placeholder.png';
-  }
-
-  getCourseThumbnailUrl(course: CourseDto): string {
-    return course.thumbnailUrl || 'assets/images/course-placeholder.png';
-  }
-
-  markVideoAsCompleted(video: VideoWithProgress): void {
-    video.isCompleted = true;
-    video.watchProgress = 100;
-    // Update backend
-    console.log('Video marked as completed:', video);
-  }
-
-  continueWatching(): void {
-    // Resume video at last watched position
-    console.log('Continuing video:', this.selectedVideo);
   }
 }
