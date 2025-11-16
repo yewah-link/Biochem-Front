@@ -63,30 +63,6 @@
         </div>
 
         <form [formGroup]="examForm" class="space-y-6">
-          <!-- Category Selection -->
-          <div class="form-group">
-            <label class="block text-sm font-semibold text-gray-900 mb-2">
-              Category <span class="text-red-600">*</span>
-            </label>
-            <div class="relative">
-              <select
-                formControlName="categoryId"
-                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9b6012] focus:border-transparent transition-all appearance-none cursor-pointer"
-                [class.border-red-500]="examForm.get('categoryId')?.invalid && examForm.get('categoryId')?.touched">
-                <option value="" disabled>Select a category</option>
-                <option *ngFor="let category of categories" [value]="category.id">
-                  {{ category.name }}
-                </option>
-              </select>
-              <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            @if (examForm.get('categoryId')?.invalid && examForm.get('categoryId')?.touched) {
-              <p class="mt-1 text-sm text-red-600">Category is required</p>
-            }
-          </div>
-
           <!-- Title -->
           <div class="form-group">
             <label class="block text-sm font-semibold text-gray-900 mb-2">

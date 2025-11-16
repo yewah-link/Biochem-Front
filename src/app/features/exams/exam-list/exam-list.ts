@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ExamDto, ExamService, GenericResponseV2 } from '../../../core/exam.service';
+import { ExamDto, ExamService } from '../../../core/exam.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-exam-list',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './exam-list.html',
   styleUrls: ['./exam-list.scss']
 })
@@ -33,13 +34,9 @@ export class ExamList implements OnInit {
     this.errorMessage = '';
 
     this.examService.getAllExams().subscribe({
-      next: (res: GenericResponseV2<ExamDto[]>) => {
-        if (res.status === 'SUCCESS') {
-          this.exams = res._embedded || [];
-          this.errorMessage = '';
-        } else {
-          this.errorMessage = res.message || 'Failed to load exams';
-        }
+      next: (exams: ExamDto[]) => {
+        this.exams = exams || [];
+        this.errorMessage = '';
         this.isLoading = false;
       },
       error: (error) => {
@@ -77,16 +74,11 @@ export class ExamList implements OnInit {
 
     this.deletingIds.add(id);
 
-    this.examService.deleteExam(id).subscribe({
-      next: (res: GenericResponseV2<void>) => {
-        if (res.status === 'SUCCESS') {
-          this.exams = this.exams.filter(e => e.id !== id);
-          this.successMessage = 'Exam deleted successfully';
-          setTimeout(() => this.successMessage = '', 3000);
-        } else {
-          this.errorMessage = res.message || 'Failed to delete exam';
-          setTimeout(() => this.errorMessage = '', 3000);
-        }
+    this.examService.deleteExamById(id).subscribe({
+      next: () => {
+        this.exams = this.exams.filter(e => e.id !== id);
+        this.successMessage = 'Exam deleted successfully';
+        setTimeout(() => this.successMessage = '', 3000);
         this.deletingIds.delete(id);
       },
       error: (error) => {

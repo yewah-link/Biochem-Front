@@ -1,153 +1,122 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
+import { catchError, retry, map } from 'rxjs/operators';
 
-export interface CategoryDto {
-  id: number;
-  name: string;
-}
-
-export interface QuestionDto {
+/**
+ * Data Transfer Object representing a Course.
+ */
+export interface CourseDto {
   id?: number;
-  questionText: string;
-  examId?: number;
+  title?: string;
+  description?: string;
 }
 
+/**
+ * Data Transfer Object representing an Exam.
+ */
 export interface ExamDto {
   id?: number;
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
+  totalMarks?: number;
+  passingMarks?: number;
+  durationMinutes?: number;
+  orderIndex?: number;
+  isPublished?: boolean;
   createdDate?: string;
-  category: CategoryDto;
-  questions?: QuestionDto[];
+  courseId?: number;
+  course?: CourseDto;
 }
 
-export interface GenericResponseV2<T> {
-  status: 'SUCCESS' | 'ERROR';
+/**
+ * Generic API response wrapper.
+ */
+interface GenericResponse<T> {
+  status: string;
   message: string;
-  _embedded: T;
+  _embedded?: T;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExamService {
- private readonly baseUrl = 'http://localhost:8080/api/v1/exam';
-
-  private readonly httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json'
-    })
-  };
+  private apiUrl = 'http://localhost:8080/api/v1/exam';
 
   constructor(private http: HttpClient) {}
 
-  // Create a new exam
-  createExam(examDto: ExamDto): Observable<GenericResponseV2<ExamDto>> {
-    return this.http.post<GenericResponseV2<ExamDto>>(
-      this.baseUrl,
-      examDto,
-      this.httpOptions
-    ).pipe(
-      catchError(this.handleError)
+  /**
+   * Create a new exam.
+   */
+  createExam(examDto: ExamDto): Observable<ExamDto> {
+    return this.http.post<GenericResponse<ExamDto>>(this.apiUrl, examDto).pipe(
+      map(res => {
+        if (res.status === 'SUCCESS' && res._embedded) {
+          return res._embedded;
+        }
+        throw new Error(res.message || 'Exam creation failed');
+      })
     );
   }
 
-  // GET all exams
-  getAllExams(): Observable<GenericResponseV2<ExamDto[]>> {
-    return this.http.get<GenericResponseV2<ExamDto[]>>(this.baseUrl)
-      .pipe(
-        retry(1),
-        catchError(this.handleError)
-      );
-  }
-
-  // GET exam by ID
-  getExamById(id: number): Observable<GenericResponseV2<ExamDto>> {
-    return this.http.get<GenericResponseV2<ExamDto>>(`${this.baseUrl}/${id}`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  // GET exams by category
-  getExamsByCategory(categoryId: number): Observable<GenericResponseV2<ExamDto[]>> {
-    return this.http.get<GenericResponseV2<ExamDto[]>>(`${this.baseUrl}/category/${categoryId}`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  // Update exam
-  updateExam(id: number, examDto: ExamDto): Observable<GenericResponseV2<ExamDto>> {
-    return this.http.put<GenericResponseV2<ExamDto>>(
-      `${this.baseUrl}/${id}`,
-      examDto,
-      this.httpOptions
-    ).pipe(
-      catchError(this.handleError)
+  /**
+   * Update an existing exam's metadata.
+   */
+  updateExam(id: number, examDto: ExamDto): Observable<ExamDto> {
+    return this.http.put<GenericResponse<ExamDto>>(`${this.apiUrl}/${id}`, examDto).pipe(
+      map(res => {
+        if (res.status === 'SUCCESS' && res._embedded) {
+          return res._embedded;
+        }
+        throw new Error(res.message || 'Exam update failed');
+      })
     );
   }
 
-  // Delete exam
-  deleteExam(id: number): Observable<GenericResponseV2<void>> {
-    return this.http.delete<GenericResponseV2<void>>(`${this.baseUrl}/${id}`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  // Add question to exam
-  addQuestion(examId: number, questionDto: QuestionDto): Observable<GenericResponseV2<QuestionDto>> {
-    return this.http.post<GenericResponseV2<QuestionDto>>(
-      `${this.baseUrl}/${examId}/questions`,
-      questionDto,
-      this.httpOptions
-    ).pipe(
-      catchError(this.handleError)
+  /**
+   * Fetch all exams in the system.
+   */
+  getAllExams(): Observable<ExamDto[]> {
+    return this.http.get<GenericResponse<ExamDto[]>>(`${this.apiUrl}`).pipe(
+      map(res => res._embedded || [])
     );
   }
 
-  // Get questions for a specific exam
-  getQuestionsByExam(examId: number): Observable<GenericResponseV2<QuestionDto[]>> {
-    return this.http.get<GenericResponseV2<QuestionDto[]>>(`${this.baseUrl}/${examId}/questions`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  // Update question
-  updateQuestion(id: number, questionDto: QuestionDto): Observable<GenericResponseV2<QuestionDto>> {
-    return this.http.put<GenericResponseV2<QuestionDto>>(
-      `${this.baseUrl}/questions/${id}`,
-      questionDto,
-      this.httpOptions
-    ).pipe(
-      catchError(this.handleError)
+  /**
+   * Fetch an exam by its unique ID.
+   */
+  getExamById(id: number): Observable<ExamDto> {
+    return this.http.get<GenericResponse<ExamDto>>(`${this.apiUrl}/${id}`).pipe(
+      map(res => {
+        if (res.status === 'SUCCESS' && res._embedded) {
+          return res._embedded;
+        }
+        throw new Error(res.message || 'Failed to fetch exam');
+      })
     );
   }
 
-  // Delete question
-  deleteQuestion(id: number): Observable<GenericResponseV2<void>> {
-    return this.http.delete<GenericResponseV2<void>>(`${this.baseUrl}/questions/${id}`)
-      .pipe(
-        catchError(this.handleError)
-      );
+  /**
+   * Fetch all exams associated with a specific course.
+   */
+  getExamsByCourse(courseId: number): Observable<ExamDto[]> {
+    return this.http.get<GenericResponse<ExamDto[]>>(`${this.apiUrl}/course/${courseId}`).pipe(
+      map(res => res._embedded || [])
+    );
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An unknown error occurred!';
-
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Server-side error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-    }
-
-    console.error('ExamService Error:', errorMessage);
-    return throwError(() => new Error(errorMessage));
+  /**
+   * Delete an exam by its ID.
+   */
+  deleteExamById(id: number): Observable<void> {
+    return this.http.delete<GenericResponse<void>>(`${this.apiUrl}/${id}`).pipe(
+      map(res => {
+        if (res.status === 'SUCCESS') return;
+        throw new Error(res.message || 'Failed to delete exam');
+      })
+    );
   }
+
+
 }

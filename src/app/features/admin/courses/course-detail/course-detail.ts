@@ -497,37 +497,57 @@ removeNote(noteId: number) {
   });
 }
 
-  // ========================================
-  // EXAM METHODS
-  // ========================================
+// EXAM METHODS
 
-  addExam() {
-    this.router.navigate(['/dashboard/courses', this.courseId, 'exams', 'add']);
+addExam() {
+  if (!this.courseId) {
+    alert('Course ID is missing');
+    return;
   }
 
-  editExam(examId: number) {
-    this.router.navigate(['/dashboard/courses', this.courseId, 'exams', examId, 'edit']);
+  // Navigate to '/dashboard/exams/add' with courseId as query param
+  this.router.navigate(['/dashboard/exams/add'], {
+    queryParams: {
+      courseId: this.courseId,
+      courseName: this.course?.title || 'Unknown Course'
+    }
+  });
+}
+
+editExam(examId: number) {
+  if (!this.courseId) {
+    alert('Course ID is missing');
+    return;
   }
 
-  removeExam(examId: number) {
-    if (this.courseId === null) return;
+  // Navigate to '/dashboard/exams/edit/:id' with courseId as query param
+  this.router.navigate(['/dashboard/exams/edit', examId], {
+    queryParams: {
+      courseId: this.courseId,
+      courseName: this.course?.title || 'Unknown Course'
+    }
+  });
+}
 
-    const confirmed = confirm('Are you sure you want to remove this exam from the course?');
-    if (!confirmed) return;
+removeExam(examId: number) {
+  if (this.courseId === null) return;
 
-    this.isLoading = true;
-    this.courseService.removeExamFromCourse(this.courseId, examId).subscribe({
-      next: () => {
-        console.log('Exam removed successfully');
-        this.isLoading = false;
-        alert('Exam removed successfully!');
-        this.loadCourse();
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error removing exam:', error);
-        this.isLoading = false;
-        alert(`Error removing exam: ${error.message}`);
-      }
-    });
-  }
+  const confirmed = confirm('Are you sure you want to remove this exam from the course?');
+  if (!confirmed) return;
+
+  this.isLoading = true;
+  this.courseService.removeExamFromCourse(this.courseId, examId).subscribe({
+    next: () => {
+      console.log('Exam removed successfully');
+      this.isLoading = false;
+      alert('Exam removed successfully!');
+      this.loadCourse();
+    },
+    error: (error: HttpErrorResponse) => {
+      console.error('Error removing exam:', error);
+      this.isLoading = false;
+      alert(`Error removing exam: ${error.message}`);
+    }
+  });
+}
 }
