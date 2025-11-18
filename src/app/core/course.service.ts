@@ -193,7 +193,7 @@ export class CourseService {
           return res._embedded;
         }
         throw new Error(res.message || 'Failed to add video to course');
-      })
+      })
     );
   }
 

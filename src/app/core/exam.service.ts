@@ -26,6 +26,7 @@ export interface ExamDto {
   isPublished?: boolean;
   createdDate?: string;
   courseId?: number;
+  courseName?: string;
   course?: CourseDto;
 }
 

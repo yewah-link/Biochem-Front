@@ -8,8 +8,8 @@ import { map } from 'rxjs/operators';
  */
 export interface ChoiceDto {
   id?: number;
-  text?: string;
-  isCorrect?: boolean;
+  choiceText?: string;     
+  correct?: boolean;        
   questionId?: number;
 }
 
@@ -19,7 +19,7 @@ export interface ChoiceDto {
 export interface QuestionDto {
   id?: number;
   text?: string;
-  type?: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'ESSAY';
+  type?: 'MULTIPLE_CHOICE' | 'WRITTEN';  // ✅ Changed to match backend enum
   marks?: number;
   examId?: number;
   choices?: ChoiceDto[];
@@ -103,7 +103,7 @@ export class QuestionService {
    * Delete a question by its ID.
    */
   deleteQuestionById(id: number): Observable<void> {
-    return this.http.delete<GenericResponse<void>>(`${this.apiUrl}/question/${id}`).pipe(
+    return this.http.delete<GenericResponse<void>>(`${this.apiUrl}/questions/${id}`).pipe(  // ✅ Fixed endpoint
       map(res => {
         if (res.status === 'SUCCESS') return;
         throw new Error(res.message || 'Failed to delete question');

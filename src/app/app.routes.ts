@@ -22,13 +22,16 @@ import { Achievements } from './features/student/achievements/achievements';
 import { ProgressBar } from './features/student/progress-bar/progress-bar';
 import { CourseEnrollment } from './features/student/course-enrollment/course-enrollment';
 import { Learning } from './features/student/learning/learning';
-// MyCourses is imported implicitly via StudentDashboard, but keeping the component import standard for consistency
 import { MyCourses } from './features/student/my-courses/my-courses';
 
 // Import course components
 import { CourseDetail } from './features/admin/courses/course-detail/course-detail';
 import { CourseList } from './features/admin/courses/course-list/course-list';
 import { CourseForm } from './features/admin/courses/course-form/course-form';
+
+// ✅ Import question components
+import { QuestionEdit } from './features/questions/question-edit/question-edit';
+import { QuestionList } from './features/questions/question-list/question-list';
 
 export const routes: Routes = [
   { path: '', component: Loader },
@@ -67,7 +70,20 @@ export const routes: Routes = [
       { path: 'exams/add', component: ExamEdit },
       { path: 'exams/edit/:id', component: ExamEdit },
       { path: 'exams/take/:id', component: ExamTake },
-      { path: 'exams/result/:id', component: ExamResult }
+      { path: 'exams/result/:id', component: ExamResult },
+
+      // Question Management Routes
+      // View all questions for a specific exam
+      { path: 'exams/:examId/questions', component: QuestionList },
+      
+      // Add new question to an exam
+      { path: 'exams/:examId/questions/add', component: QuestionEdit },
+      
+      // Edit specific question
+      { path: 'exams/:examId/questions/edit/:id', component: QuestionEdit },
+      
+      // Alternative: Edit questions in bulk for an exam
+      { path: 'exams/:examId/questions/edit', component: QuestionEdit }
     ]
   },
 

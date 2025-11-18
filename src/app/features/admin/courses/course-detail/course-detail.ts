@@ -514,14 +514,16 @@ addExam() {
   });
 }
 
+// In course-detail.ts
+
 editExam(examId: number) {
   if (!this.courseId) {
     alert('Course ID is missing');
     return;
   }
 
-  // Navigate to '/dashboard/exams/edit/:id' with courseId as query param
-  this.router.navigate(['/dashboard/exams/edit', examId], {
+  // ✅ Navigate to filtered exam list for this course
+  this.router.navigate(['/dashboard/exams'], {
     queryParams: {
       courseId: this.courseId,
       courseName: this.course?.title || 'Unknown Course'
