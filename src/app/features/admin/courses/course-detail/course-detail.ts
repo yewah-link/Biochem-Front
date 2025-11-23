@@ -35,6 +35,11 @@ export class CourseDetail implements OnInit {
   draggedVideoIndex: number | null = null;
   dragOverIndex: number | null = null;
 
+  // Thumbnail handling
+  selectedThumbnailFile: File | null = null;
+  thumbnailPreview: string | null = null;
+  isThumbnailChanged = false;
+
   // Form for course metadata
   courseForm: FormGroup;
 
@@ -51,7 +56,6 @@ export class CourseDetail implements OnInit {
       title: ['', Validators.required],
       description: [''],
       categoryId: [null, Validators.required],
-      thumbnailUrl: [''],
       estimatedHours: [0, [Validators.min(0)]]
     });
   }
@@ -120,11 +124,14 @@ export class CourseDetail implements OnInit {
           title: this.course.title || '',
           description: this.course.description || '',
           categoryId: this.course.category?.id || null,
-          thumbnailUrl: this.course.thumbnailUrl || '',
           estimatedHours: this.course.estimatedHours || 0
         });
 
-        // ✅ Load notes filtered by course
+        // Reset thumbnail state
+        this.thumbnailPreview = this.course.thumbnailUrl || null;
+        this.selectedThumbnailFile = null;
+        this.isThumbnailChanged = false;
+
         this.loadCourseNotes();
 
         this.isLoading = false;
@@ -145,7 +152,6 @@ export class CourseDetail implements OnInit {
     });
   }
 
-  // ✅ NEW METHOD: Load notes filtered by course
   loadCourseNotes() {
     if (!this.courseId) return;
 
@@ -158,7 +164,6 @@ export class CourseDetail implements OnInit {
       },
       error: (error: HttpErrorResponse) => {
         console.error('Error loading course notes:', error);
-        // Don't show alert for notes loading failure, just log it
       }
     });
   }
@@ -166,13 +171,59 @@ export class CourseDetail implements OnInit {
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
     if (!this.isEditMode && this.course) {
+      // Reset form and thumbnail state when canceling edit
       this.courseForm.patchValue({
         title: this.course.title,
         description: this.course.description,
         categoryId: this.course.category?.id,
-        thumbnailUrl: this.course.thumbnailUrl,
         estimatedHours: this.course.estimatedHours
       });
+      this.thumbnailPreview = this.course.thumbnailUrl || null;
+      this.selectedThumbnailFile = null;
+      this.isThumbnailChanged = false;
+    }
+  }
+
+  onThumbnailSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        input.value = '';
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert('File size must be less than 5MB');
+        input.value = '';
+        return;
+      }
+
+      this.selectedThumbnailFile = file;
+      this.isThumbnailChanged = true;
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.thumbnailPreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeThumbnail() {
+    this.selectedThumbnailFile = null;
+    this.thumbnailPreview = null;
+    this.isThumbnailChanged = true;
+    
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
 
@@ -195,7 +246,6 @@ export class CourseDetail implements OnInit {
     const courseDto: CourseDto = {
       title: formData.title,
       description: formData.description,
-      thumbnailUrl: formData.thumbnailUrl,
       estimatedHours: Number(formData.estimatedHours),
       category: {
         id: selectedCategory.id,
@@ -211,10 +261,13 @@ export class CourseDetail implements OnInit {
     this.courseService.updateCourse(this.courseId, courseDto).subscribe({
       next: () => {
         console.log('Course updated successfully');
-        this.isLoading = false;
-        this.isEditMode = false;
-        alert('Course updated successfully!');
-        this.loadCourse();
+
+        // Handle thumbnail changes
+        if (this.isThumbnailChanged) {
+          this.handleThumbnailUpdate();
+        } else {
+          this.finishUpdate();
+        }
       },
       error: (error: HttpErrorResponse) => {
         console.error('Error updating course:', error);
@@ -227,6 +280,48 @@ export class CourseDetail implements OnInit {
         }
       }
     });
+  }
+
+  handleThumbnailUpdate() {
+    if (!this.courseId) return;
+
+    // If thumbnail was removed
+    if (!this.selectedThumbnailFile && !this.thumbnailPreview) {
+      this.courseService.deleteThumbnail(this.courseId).subscribe({
+        next: () => {
+          console.log('Thumbnail deleted successfully');
+          this.finishUpdate();
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error deleting thumbnail:', error);
+          alert(`Course updated but thumbnail deletion failed: ${error.message}`);
+          this.finishUpdate();
+        }
+      });
+    }
+    // If new thumbnail was selected
+    else if (this.selectedThumbnailFile) {
+      this.courseService.uploadThumbnail(this.courseId, this.selectedThumbnailFile).subscribe({
+        next: () => {
+          console.log('Thumbnail uploaded successfully');
+          this.finishUpdate();
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error uploading thumbnail:', error);
+          alert(`Course updated but thumbnail upload failed: ${error.message}`);
+          this.finishUpdate();
+        }
+      });
+    } else {
+      this.finishUpdate();
+    }
+  }
+
+  finishUpdate() {
+    this.isLoading = false;
+    this.isEditMode = false;
+    alert('Course updated successfully!');
+    this.loadCourse();
   }
 
   publishCourse() {
@@ -288,10 +383,6 @@ export class CourseDetail implements OnInit {
       }
     });
   }
-
-  // ========================================
-  // VIDEO METHODS
-  // ========================================
 
   getVideoThumbnailUrl(video: any): string {
     return this.videoService.getVideoThumbnail(video as VideoDto);
@@ -439,117 +530,112 @@ export class CourseDetail implements OnInit {
     this.dragOverIndex = null;
   }
 
-  /*
-  NOTES METHODS 
-  */
-
   addNotes() {
-  if (!this.courseId) {
-    alert('Course ID is missing');
-    return;
+    if (!this.courseId) {
+      alert('Course ID is missing');
+      return;
+    }
+
+    this.router.navigate(['/dashboard/notes'], {
+      queryParams: {
+        courseId: this.courseId,
+        courseName: this.course?.title || 'Unknown Course'
+      }
+    });
   }
 
-  // ✅ Navigate to '/dashboard/notes' (no /create, no /add)
-  this.router.navigate(['/dashboard/notes'], {
-    queryParams: {
-      courseId: this.courseId,
-      courseName: this.course?.title || 'Unknown Course'
+  editNote(noteId: number) {
+    if (!this.courseId) {
+      alert('Course ID is missing');
+      return;
     }
-  });
-}
 
-editNote(noteId: number) {
-  if (!this.courseId) {
-    alert('Course ID is missing');
-    return;
+    this.router.navigate(['/dashboard/notes', noteId], {
+      queryParams: {
+        courseId: this.courseId,
+        courseName: this.course?.title || 'Unknown Course'
+      }
+    });
   }
 
-  // ✅ Navigate to '/dashboard/notes/:id' with noteId in path
-  this.router.navigate(['/dashboard/notes', noteId], {
-    queryParams: {
-      courseId: this.courseId,
-      courseName: this.course?.title || 'Unknown Course'
-    }
-  });
-}
+  removeNote(noteId: number) {
+    if (this.courseId === null) return;
 
-removeNote(noteId: number) {
-  if (this.courseId === null) return;
+    const confirmed = confirm('Are you sure you want to remove this note from the course?');
+    if (!confirmed) return;
 
-  const confirmed = confirm('Are you sure you want to remove this note from the course?');
-  if (!confirmed) return;
-
-  this.isLoading = true;
-  this.courseService.removeNotesFromCourse(this.courseId, noteId).subscribe({
-    next: () => {
-      console.log('Note removed successfully');
-      this.isLoading = false;
-      alert('Note removed successfully!');
-
-      // ✅ Reload notes after removal
-      this.loadCourseNotes();
-    },
-    error: (error: HttpErrorResponse) => {
-      console.error('Error removing note:', error);
-      this.isLoading = false;
-      alert(`Error removing note: ${error.message}`);
-    }
-  });
-}
-
-// EXAM METHODS
-
-addExam() {
-  if (!this.courseId) {
-    alert('Course ID is missing');
-    return;
+    this.isLoading = true;
+    this.courseService.removeNotesFromCourse(this.courseId, noteId).subscribe({
+      next: () => {
+        console.log('Note removed successfully');
+        this.isLoading = false;
+        alert('Note removed successfully!');
+        this.loadCourseNotes();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error removing note:', error);
+        this.isLoading = false;
+        alert(`Error removing note: ${error.message}`);
+      }
+    });
   }
 
-  // Navigate to '/dashboard/exams/add' with courseId as query param
-  this.router.navigate(['/dashboard/exams/add'], {
-    queryParams: {
-      courseId: this.courseId,
-      courseName: this.course?.title || 'Unknown Course'
+  addExam() {
+    if (!this.courseId) {
+      alert('Course ID is missing');
+      return;
     }
-  });
-}
 
-// In course-detail.ts
-
-editExam(examId: number) {
-  if (!this.courseId) {
-    alert('Course ID is missing');
-    return;
+    this.router.navigate(['/dashboard/exams/add'], {
+      queryParams: {
+        courseId: this.courseId,
+        courseName: this.course?.title || 'Unknown Course'
+      }
+    });
   }
 
-  // ✅ Navigate to filtered exam list for this course
-  this.router.navigate(['/dashboard/exams'], {
-    queryParams: {
-      courseId: this.courseId,
-      courseName: this.course?.title || 'Unknown Course'
+  editExam(examId: number) {
+    if (!this.courseId) {
+      alert('Course ID is missing');
+      return;
     }
-  });
-}
 
-removeExam(examId: number) {
-  if (this.courseId === null) return;
+    this.router.navigate(['/dashboard/exams'], {
+      queryParams: {
+        courseId: this.courseId,
+        courseName: this.course?.title || 'Unknown Course'
+      }
+    });
+  }
 
-  const confirmed = confirm('Are you sure you want to remove this exam from the course?');
-  if (!confirmed) return;
+  removeExam(examId: number) {
+    if (this.courseId === null) return;
 
-  this.isLoading = true;
-  this.courseService.removeExamFromCourse(this.courseId, examId).subscribe({
-    next: () => {
-      console.log('Exam removed successfully');
-      this.isLoading = false;
-      alert('Exam removed successfully!');
-      this.loadCourse();
-    },
-    error: (error: HttpErrorResponse) => {
-      console.error('Error removing exam:', error);
-      this.isLoading = false;
-      alert(`Error removing exam: ${error.message}`);
+    const confirmed = confirm('Are you sure you want to remove this exam from the course?');
+    if (!confirmed) return;
+
+    this.isLoading = true;
+    this.courseService.removeExamFromCourse(this.courseId, examId).subscribe({
+      next: () => {
+        console.log('Exam removed successfully');
+        this.isLoading = false;
+        alert('Exam removed successfully!');
+        this.loadCourse();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error removing exam:', error);
+        this.isLoading = false;
+        alert(`Error removing exam: ${error.message}`);
+      }
+    });
+  }
+
+  getCourseThumbnailUrl(): string {
+    if (this.course) {
+      // Use the service method that calls the backend endpoint
+      // GET /api/v1/course/{courseId}/thumbnail
+      return this.courseService.getCourseThumbnailUrl(this.course);
     }
-  });
-}
+    return 'assets/images/course-placeholder.png';
+  }
 }

@@ -107,7 +107,7 @@
               <!-- Course Image -->
               <div class="relative h-48 overflow-hidden bg-gradient-to-br from-amber-100 to-amber-200">
                 <img 
-                  [src]="getCourseImage(course)" 
+                  [src]="getCourseThumbnailUrl(course)" 
                   [alt]="course.title"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                 
@@ -235,7 +235,7 @@
                 <!-- Course Image -->
                 <div class="md:w-64 h-48 md:h-auto relative overflow-hidden bg-gradient-to-br from-amber-100 to-amber-200 flex-shrink-0">
                   <img 
-                    [src]="getCourseImage(course)" 
+                    [src]="getCourseThumbnailUrl(course)" 
                     [alt]="course.title"
                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                   

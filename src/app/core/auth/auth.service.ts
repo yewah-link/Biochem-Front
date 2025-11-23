@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, tap, map, interval } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { Observable, BehaviorSubject, tap, map, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 
 // Backend response wrapper
@@ -52,10 +52,23 @@ export interface AuthResponse {
   user: UserDto;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export interface VerifyResetTokenRequest {
+  token: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
   private apiUrl = 'http://localhost:8080/auth'; // ⚠️ Use HTTPS in production
   private tokenKey = 'auth_token';
   private userKey = 'current_user';
@@ -67,12 +80,20 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   public token$ = this.tokenSubject.asObservable();
 
+  // ✅ FIX: Store subscription to prevent memory leaks
+  private tokenRefreshSubscription?: Subscription;
+
   constructor(
     private http: HttpClient,
     private router: Router
   ) {
     // Start automatic token refresh check
     this.startTokenExpirationCheck();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription on service destroy
+    this.tokenRefreshSubscription?.unsubscribe();
   }
 
   // Register a new user
@@ -100,7 +121,7 @@ export class AuthService {
         }),
         tap(authResponse => {
           this.setAuthData(authResponse.token, authResponse.user);
-          this.startTokenExpirationCheck(); // Restart expiration check
+          // ✅ FIX: Don't restart - already running from constructor
         })
       );
   }
@@ -141,6 +162,47 @@ export class AuthService {
         }),
         tap(authResponse => {
           this.setAuthData(authResponse.token, authResponse.user);
+        })
+      );
+  }
+
+  // 🆕 Forgot Password - Request password reset email
+  forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): Observable<void> {
+    return this.http.post<GenericResponseV2<void>>(`${this.apiUrl}/forgot-password`, forgotPasswordRequest)
+      .pipe(
+        map(response => {
+          if (response.status === 'SUCCESS') {
+            return;
+          }
+          throw new Error(response.message || 'Failed to send password reset email');
+        })
+      );
+  }
+
+  // 🆕 Reset Password - Set new password with token
+  resetPassword(resetPasswordRequest: ResetPasswordRequest): Observable<void> {
+    return this.http.post<GenericResponseV2<void>>(`${this.apiUrl}/reset-password`, resetPasswordRequest)
+      .pipe(
+        map(response => {
+          if (response.status === 'SUCCESS') {
+            return;
+          }
+          throw new Error(response.message || 'Password reset failed');
+        })
+      );
+  }
+
+  // 🆕 Verify Reset Token - Check if reset token is valid
+  verifyResetToken(token: string): Observable<void> {
+    return this.http.get<GenericResponseV2<void>>(`${this.apiUrl}/verify-reset-token`, {
+      params: { token }
+    })
+      .pipe(
+        map(response => {
+          if (response.status === 'SUCCESS') {
+            return;
+          }
+          throw new Error(response.message || 'Invalid or expired reset token');
         })
       );
   }
@@ -209,8 +271,11 @@ export class AuthService {
 
   // ✅ SECURITY: Automatic token refresh before expiration
   private startTokenExpirationCheck(): void {
+    // ✅ FIX: Unsubscribe from previous subscription if it exists
+    this.tokenRefreshSubscription?.unsubscribe();
+
     // Check every minute if token needs refresh
-    interval(60000).subscribe(() => {
+    this.tokenRefreshSubscription = setInterval(() => {
       if (this.isLoggedIn() && this.shouldRefreshToken()) {
         this.refreshToken().subscribe({
           next: () => console.log('Token auto-refreshed'),
@@ -221,7 +286,7 @@ export class AuthService {
           }
         });
       }
-    });
+    }, 60000) as any; // Type assertion needed for compatibility
   }
 
   // ✅ SECURITY: Check if token should be refreshed (5 minutes before expiry)

@@ -114,8 +114,8 @@ export class CourseList implements OnInit {
     return ['all', ...Array.from(new Set(categories))];
   }
 
-  getCourseImage(course: CourseDto): string {
-    return course.thumbnailUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800';
+  getCourseThumbnailUrl(course: CourseDto): string {
+  return this.courseService.getCourseThumbnailUrl(course);
   }
 
   getStatusBadgeClass(course: CourseDto): string {
