@@ -272,7 +272,7 @@ export class StudentDashboard implements OnInit, OnDestroy {
   getCourseImage(course: CourseDto): string {
     // Try thumbnailUrl first, then fallback to a data URI placeholder
     if ((course as any).thumbnailUrl) {
-      return (course as any).thumbnailUrl;
+      return this.courseService.getCourseThumbnailUrl(course);
     }
 
     // Return a data URI SVG placeholder as fallback

@@ -130,7 +130,7 @@ export class VideoPreview implements OnInit {
   }
 
   getVideoThumbnail(course: ExtendedCourseDto): string {
-    return course.thumbnailUrl || this.getFallbackImageUrl();
+    return this.courseService.getCourseThumbnailUrl(course) || this.getFallbackImageUrl();
   }
 
   onThumbnailError(_: Event, course: ExtendedCourseDto): void {
@@ -159,4 +159,16 @@ export class VideoPreview implements OnInit {
   getFallbackImageUrl(): string {
     return 'assets/images/course-placeholder.png';
   }
+
+  getCourseImage(course: CourseDto): string {
+    // Try thumbnailUrl first, then fallback to a data URI placeholder
+    if ((course as any).thumbnailUrl) {
+      return this.courseService.getCourseThumbnailUrl(course);
+    }
+
+    // Return a data URI SVG placeholder as fallback
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzliNjAxMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmZmZmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db3Vyc2UgSW1hZ2U8L3RleHQ+PC9zdmc+';
+  }
+
+  
 }

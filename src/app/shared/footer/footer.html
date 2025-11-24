@@ -1,59 +1,60 @@
-<mat-card class="footer">
-  <mat-card-content>
-    <div class="footer-left footer-section">
-      <span class="brand">Biochem</span>
-      <div class="company-description">
-        Leading the way in biochemical research and innovation. Committed to advancing scientific knowledge and improving lives through cutting-edge solutions.
-      </div>
-      <span class="copyright">© 2025 Biochem. All rights reserved.</span>
-    </div>
+<footer class="bg-[#1a1a1a] text-[#d1d5db]  border-t border-[#2e2e2e]">
+  <div class="px-10 pt-16 pb-10 max-w-7xl mx-auto">
 
-    <div class="footer-links footer-section">
-      <h4>Company</h4>
-      <div class="link-list">
-        <button mat-button>About Us</button>
-        <button mat-button>Our Services</button>
-        <button mat-button>Contact</button>
-        <button mat-button>Privacy Policy</button>
-        <button mat-button>Careers</button>
-      </div>
-    </div>
+    <!-- Footer Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-16">
 
-    <div class="footer-contact footer-section">
-      <h4>Contact Info</h4>
-      <div class="contact-info">
-        <div class="contact-item">
-          <mat-icon>location_on</mat-icon>
-          <span>123 Science Ave, Research City</span>
-        </div>
-        <div class="contact-item">
-          <mat-icon>phone</mat-icon>
-          <span>+1 (555) 123-4567</span>
-        </div>
-        <div class="contact-item">
-          <mat-icon>email</mat-icon>
-          <span>info@biochem.com</span>
+      <!-- Column 1: Follow Us -->
+      <div>
+        <h4 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">Follow Us</h4>
+
+        <div class="flex gap-4 flex-wrap mb-6">
+          <button class="w-10 h-10 rounded-full border border-[#9b6012] text-[#9b6012] flex items-center justify-center hover:bg-[#9b6012] hover:text-white transition">
+            <fa-icon [icon]="faFacebook"></fa-icon>
+          </button>
+
+          <button class="w-10 h-10 rounded-full border border-[#9b6012] text-[#9b6012] flex items-center justify-center hover:bg-[#9b6012] hover:text-white transition">
+            <fa-icon [icon]="faX"></fa-icon>
+          </button>
+
+          <button class="w-10 h-10 rounded-full border border-[#9b6012] text-[#9b6012] flex items-center justify-center hover:bg-[#9b6012] hover:text-white transition">
+            <fa-icon [icon]="faLinkedin"></fa-icon>
+          </button>
+
+          <button class="w-10 h-10 rounded-full border border-[#9b6012] text-[#9b6012] flex items-center justify-center hover:bg-[#9b6012] hover:text-white transition">
+            <fa-icon [icon]="faInstagram"></fa-icon>
+          </button>
         </div>
       </div>
+
+      <!-- Column 2 -->
+      <div class="space-y-3 text-sm">
+        <button class="text-[#cbd5e1] hover:text-white transition">Feedback</button><br />
+        <button class="text-[#cbd5e1] hover:text-white transition">Trust, Safety & Security</button><br />
+        <button class="text-[#cbd5e1] hover:text-white transition">Help & Support</button>
+      </div>
+
+      <!-- Column 3 -->
+      <div class="space-y-3 text-sm">
+        <button class="text-[#cbd5e1] hover:text-white transition">Terms of Service</button><br />
+        <button class="text-[#cbd5e1] hover:text-white transition">Privacy Policy</button><br />
+        <button class="text-[#cbd5e1] hover:text-white transition">Code of Conduct</button>
+
+      </div>
+
+      <!-- Column 4 -->
+      <div class="space-y-3 text-sm">
+        <button class="text-[#cbd5e1] hover:text-white transition">About Us</button><br />
+        <button class="text-[#cbd5e1] hover:text-white transition">Careers</button><br />
+        <button class="text-[#cbd5e1] hover:text-white transition">Contact</button>
+      </div>
+
     </div>
 
-    <div class="footer-social footer-section">
-  <h4>Follow Us</h4>
-  <div class="social-links">
-    <button mat-icon-button aria-label="Facebook">
-      <fa-icon [icon]="faFacebook"></fa-icon>
-    </button>
-    <button mat-icon-button aria-label="Twitter">
-      <fa-icon [icon]="faX"></fa-icon>
-    </button>
-    <button mat-icon-button aria-label="LinkedIn">
-      <fa-icon [icon]="faLinkedin"></fa-icon>
-    </button>
-    <button mat-icon-button aria-label="Instagram">
-      <fa-icon [icon]="faInstagram"></fa-icon>
-    </button>
+    <!-- Bottom -->
+    <div class="pt-8 border-t border-[#2e2e2e]">
+      <p class="text-xs text-[#a1a1a1]">© 2025 BioChemLab. All rights reserved.</p>
+    </div>
+
   </div>
-</div>
-
-  </mat-card-content>
-</mat-card>
+</footer>
