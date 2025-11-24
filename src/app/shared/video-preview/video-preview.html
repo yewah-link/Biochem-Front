@@ -24,96 +24,117 @@
 
         <!-- Courses Container (keeping 'videosContainer' name) -->
         <div
-          #videosContainer
-          class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
-          (scroll)="onScroll($event)">
-          @for (video of courses; track video.id) {
-            <div class="flex-shrink-0 w-[290px] cursor-pointer transition-all duration-300 rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)] group" (click)="openVideo(video.id!)">
-              <div class="relative w-full h-[158px] overflow-hidden bg-[#f5f5f5]">
-                <!-- Thumbnail image -->
-                @if (shouldShowThumbnail(video)) {
-                  <img
-                    [src]="getVideoThumbnail(video)"
-                    [alt]="video.title || 'Course thumbnail'"
-                    loading="lazy"
-                    class="w-full h-full object-cover object-center"
-                    (error)="onThumbnailError($event, video)"
-                  />
-                }
+        #videosContainer
+        class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+        (scroll)="onScroll($event)"
+         >
+        @for (video of courses; track video.id) {
+          <div
+            class="flex-shrink-0 w-[290px] h-[370px] cursor-pointer transition-all duration-300 rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)] group"
+            (click)="openVideo(video.id!)"
+          >
+            <div class="relative w-full h-[158px] overflow-hidden bg-[#f5f5f5]">
 
-                <!-- Placeholder if thumbnail fails -->
-                @if (shouldShowPlaceholder(video)) {
-                  <div class="w-full h-full flex items-center justify-center bg-[#e9ecef] text-5xl text-[#6c757d]">
-                    📚
-                  </div>
-                }
+              <!-- Simplified: Always use getCourseImage -->
+              <img
+                [src]="getCourseImage(video)"
+                [alt]="video.title || 'Course thumbnail'"
+                loading="lazy"
+                class="w-full h-full object-cover object-center"
+                (error)="onThumbnailError($event, video)"
+              />
 
-                <!-- Overlay icon -->
-                <div class="absolute top-0 left-0 w-full h-full bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <div class="bg-white/90 w-[50px] h-[50px] rounded-full flex items-center justify-center text-xl text-[#333] transition-transform duration-300 group-hover:scale-110">
-                    →
-                  </div>
+              <!-- Overlay icon -->
+              <div
+                class="absolute top-0 left-0 w-full h-full bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+              >
+                <div
+                  class="bg-white/90 w-[50px] h-[50px] rounded-full flex items-center justify-center text-xl text-[#333] transition-transform duration-300 group-hover:scale-110"
+                >
+                  →
+                </div>
+              </div>
+
+              <!-- Bestseller Badge -->
+              <div
+                class="absolute top-2 left-2 bg-gradient-to-r from-[#9b6012] to-[#d4941e] text-white text-xs font-bold px-2 py-1 rounded"
+              >
+                Bestseller
+              </div>
+
+              <!-- Course Duration Badge -->
+              @if (video.estimatedHours) {
+                <div
+                  class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-1 rounded"
+                >
+                  {{ video.estimatedHours }}h
+                </div>
+              }
+            </div>
+
+            <div class="p-4 bg-white">
+              <h4
+                class="m-0 mb-2 text-base font-semibold leading-snug text-[#333] overflow-hidden line-clamp-2"
+              >
+                {{ video.title || 'Untitled Course' }}
+              </h4>
+
+              <p
+                class="m-0 text-[#666] text-[0.9rem] leading-snug overflow-hidden line-clamp-2 mb-2"
+              >
+                {{ video.description || 'No description available' }}
+              </p>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-xs text-[#666]">
+                  <span class="flex items-center gap-1">
+                    <span class="text-[#9b6012]">★</span>
+                    <span class="font-semibold">4.5</span>
+                  </span>
+                  <span>(10,532)</span>
                 </div>
 
-                <!-- Bestseller Badge -->
-                <div class="absolute top-2 left-2 bg-gradient-to-r from-[#9b6012] to-[#d4941e] text-white text-xs font-bold px-2 py-1 rounded">
-                  Bestseller
-                </div>
-
-                <!-- Course Duration Badge -->
-                @if (video.estimatedHours) {
-                  <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-1 rounded">
-                    {{ video.estimatedHours }}h
-                  </div>
+                <!-- Course Status Badge -->
+                @if (video.isPublished) {
+                  <span
+                    class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium"
+                  >
+                    Published
+                  </span>
+                } @else {
+                  <span
+                    class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded font-medium"
+                  >
+                    Draft
+                  </span>
                 }
               </div>
 
-              <div class="p-4 bg-white">
-                <h4 class="m-0 mb-2 text-base font-semibold leading-snug text-[#333] overflow-hidden line-clamp-2">{{ video.title || 'Untitled Course' }}</h4>
-                <p class="m-0 text-[#666] text-[0.9rem] leading-snug overflow-hidden line-clamp-2 mb-2">{{ video.description || 'No description available' }}</p>
-
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2 text-xs text-[#666]">
+              <!-- Video/Notes count -->
+              @if (video.videos || video.notes) {
+                <div
+                  class="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100 text-xs text-[#666]"
+                >
+                  @if (video.videos && video.videos.length > 0) {
                     <span class="flex items-center gap-1">
-                      <span class="text-[#9b6012]">★</span>
-                      <span class="font-semibold">4.5</span>
+                      <span>🎥</span>
+                      <span>{{ video.videos.length }} videos</span>
                     </span>
-                    <span>(10,532)</span>
-                  </div>
+                  }
 
-                  <!-- Course Status Badge -->
-                  @if (video.isPublished) {
-                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">
-                      Published
-                    </span>
-                  } @else {
-                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded font-medium">
-                      Draft
+                  @if (video.notes && video.notes.length > 0) {
+                    <span class="flex items-center gap-1">
+                      <span>📝</span>
+                      <span>{{ video.notes.length }} notes</span>
                     </span>
                   }
                 </div>
-
-                <!-- Video/Notes count if available -->
-                @if (video.videos || video.notes) {
-                  <div class="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100 text-xs text-[#666]">
-                    @if (video.videos && video.videos.length > 0) {
-                      <span class="flex items-center gap-1">
-                        <span>🎥</span>
-                        <span>{{ video.videos.length }} videos</span>
-                      </span>
-                    }
-                    @if (video.notes && video.notes.length > 0) {
-                      <span class="flex items-center gap-1">
-                        <span>📝</span>
-                        <span>{{ video.notes.length }} notes</span>
-                      </span>
-                    }
-                  </div>
-                }
-              </div>
+              }
             </div>
-          }
-        </div>
+          </div>
+        }
+      </div>
+
 
         <!-- Right Arrow -->
         @if (canScrollLeft || canScrollRight) {

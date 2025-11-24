@@ -173,7 +173,10 @@ export class CourseEnrollment implements OnInit {
   }
 
   getCourseImage(): string {
-    return this.course?.thumbnailUrl || 'assets/images/course-placeholder.png';
+  if(this.course && (this.course as any).thumbnailUrl){
+    return this.courseService.getCourseThumbnailUrl(this.course)
+  }
+  return 'assets/images/course-placeholder.png';
   }
 
   getRating(): number {
