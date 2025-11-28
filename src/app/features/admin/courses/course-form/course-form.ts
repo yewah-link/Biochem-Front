@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
 
 // Services
 import { CourseService, CourseDto } from '../../../../core/course.service';
 import { CategoryService, CategoryDto, GenericResponseV2 } from '../../../../core/category.service';
+import { CoursePriceService, CoursePriceRequest } from '../../../../core/course-price.service';
 
 @Component({
   selector: 'app-course-form',
@@ -25,22 +25,31 @@ export class CourseForm implements OnInit {
   selectedThumbnailFile: File | null = null;
   thumbnailPreview: string | null = null;
 
+  // Pricing mode
+  pricingMode: 'free' | 'immediate' | 'scheduled' = 'free';
+
   constructor(
     private fb: FormBuilder,
     private courseService: CourseService,
     private categoryService: CategoryService,
+    private coursePriceService: CoursePriceService,
     private router: Router
   ) {
     this.courseForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
       categoryId: [null, Validators.required],
-      estimatedHours: [0, [Validators.min(0)]]
+      estimatedHours: [0, [Validators.min(0)]],
+      
+      // Pricing fields
+      price: [0, [Validators.min(0)]],
+      priceActivationDate: ['']
     });
   }
 
   ngOnInit() {
     this.loadCategories();
+    this.setupPricingValidation();
   }
 
   loadCategories() {
@@ -49,9 +58,7 @@ export class CourseForm implements OnInit {
       next: (response: GenericResponseV2<CategoryDto[]>) => {
         if (response.status === 'SUCCESS' && response._embedded) {
           this.categories = response._embedded;
-          console.log('Categories loaded:', this.categories);
         } else {
-          console.error('Failed to load categories:', response.message);
           this.categories = [];
         }
         this.isLoading = false;
@@ -59,16 +66,44 @@ export class CourseForm implements OnInit {
       error: (error: HttpErrorResponse) => {
         console.error('Error loading categories:', error);
         this.isLoading = false;
-
+        this.categories = [];
+        
         if (error.status === 0) {
           alert('Cannot connect to server. Please check if the backend is running.');
         } else {
           alert(`Error loading categories: ${error.message}`);
         }
-
-        this.categories = [];
       }
     });
+  }
+
+  // Handle pricing mode changes
+  setPricingMode(mode: 'free' | 'immediate' | 'scheduled') {
+    this.pricingMode = mode;
+    this.setupPricingValidation();
+  }
+
+  // Setup validators based on pricing mode
+  setupPricingValidation() {
+    const priceControl = this.courseForm.get('price');
+    const activationControl = this.courseForm.get('priceActivationDate');
+
+    if (this.pricingMode === 'free') {
+      priceControl?.clearValidators();
+      activationControl?.clearValidators();
+      priceControl?.setValue(0);
+      activationControl?.setValue('');
+    } else if (this.pricingMode === 'immediate') {
+      priceControl?.setValidators([Validators.required, Validators.min(0.01)]);
+      activationControl?.clearValidators();
+      activationControl?.setValue('');
+    } else if (this.pricingMode === 'scheduled') {
+      priceControl?.setValidators([Validators.required, Validators.min(0.01)]);
+      activationControl?.setValidators([Validators.required]);
+    }
+
+    priceControl?.updateValueAndValidity();
+    activationControl?.updateValueAndValidity();
   }
 
   onThumbnailSelected(event: Event) {
@@ -76,15 +111,13 @@ export class CourseForm implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select a valid image file');
         input.value = '';
         return;
       }
 
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
         alert('File size must be less than 5MB');
         input.value = '';
@@ -93,7 +126,6 @@ export class CourseForm implements OnInit {
 
       this.selectedThumbnailFile = file;
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         this.thumbnailPreview = e.target?.result as string;
@@ -106,7 +138,6 @@ export class CourseForm implements OnInit {
     this.selectedThumbnailFile = null;
     this.thumbnailPreview = null;
     
-    // Clear the file input
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -142,19 +173,17 @@ export class CourseForm implements OnInit {
 
     this.isLoading = true;
 
-    // First create the course
+    // Create course first
     this.courseService.createCourse(courseDto).subscribe({
       next: (newCourse: CourseDto) => {
         console.log('Course created successfully:', newCourse);
 
-        // If thumbnail is selected, upload it
-        if (this.selectedThumbnailFile && newCourse.id) {
-          this.uploadThumbnail(newCourse.id, newCourse);
+        // Handle thumbnail and pricing
+        if (newCourse.id) {
+          this.handlePostCreation(newCourse.id, newCourse);
         } else {
-          // No thumbnail to upload, navigate to course detail
           this.isLoading = false;
-          alert('Course created successfully!');
-          this.router.navigate(['/dashboard/courses', newCourse.id]);
+          alert('Course created but missing ID');
         }
       },
       error: (error: HttpErrorResponse) => {
@@ -170,29 +199,51 @@ export class CourseForm implements OnInit {
     });
   }
 
-  uploadThumbnail(courseId: number, course: CourseDto) {
-    if (!this.selectedThumbnailFile) {
-      this.isLoading = false;
-      this.router.navigate(['/dashboard/courses', courseId]);
-      return;
+  // Handle thumbnail upload and pricing setup after course creation
+  handlePostCreation(courseId: number, course: CourseDto) {
+    const tasks: Promise<any>[] = [];
+
+    // Upload thumbnail if selected
+    if (this.selectedThumbnailFile) {
+      tasks.push(
+        this.courseService.uploadThumbnail(courseId, this.selectedThumbnailFile).toPromise()
+      );
     }
 
-    this.courseService.uploadThumbnail(courseId, this.selectedThumbnailFile).subscribe({
-      next: (updatedCourse: CourseDto) => {
-        console.log('Thumbnail uploaded successfully:', updatedCourse);
-        this.isLoading = false;
-        alert('Course created with thumbnail successfully!');
-        this.router.navigate(['/dashboard/courses', courseId]);
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error uploading thumbnail:', error);
-        this.isLoading = false;
-        
-        // Course was created but thumbnail upload failed
-        alert(`Course created but thumbnail upload failed: ${error.message}. You can upload a thumbnail later.`);
-        this.router.navigate(['/dashboard/courses', courseId]);
-      }
-    });
+    // Set pricing based on mode
+    if (this.pricingMode !== 'free') {
+      const priceRequest: CoursePriceRequest = {
+        price: Number(this.courseForm.value.price),
+        priceActivationDate: this.pricingMode === 'scheduled' 
+          ? this.courseForm.value.priceActivationDate 
+          : undefined
+      };
+
+      tasks.push(
+        this.coursePriceService.setCoursePrice(courseId, priceRequest).toPromise()
+      );
+    }
+
+    // Execute all tasks
+    if (tasks.length > 0) {
+      Promise.all(tasks)
+        .then(() => {
+          this.isLoading = false;
+          alert('Course created successfully with all settings!');
+          this.router.navigate(['/dashboard/courses', courseId]);
+        })
+        .catch((error) => {
+          console.error('Error in post-creation tasks:', error);
+          this.isLoading = false;
+          alert(`Course created but some settings failed: ${error.message}. You can update them later.`);
+          this.router.navigate(['/dashboard/courses', courseId]);
+        });
+    } else {
+      // No additional tasks, just navigate
+      this.isLoading = false;
+      alert('Course created successfully!');
+      this.router.navigate(['/dashboard/courses', courseId]);
+    }
   }
 
   cancel() {
