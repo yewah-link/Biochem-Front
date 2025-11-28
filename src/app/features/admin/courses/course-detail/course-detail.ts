@@ -4,17 +4,12 @@ import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
-// Course Service
+// Services
 import { CourseService, CourseDto, CategoryDto as CourseCategoryDto } from '../../../../core/course.service';
-
-// Category Service
 import { CategoryService, CategoryDto, GenericResponseV2 } from '../../../../core/category.service';
-
-// Video Service
 import { VideoService, VideoDto } from '../../../../core/video.service';
-
-// Note Service
 import { NoteService, NotesDto } from '../../../../core/note.service';
+import { CoursePriceService, CoursePriceDto, CoursePriceRequest, CourseDiscountRequest, PriceStatus } from '../../../../core/course-price.service';
 
 @Component({
   selector: 'app-course-detail',
@@ -27,6 +22,7 @@ export class CourseDetail implements OnInit {
   courseId: number | null = null;
   isEditMode = false;
   course: CourseDto | null = null;
+  coursePrice: CoursePriceDto | null = null;
   categories: CategoryDto[] = [];
   activeTab: 'videos' | 'notes' | 'exams' = 'videos';
   isLoading = false;
@@ -40,6 +36,12 @@ export class CourseDetail implements OnInit {
   thumbnailPreview: string | null = null;
   isThumbnailChanged = false;
 
+  // Pricing mode
+  pricingMode: 'free' | 'immediate' | 'scheduled' = 'free';
+  
+  // Discount state
+  hasExistingDiscount = false;
+
   // Form for course metadata
   courseForm: FormGroup;
 
@@ -48,6 +50,7 @@ export class CourseDetail implements OnInit {
     private courseService: CourseService,
     private categoryService: CategoryService,
     private noteService: NoteService,
+    private coursePriceService: CoursePriceService,
     private router: Router,
     private fb: FormBuilder,
     private videoService: VideoService
@@ -56,7 +59,16 @@ export class CourseDetail implements OnInit {
       title: ['', Validators.required],
       description: [''],
       categoryId: [null, Validators.required],
-      estimatedHours: [0, [Validators.min(0)]]
+      estimatedHours: [0, [Validators.min(0)]],
+      
+      // Pricing fields
+      price: [0, [Validators.min(0)]],
+      priceActivationDate: [''],
+      
+      // Discount fields
+      discountPrice: [0, [Validators.min(0)]],
+      discountStartTime: [''],
+      discountEndTime: ['']
     });
   }
 
@@ -77,6 +89,7 @@ export class CourseDetail implements OnInit {
       this.courseId = parsedId;
       console.log('Loading course with ID:', this.courseId);
       this.loadCourse();
+      this.loadCoursePricing();
     });
   }
 
@@ -152,6 +165,45 @@ export class CourseDetail implements OnInit {
     });
   }
 
+  loadCoursePricing() {
+    if (!this.courseId) return;
+
+    this.coursePriceService.getCoursePricing(this.courseId).subscribe({
+      next: (pricing: CoursePriceDto) => {
+        this.coursePrice = pricing;
+        console.log('Course pricing loaded:', pricing);
+
+        // Determine pricing mode
+        if (pricing.isFree) {
+          this.pricingMode = 'free';
+        } else if (pricing.priceActivationDate) {
+          this.pricingMode = 'scheduled';
+        } else {
+          this.pricingMode = 'immediate';
+        }
+
+        // Check if discount exists
+        this.hasExistingDiscount = this.coursePriceService.hasDiscount(pricing);
+
+        // Populate pricing form fields
+        this.courseForm.patchValue({
+          price: pricing.price || 0,
+          priceActivationDate: pricing.priceActivationDate ? this.formatDateForInput(pricing.priceActivationDate) : '',
+          discountPrice: pricing.discountPrice || 0,
+          discountStartTime: pricing.discountStartTime ? this.formatDateForInput(pricing.discountStartTime) : '',
+          discountEndTime: pricing.discountEndTime ? this.formatDateForInput(pricing.discountEndTime) : ''
+        });
+
+        this.setupPricingValidation();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error loading course pricing:', error);
+        // If pricing doesn't exist yet, that's okay - course might be free by default
+        this.coursePrice = null;
+      }
+    });
+  }
+
   loadCourseNotes() {
     if (!this.courseId) return;
 
@@ -181,7 +233,45 @@ export class CourseDetail implements OnInit {
       this.thumbnailPreview = this.course.thumbnailUrl || null;
       this.selectedThumbnailFile = null;
       this.isThumbnailChanged = false;
+      
+      // Reload pricing data
+      if (this.coursePrice) {
+        this.courseForm.patchValue({
+          price: this.coursePrice.price || 0,
+          priceActivationDate: this.coursePrice.priceActivationDate ? this.formatDateForInput(this.coursePrice.priceActivationDate) : '',
+          discountPrice: this.coursePrice.discountPrice || 0,
+          discountStartTime: this.coursePrice.discountStartTime ? this.formatDateForInput(this.coursePrice.discountStartTime) : '',
+          discountEndTime: this.coursePrice.discountEndTime ? this.formatDateForInput(this.coursePrice.discountEndTime) : ''
+        });
+      }
     }
+  }
+
+  setPricingMode(mode: 'free' | 'immediate' | 'scheduled') {
+    this.pricingMode = mode;
+    this.setupPricingValidation();
+  }
+
+  setupPricingValidation() {
+    const priceControl = this.courseForm.get('price');
+    const activationControl = this.courseForm.get('priceActivationDate');
+
+    if (this.pricingMode === 'free') {
+      priceControl?.clearValidators();
+      activationControl?.clearValidators();
+      priceControl?.setValue(0);
+      activationControl?.setValue('');
+    } else if (this.pricingMode === 'immediate') {
+      priceControl?.setValidators([Validators.required, Validators.min(0.01)]);
+      activationControl?.clearValidators();
+      activationControl?.setValue('');
+    } else if (this.pricingMode === 'scheduled') {
+      priceControl?.setValidators([Validators.required, Validators.min(0.01)]);
+      activationControl?.setValidators([Validators.required]);
+    }
+
+    priceControl?.updateValueAndValidity();
+    activationControl?.updateValueAndValidity();
   }
 
   onThumbnailSelected(event: Event) {
@@ -189,14 +279,12 @@ export class CourseDetail implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select a valid image file');
         input.value = '';
         return;
       }
 
-      // Validate file size (max 5MB)
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         alert('File size must be less than 5MB');
@@ -207,7 +295,6 @@ export class CourseDetail implements OnInit {
       this.selectedThumbnailFile = file;
       this.isThumbnailChanged = true;
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         this.thumbnailPreview = e.target?.result as string;
@@ -261,13 +348,7 @@ export class CourseDetail implements OnInit {
     this.courseService.updateCourse(this.courseId, courseDto).subscribe({
       next: () => {
         console.log('Course updated successfully');
-
-        // Handle thumbnail changes
-        if (this.isThumbnailChanged) {
-          this.handleThumbnailUpdate();
-        } else {
-          this.finishUpdate();
-        }
+        this.handlePostUpdate();
       },
       error: (error: HttpErrorResponse) => {
         console.error('Error updating course:', error);
@@ -282,38 +363,76 @@ export class CourseDetail implements OnInit {
     });
   }
 
-  handleThumbnailUpdate() {
+  handlePostUpdate() {
     if (!this.courseId) return;
 
-    // If thumbnail was removed
-    if (!this.selectedThumbnailFile && !this.thumbnailPreview) {
-      this.courseService.deleteThumbnail(this.courseId).subscribe({
-        next: () => {
-          console.log('Thumbnail deleted successfully');
-          this.finishUpdate();
-        },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error deleting thumbnail:', error);
-          alert(`Course updated but thumbnail deletion failed: ${error.message}`);
-          this.finishUpdate();
-        }
-      });
+    const tasks: Promise<any>[] = [];
+
+    // Handle thumbnail changes
+    if (this.isThumbnailChanged) {
+      if (!this.selectedThumbnailFile && !this.thumbnailPreview) {
+        tasks.push(this.courseService.deleteThumbnail(this.courseId).toPromise());
+      } else if (this.selectedThumbnailFile) {
+        tasks.push(this.courseService.uploadThumbnail(this.courseId, this.selectedThumbnailFile).toPromise());
+      }
     }
-    // If new thumbnail was selected
-    else if (this.selectedThumbnailFile) {
-      this.courseService.uploadThumbnail(this.courseId, this.selectedThumbnailFile).subscribe({
-        next: () => {
-          console.log('Thumbnail uploaded successfully');
-          this.finishUpdate();
-        },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error uploading thumbnail:', error);
-          alert(`Course updated but thumbnail upload failed: ${error.message}`);
-          this.finishUpdate();
-        }
+
+    // Handle pricing changes
+    tasks.push(this.updatePricing());
+
+    // Handle discount changes
+    tasks.push(this.updateDiscount());
+
+    Promise.all(tasks)
+      .then(() => {
+        this.finishUpdate();
+      })
+      .catch((error) => {
+        console.error('Error in post-update tasks:', error);
+        alert(`Course updated but some settings failed: ${error.message}`);
+        this.finishUpdate();
       });
+  }
+
+  async updatePricing(): Promise<void> {
+    if (!this.courseId) return;
+
+    const formData = this.courseForm.value;
+
+    if (this.pricingMode === 'free') {
+      // Make course free
+      await this.coursePriceService.makeCourseFree(this.courseId).toPromise();
     } else {
-      this.finishUpdate();
+      // Set price (immediate or scheduled)
+      const priceRequest: CoursePriceRequest = {
+        price: Number(formData.price),
+        priceActivationDate: this.pricingMode === 'scheduled' ? formData.priceActivationDate : undefined
+      };
+      await this.coursePriceService.setCoursePrice(this.courseId, priceRequest).toPromise();
+    }
+  }
+
+  async updateDiscount(): Promise<void> {
+    if (!this.courseId || this.pricingMode === 'free') return;
+
+    const formData = this.courseForm.value;
+    const hasDiscountData = formData.discountPrice && formData.discountStartTime && formData.discountEndTime;
+
+    if (!hasDiscountData && this.hasExistingDiscount) {
+      // Remove existing discount
+      await this.coursePriceService.removeCourseDiscount(this.courseId).toPromise();
+    } else if (hasDiscountData) {
+      const discountRequest: CourseDiscountRequest = {
+        discountPrice: Number(formData.discountPrice),
+        discountStartTime: formData.discountStartTime,
+        discountEndTime: formData.discountEndTime
+      };
+
+      if (this.hasExistingDiscount) {
+        await this.coursePriceService.updateCourseDiscount(this.courseId, discountRequest).toPromise();
+      } else {
+        await this.coursePriceService.createCourseDiscount(this.courseId, discountRequest).toPromise();
+      }
     }
   }
 
@@ -322,8 +441,21 @@ export class CourseDetail implements OnInit {
     this.isEditMode = false;
     alert('Course updated successfully!');
     this.loadCourse();
+    this.loadCoursePricing();
   }
 
+  // Helper method to format date for datetime-local input
+  formatDateForInput(dateString: string): string {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  // Existing methods remain the same...
   publishCourse() {
     if (this.courseId === null) return;
 
@@ -632,10 +764,23 @@ export class CourseDetail implements OnInit {
 
   getCourseThumbnailUrl(): string {
     if (this.course) {
-      // Use the service method that calls the backend endpoint
-      // GET /api/v1/course/{courseId}/thumbnail
       return this.courseService.getCourseThumbnailUrl(this.course);
     }
     return 'assets/images/course-placeholder.png';
+  }
+
+  // Pricing helper methods
+  getPriceDisplay(): string {
+    if (!this.coursePrice) return 'Loading...';
+    return this.coursePriceService.formatPrice(this.coursePrice);
+  }
+
+  getDiscountBadge(): string | null {
+    if (!this.coursePrice) return null;
+    return this.coursePriceService.getDiscountBadgeText(this.coursePrice);
+  }
+
+  getStatusBadge(): { text: string; colorClass: string } {
+    return this.coursePriceService.getStatusBadge(this.coursePrice?.priceStatus);
   }
 }

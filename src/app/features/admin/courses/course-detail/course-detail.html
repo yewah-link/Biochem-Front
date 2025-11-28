@@ -12,7 +12,7 @@
       </div>
 
       <div class="flex gap-2 flex-wrap">
-        @if (!isEditMode) {
+        @if (! isEditMode) {
           <button
             (click)="toggleEditMode()"
             class="px-4 py-2 bg-gray-600 text-white text-sm rounded-md font-medium hover:bg-gray-700 transition">
@@ -44,39 +44,62 @@
     @if (isEditMode) {
       <div class="mb-6 p-6 bg-gray-50 rounded-lg">
         <form [formGroup]="courseForm" (ngSubmit)="saveCourse()" class="space-y-6">
+          <!-- COURSE METADATA SECTION -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Title</label>
-            <input
-              formControlName="title"
-              placeholder="Course Title"
-              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Course Information</h2>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+                <input
+                  formControlName="title"
+                  placeholder="Course Title"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                @if (courseForm.get('title')?.invalid && courseForm.get('title')?. touched) {
+                  <span class="text-xs text-red-600 mt-1 block">Title is required</span>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                <textarea
+                  formControlName="description"
+                  placeholder="Course Description"
+                  rows="5"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600 resize-y"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                <select
+                  formControlName="categoryId"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                  @for (cat of categories; track cat. id) {
+                    <option [value]="cat.id">{{ cat.name }}</option>
+                  }
+                </select>
+                @if (courseForm.get('categoryId')?.invalid && courseForm.get('categoryId')?.touched) {
+                  <span class="text-xs text-red-600 mt-1 block">Category is required</span>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Estimated Hours</label>
+                <input
+                  type="number"
+                  formControlName="estimatedHours"
+                  min="0"
+                  step="0.5"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-            <textarea
-              formControlName="description"
-              placeholder="Course Description"
-              rows="5"
-              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600 resize-y"></textarea>
-          </div>
+          <!-- THUMBNAIL SECTION -->
+          <div class="border-t pt-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Course Thumbnail</h2>
 
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-            <select
-              formControlName="categoryId"
-              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
-              @for (cat of categories; track cat.id) {
-                <option [value]="cat.id">{{ cat.name }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Thumbnail Upload Section -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Course Thumbnail</label>
-            
-            @if (!thumbnailPreview) {
+            @if (! thumbnailPreview) {
               <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-amber-600 transition">
                 <input
                   type="file"
@@ -84,10 +107,10 @@
                   (change)="onThumbnailSelected($event)"
                   class="hidden"
                   #thumbnailInput>
-                
+
                 <div class="space-y-2">
                   <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3. 172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015. 656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h. 02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                   <div class="text-sm text-gray-600">
                     <button
@@ -107,7 +130,7 @@
                   [src]="thumbnailPreview"
                   alt="Thumbnail preview"
                   class="w-full h-64 object-cover rounded-md border border-gray-300">
-                
+
                 <button
                   type="button"
                   (click)="removeThumbnail()"
@@ -116,7 +139,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-                
+
                 @if (selectedThumbnailFile) {
                   <div class="mt-2 text-sm text-gray-600">
                     <span class="font-medium">{{ selectedThumbnailFile.name }}</span>
@@ -125,30 +148,169 @@
                 }
               </div>
             }
-            
+
             <p class="mt-2 text-xs text-gray-500">
               @if (isThumbnailChanged) {
-                <span class="text-amber-700 font-medium">Thumbnail will be updated when you save changes.</span>
+                <span class="text-amber-700 font-medium">Thumbnail will be updated when you save changes. </span>
               } @else {
-                Current thumbnail is displayed above. Upload a new one to replace it.
+                Current thumbnail is displayed above.  Upload a new one to replace it.
               }
             </p>
           </div>
 
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Estimated Hours</label>
-            <input
-              type="number"
-              formControlName="estimatedHours"
-              min="0"
-              step="0.5"
-              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+          <!-- PRICING SECTION -->
+          <div class="border-t pt-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Pricing Configuration</h2>
+
+            <!-- Pricing Mode Selection -->
+            <div class="space-y-3 mb-4">
+              <label class="block text-sm font-semibold text-gray-700 mb-3">Select Pricing Option</label>
+
+              <!-- Free Option -->
+              <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition"
+                     [class.border-green-600]="pricingMode === 'free'"
+                     [class.bg-green-50]="pricingMode === 'free'"
+                     [class.border-gray-300]="pricingMode !== 'free'">
+                <input
+                  type="radio"
+                  name="pricingMode"
+                  [checked]="pricingMode === 'free'"
+                  (change)="setPricingMode('free')"
+                  class="mt-1">
+                <div class="ml-3">
+                  <div class="font-semibold text-gray-900">Free Course</div>
+                  <div class="text-sm text-gray-600">This course will be completely free for all users</div>
+                </div>
+              </label>
+
+              <!-- Immediate Price Option -->
+              <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition"
+                     [class.border-blue-600]="pricingMode === 'immediate'"
+                     [class.bg-blue-50]="pricingMode === 'immediate'"
+                     [class.border-gray-300]="pricingMode !== 'immediate'">
+                <input
+                  type="radio"
+                  name="pricingMode"
+                  [checked]="pricingMode === 'immediate'"
+                  (change)="setPricingMode('immediate')"
+                  class="mt-1">
+                <div class="ml-3">
+                  <div class="font-semibold text-gray-900">Set Price Now</div>
+                  <div class="text-sm text-gray-600">Course becomes paid immediately</div>
+                </div>
+              </label>
+
+              <!-- Scheduled Price Option -->
+              <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition"
+                     [class.border-amber-600]="pricingMode === 'scheduled'"
+                     [class.bg-amber-50]="pricingMode === 'scheduled'"
+                     [class.border-gray-300]="pricingMode !== 'scheduled'">
+                <input
+                  type="radio"
+                  name="pricingMode"
+                  [checked]="pricingMode === 'scheduled'"
+                  (change)="setPricingMode('scheduled')"
+                  class="mt-1">
+                <div class="ml-3">
+                  <div class="font-semibold text-gray-900">Schedule Price Activation</div>
+                  <div class="text-sm text-gray-600">Set a future date when the price becomes active (countdown timer)</div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Price Input (for immediate or scheduled) -->
+            @if (pricingMode === 'immediate' || pricingMode === 'scheduled') {
+              <div class="space-y-4 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Course Price ($)</label>
+                  <input
+                    type="number"
+                    formControlName="price"
+                    min="0"
+                    step="0.01"
+                    placeholder="0. 00"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                  @if (courseForm.get('price')?.invalid && courseForm.get('price')?. touched) {
+                    <span class="text-xs text-red-600 mt-1 block">Price must be greater than 0</span>
+                  }
+                </div>
+
+                <!-- Activation Date (for scheduled only) -->
+                @if (pricingMode === 'scheduled') {
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Price Activation Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      formControlName="priceActivationDate"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                    @if (courseForm.get('priceActivationDate')?.invalid && courseForm.get('priceActivationDate')?.touched) {
+                      <span class="text-xs text-red-600 mt-1 block">Activation date is required</span>
+                    }
+                    <p class="mt-2 text-xs text-gray-500">
+                      Course will be free until this date, then become paid automatically
+                    </p>
+                  </div>
+                }
+              </div>
+            }
           </div>
 
-          <div class="flex gap-3">
+          <!-- DISCOUNT SECTION -->
+          <div class="border-t pt-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Discount Configuration</h2>
+
+            @if (pricingMode === 'free') {
+              <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-sm text-amber-800">
+                  💡 Discounts are only available for paid courses. Switch to a paid pricing mode above to configure discounts.
+                </p>
+              </div>
+            } @else {
+              <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Discount Price ($)</label>
+                  <input
+                    type="number"
+                    formControlName="discountPrice"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                  <p class="mt-1 text-xs text-gray-500">Leave empty to remove discount</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Discount Start Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      formControlName="discountStartTime"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Discount End Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      formControlName="discountEndTime"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                  </div>
+                </div>
+
+                @if (hasExistingDiscount) {
+                  <div class="p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                    ℹ️ This course already has an active discount.  Update the values above to modify it.
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- SUBMIT BUTTONS -->
+          <div class="border-t pt-6 flex gap-3">
             <button
               type="submit"
-              [disabled]="!courseForm.valid || isLoading"
+              [disabled]="! courseForm.valid || isLoading"
               class="px-6 py-2 bg-amber-700 text-white rounded-md font-medium hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed transition">
               {{ isLoading ? 'Saving...' : 'Save Changes' }}
             </button>
@@ -164,8 +326,8 @@
       </div>
     }
 
-    <!-- COURSE INFO -->
-    @if (!isEditMode) {
+    <!-- COURSE INFO (VIEW MODE) -->
+    @if (! isEditMode) {
       <div class="mb-6 p-6 bg-gray-50 rounded-lg">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div>
@@ -175,7 +337,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Category</label>
-            <p class="text-sm text-gray-900">{{ course.category?.name || 'Uncategorized' }}</p>
+            <p class="text-sm text-gray-900">{{ course.category?. name || 'Uncategorized' }}</p>
           </div>
 
           <div>
@@ -189,6 +351,22 @@
               {{ course.totalVideos || 0 }} videos,
               {{ course.totalNotes || 0 }} notes,
               {{ course.totalExams || 0 }} exams
+            </p>
+          </div>
+
+          <!-- Pricing Info Card -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Pricing</label>
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-bold text-amber-700">{{ getPriceDisplay() }}</span>
+              @if (getDiscountBadge()) {
+                <span class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded">
+                  {{ getDiscountBadge() }}
+                </span>
+              }
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+              {{ getStatusBadge(). text }}
             </p>
           </div>
 
@@ -221,7 +399,7 @@
         [class.text-gray-500]="activeTab !== 'notes'"
         (click)="activeTab = 'notes'"
         class="px-6 py-3 text-sm font-medium border-b-2 transition hover:text-amber-700">
-        Notes ({{ course.notes?.length || 0 }})
+        Notes ({{ course. notes?.length || 0 }})
       </button>
       <button
         [class.border-amber-700]="activeTab === 'exams'"
@@ -230,7 +408,7 @@
         [class.text-gray-500]="activeTab !== 'exams'"
         (click)="activeTab = 'exams'"
         class="px-6 py-3 text-sm font-medium border-b-2 transition hover:text-amber-700">
-        Exams ({{ course.exams?.length || 0 }})
+        Exams ({{ course. exams?.length || 0 }})
       </button>
     </div>
 
@@ -260,7 +438,7 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                @for (video of course.videos; track video.id; let i = $index) {
+                @for (video of course.videos; track video. id; let i = $index) {
                   <tr
                     class="hover:bg-gray-50 transition cursor-move"
                     [class.opacity-50]="draggedVideoIndex === i"
@@ -288,10 +466,10 @@
                         class="w-24 h-16 object-cover rounded shadow-sm">
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900">{{ video.title }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ video.durationSeconds ? formatDuration(video.durationSeconds) : 'N/A' }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ video. durationSeconds ?  formatDuration(video.durationSeconds) : 'N/A' }}</td>
                     <td class="px-6 py-4 text-sm whitespace-nowrap">
                       <button
-                        (click)="editVideo(video.id!)"
+                        (click)="editVideo(video. id! )"
                         class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition mr-2">
                         Edit
                       </button>
@@ -308,7 +486,7 @@
           </div>
         } @else {
           <div class="text-center py-12 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-500">No videos yet. Add your first video!</p>
+            <p class="text-sm text-gray-500">No videos yet. Add your first video! </p>
           </div>
         }
       </div>
@@ -356,7 +534,7 @@
                       }
                     </td>
                     <td class="px-6 py-4 text-sm whitespace-nowrap">
-                      <button (click)="editNote(note.id!)"
+                      <button (click)="editNote(note. id!)"
                         class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition mr-2">
                         Edit
                       </button>
@@ -403,11 +581,11 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                @for (exam of course.exams; track exam.id) {
+                @for (exam of course.exams; track exam. id) {
                   <tr class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4 text-sm text-gray-900">{{ exam.title }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ exam.duration ? exam.duration + ' min' : 'N/A' }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ exam.passingScore ? exam.passingScore + '%' : 'N/A' }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ exam.duration ?  exam.duration + ' min' : 'N/A' }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ exam.passingScore ?  exam.passingScore + '%' : 'N/A' }}</td>
                     <td class="px-6 py-4 text-sm text-gray-900 max-w-md truncate">{{ exam.description || 'No description' }}</td>
                     <td class="px-6 py-4 text-sm whitespace-nowrap">
                       <button
@@ -437,7 +615,7 @@
 }
 
 <!-- LOADING STATE -->
-@if (!course && !isLoading) {
+@if (! course && !isLoading) {
   <div class="max-w-4xl mx-auto p-12 text-center">
     <p class="text-gray-500">Course not found.</p>
     <button
