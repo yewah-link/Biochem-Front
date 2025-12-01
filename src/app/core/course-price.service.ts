@@ -233,4 +233,158 @@ export class CoursePriceService {
     const end = this.formatDate(coursePrice.discountEndTime);
     return `${start} - ${end}`;
   }
+
+     //check if course will becomepaid in future
+
+      willBecomePaid(coursePrice: CoursePriceDto): boolean {
+      // Must have a price activation date to count as "will become paid"
+      if (!coursePrice || !coursePrice.priceActivationDate) {
+        return false;
+      }
+
+      const activationDate = new Date(coursePrice.priceActivationDate);
+      const now = new Date();
+
+      // If activation date is in the future → countdown should be active
+      return activationDate.getTime() > now.getTime();
+    }
+
+
+  /**
+ * Get time remaining until price activation
+ * Returns null if no future pricing or already activated
+ */
+  getTimeUntilPriceActivation(coursePrice: CoursePriceDto): {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+    totalMilliseconds: number;
+  } | null {
+    if (!this.willBecomePaid(coursePrice)) {
+      return null;
+    }
+    
+    const activationDate = new Date(coursePrice.priceActivationDate!);
+    const now = new Date();
+    const diff = activationDate.getTime() - now.getTime();
+    
+    if (diff <= 0) {
+      return null;
+    }
+    
+    return {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      totalMilliseconds: diff
+    };
+  } 
+
+  /**
+ * Format countdown for display (compact version)
+ */
+formatCountdown(coursePrice: CoursePriceDto): string | null {
+  const timeRemaining = this.getTimeUntilPriceActivation(coursePrice);
+
+  if (!timeRemaining) {
+    return null;
+  }
+
+  const { days, hours, minutes, seconds } = timeRemaining;
+
+  // Always include seconds
+  if (days > 0) {
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  } else if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  } else {
+    return `${seconds}s`;
+  }
+}
+
+
+/**
+ * Format countdown for display (full version with labels)
+ */
+formatCountdownFull(coursePrice: CoursePriceDto): string | null {
+  const timeRemaining = this.getTimeUntilPriceActivation(coursePrice);
+
+  if (!timeRemaining) return null;
+
+  const { days, hours, minutes, seconds } = timeRemaining;
+
+  const parts: string[] = [];
+
+  if (days > 0) parts.push(`${days} ${days === 1 ? 'day' : 'days'}`);
+  if (hours > 0) parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
+  if (minutes > 0) parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`);
+  
+  // Always include seconds
+  parts.push(`${seconds} ${seconds === 1 ? 'second' : 'seconds'}`);
+
+  return parts.join(', ');
+}
+
+
+/**
+ * Get countdown message with context and future price
+ */
+getCountdownMessage(coursePrice: CoursePriceDto): string | null {
+  const countdown = this.formatCountdown(coursePrice);
+  
+  if (!countdown) {
+    return null;
+  }
+  
+  // Calculate what the price will be
+  const futurePrice = coursePrice.priceActivationDate ? (coursePrice.price ?? 0): 0;
+  
+  return `Free for ${countdown} - Then $${futurePrice.toFixed(2)}`;
+}
+
+/**
+ * urgency level based on time remaining
+ * Useful for styling (red for urgent, yellow for warning, green for plenty of time)
+ */
+getCountdownUrgency(coursePrice: CoursePriceDto): 'critical' | 'warning' | 'normal' | null {
+  const timeRemaining = this.getTimeUntilPriceActivation(coursePrice);
+  
+  if (!timeRemaining) {
+    return null;
+  }
+  
+  const totalHours = timeRemaining.totalMilliseconds / (1000 * 60 * 60);
+  
+  if (totalHours <= 24) {
+    return 'critical'; // Less than 24 hours - red
+  } else if (totalHours <= 72) {
+    return 'warning'; // Less than 3 days - yellow
+  } else {
+    return 'normal'; // More than 3 days - green
+  }
+}
+
+/**
+ * Get countdown badge color based on urgency
+ */
+getCountdownBadgeColor(coursePrice: CoursePriceDto): string {
+  const urgency = this.getCountdownUrgency(coursePrice);
+  
+  switch (urgency) {
+    case 'critical':
+      return 'from-red-500 to-red-600'; // Red for urgent
+    case 'warning':
+      return 'from-orange-500 to-orange-600'; // Orange for warning
+    case 'normal':
+      return 'from-green-500 to-emerald-600'; // Green for normal
+    default:
+      return 'from-pink-500 to-pink-600'; // Default pink
+  }
+}
+
+
 }

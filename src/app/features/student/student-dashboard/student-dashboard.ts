@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CourseDto, CourseService, CategoryDto } from '../../../core/course.service';
 import { AuthService, UserDto } from '../../../core/auth/auth.service';
+import { CoursePriceDto } from '../../../core/course-price.service';
 import { Subscription } from 'rxjs';
 import { MyCourses } from '../my-courses/my-courses';
 import { Footer } from '../../../shared/footer/footer';
@@ -39,9 +40,15 @@ export class StudentDashboard implements OnInit, OnDestroy {
   enrolledCourseIds: number[] = [];
   enrolledCategoryIds: number[] = [];
 
+  // Track liked courses
+  likedCourseIds: Set<number> = new Set();
+
   // Track loading states
   private coursesLoaded = false;
   private enrollmentsLoaded = false;
+
+  // Countdown intervals
+  private countdownIntervals = new Map<number, any>();
 
   constructor(
     public courseService: CourseService,
@@ -50,13 +57,17 @@ export class StudentDashboard implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log('🚀 StudentDashboard: Initializing...');
     this.loadUserData();
     this.loadCourses();
+    this.loadLikedCourses();
   }
 
   ngOnDestroy(): void {
     this.userSubscription?.unsubscribe();
+    
+    // Clear all countdown intervals
+    this.countdownIntervals.forEach(interval => clearInterval(interval));
+    this.countdownIntervals.clear();
   }
 
   loadUserData(): void {
@@ -67,7 +78,6 @@ export class StudentDashboard implements OnInit, OnDestroy {
           this.isLoggedIn = true;
           this.userName = this.getUserDisplayName(user);
           this.userInitials = this.getUserInitials(user);
-          console.log('👤 Current user loaded:', user.email);
         } else {
           this.isLoggedIn = false;
           this.userName = 'User';
@@ -103,7 +113,6 @@ export class StudentDashboard implements OnInit, OnDestroy {
   }
 
   loadCourses(): void {
-    console.log('📚 Loading all published courses...');
     this.courseService.getPublishedCourses().subscribe({
       next: (coursesData: CourseDto[]) => {
         this.courses = coursesData;
@@ -111,17 +120,34 @@ export class StudentDashboard implements OnInit, OnDestroy {
         this.extractCategories();
         this.coursesLoaded = true;
 
-        console.log('✅ Courses loaded:', this.courses.length);
-        console.log('📋 Course IDs:', this.courses.map(c => ({ id: c.id, title: c.title })));
+        // Load pricing for each course
+        this.courses.forEach(course => {
+          if (course.id) {
+            this.courseService.coursePriceService.getCoursePricing(course.id).subscribe({
+              next: (pricing) => {
+                // Attach pricing to course object
+                (course as any).coursePrice = pricing;
+                
+                // Start countdown if has future pricing
+                if (this.courseService.coursePriceService.willBecomePaid(pricing)) {
+                  this.startCountdown(course.id!);
+                }
+              },
+              error: (err) => {
+                console.error('Failed to load pricing for course:', course.id);
+              }
+            });
+          }
+        });
 
         // Update recommendations if enrollments already loaded
         if (this.enrollmentsLoaded) {
-          this.logRecommendations();
+          this.getRecommendedCourses();
         }
       },
       error: (err: any) => {
-        console.error('❌ Failed to load courses:', err);
-        this.coursesLoaded = true; // Still mark as loaded to prevent blocking
+        console.error('Failed to load courses:', err);
+        this.coursesLoaded = true;
       }
     });
   }
@@ -136,7 +162,6 @@ export class StudentDashboard implements OnInit, OnDestroy {
     });
 
     this.categories = Array.from(categoryMap.values());
-    console.log('🏷️ Categories extracted:', this.categories.length);
   }
 
   filterByCategory(categoryId: number | null): void {
@@ -149,7 +174,6 @@ export class StudentDashboard implements OnInit, OnDestroy {
         course => course.category?.id === categoryId
       );
     }
-    console.log('🔍 Filtered courses:', this.filteredCourses.length);
   }
 
   isCategorySelected(categoryId: number | null): boolean {
@@ -158,8 +182,6 @@ export class StudentDashboard implements OnInit, OnDestroy {
 
   // Handler for enrolled course IDs from my-courses component
   onEnrolledCoursesLoaded(courseIds: number[]): void {
-    console.log('📨 Received enrolled course IDs from my-courses:', courseIds);
-
     this.enrolledCourseIds = courseIds;
     this.enrollmentsLoaded = true;
 
@@ -171,64 +193,25 @@ export class StudentDashboard implements OnInit, OnDestroy {
 
     // Remove duplicates
     this.enrolledCategoryIds = [...new Set(categoryIds)];
-
-    console.log('✅ Enrolled course IDs stored:', this.enrolledCourseIds);
-    console.log('🏷️ Enrolled category IDs:', this.enrolledCategoryIds);
-
-    // Log recommendations for debugging
-    if (this.coursesLoaded) {
-      this.logRecommendations();
-    }
-  }
-
-  // Helper method to log recommendations for debugging
-  private logRecommendations(): void {
-    const recommendations = this.getRecommendedCourses();
-    console.log('⭐ RECOMMENDATIONS UPDATE:');
-    console.log('   Total courses:', this.courses.length);
-    console.log('   Enrolled courses:', this.enrolledCourseIds.length);
-    console.log('   Recommended courses:', recommendations.length);
-    console.log('   Recommendations:', recommendations.map(c => ({
-      id: c.id,
-      title: c.title,
-      category: c.category?.name
-    })));
   }
 
   // Get recommended courses (ONLY courses the user is NOT enrolled in)
   getRecommendedCourses(): CourseDto[] {
     // If courses not loaded yet, return empty array
     if (!this.coursesLoaded) {
-      console.log('⏳ Courses not loaded yet');
       return [];
     }
 
     // Filter out all enrolled courses
     const notEnrolledCourses = this.courses.filter(course => {
-      // Make sure course has an ID
       if (!course.id) {
-        console.log('⚠️ Course without ID found:', course.title);
         return false;
       }
-
-      // Check if NOT in enrolled list
-      const isNotEnrolled = !this.enrolledCourseIds.includes(course.id);
-
-      if (!isNotEnrolled) {
-        console.log('❌ Filtering out enrolled course:', course.id, course.title);
-      }
-
-      return isNotEnrolled;
+      return !this.enrolledCourseIds.includes(course.id);
     });
-
-    console.log('🔍 Filtering recommendations:');
-    console.log('   Total courses:', this.courses.length);
-    console.log('   Enrolled courses:', this.enrolledCourseIds.length);
-    console.log('   Available courses (not enrolled):', notEnrolledCourses.length);
 
     // If no courses available (user enrolled in all), return empty array
     if (notEnrolledCourses.length === 0) {
-      console.log('🎉 User enrolled in all courses!');
       return [];
     }
 
@@ -244,27 +227,18 @@ export class StudentDashboard implements OnInit, OnDestroy {
         !course.category?.id || !this.enrolledCategoryIds.includes(course.category.id)
       );
 
-      console.log('🎯 Same category courses:', sameCategoryCourses.length);
-      console.log('📚 Other courses:', otherCourses.length);
-
       // Combine: prioritize same category, then others, limit to 4
-      const recommendations = [...sameCategoryCourses, ...otherCourses].slice(0, 4);
-      console.log('⭐ Final recommendations (with category priority):', recommendations.length);
-      return recommendations;
+      return [...sameCategoryCourses, ...otherCourses].slice(0, 4);
     }
 
     // If no enrolled courses yet, just return first 4 available courses
-    const recommendations = notEnrolledCourses.slice(0, 4);
-    console.log('⭐ Final recommendations (no enrollments yet):', recommendations.length);
-    return recommendations;
+    return notEnrolledCourses.slice(0, 4);
   }
 
   enrollInCourse(course: CourseDto): void {
     if (course.id) {
-      console.log('🎓 Navigating to enroll in course:', course.id, course.title);
       this.router.navigate(['/student/course', course.id, 'enroll']);
     } else {
-      console.error('❌ Course ID is missing for course:', course.title);
       alert('Unable to enroll. Course ID is missing.');
     }
   }
@@ -312,5 +286,127 @@ export class StudentDashboard implements OnInit, OnDestroy {
 
   getStudentId(): string {
     return this.currentUser?.studentId || 'N/A';
+  }
+
+  // COUNTDOWN METHODS
+
+  /**
+   * Check if course has future pricing
+   */
+  hasFuturePricing(coursePrice: CoursePriceDto): boolean {
+    return this.courseService.coursePriceService.willBecomePaid(coursePrice);
+  }
+
+  /**
+   * Get countdown for course
+   */
+  getCountdown(coursePrice: CoursePriceDto): string | null {
+    return this.courseService.coursePriceService.formatCountdown(coursePrice);
+  }
+
+  /**
+   * Get countdown badge color based on urgency
+   */
+  getCountdownBadgeColor(coursePrice: CoursePriceDto): string {
+    return this.courseService.coursePriceService.getCountdownBadgeColor(coursePrice);
+  }
+
+  /**
+   * Start live countdown for a course card
+   */
+  startCountdown(courseId: number): void {
+    // Clear existing interval if any
+    if (this.countdownIntervals.has(courseId)) {
+      clearInterval(this.countdownIntervals.get(courseId));
+    }
+    
+    // Update every second - forces Angular change detection
+    const interval = setInterval(() => {
+      // The template will automatically re-render due to the interval
+      // No explicit change detection needed
+    }, 1000);
+    
+    this.countdownIntervals.set(courseId, interval);
+  }
+
+  /**
+   * Stop countdown for a course
+   */
+  stopCountdown(courseId: number): void {
+    if (this.countdownIntervals.has(courseId)) {
+      clearInterval(this.countdownIntervals.get(courseId));
+      this.countdownIntervals.delete(courseId);
+    }
+  }
+
+  /**
+   * Get future price display (what course will cost after countdown)
+   */
+  getFuturePrice(coursePrice: CoursePriceDto): string {
+    const priceDto: CoursePriceDto = {
+      ...coursePrice,
+      isFree: false
+    };
+    return this.courseService.coursePriceService.formatPrice(priceDto);
+  }
+
+  /**
+   * Get original price for discount display
+   */
+  getOriginalPrice(coursePrice: CoursePriceDto): string {
+    const priceDto: CoursePriceDto = {
+      ...coursePrice,
+      currentPrice: coursePrice.originalPrice
+    };
+    return this.courseService.coursePriceService.formatPrice(priceDto);
+  }
+
+  // LIKE/FAVORITE METHODS
+
+  /**
+   * Load liked courses from localStorage
+   */
+  loadLikedCourses(): void {
+    const stored = localStorage.getItem('likedCourses');
+    if (stored) {
+      try {
+        const likedArray = JSON.parse(stored);
+        this.likedCourseIds = new Set(likedArray);
+      } catch (e) {
+        console.error('Failed to load liked courses:', e);
+        this.likedCourseIds = new Set();
+      }
+    }
+  }
+
+  /**
+   * Save liked courses to localStorage
+   */
+  saveLikedCourses(): void {
+    const likedArray = Array.from(this.likedCourseIds);
+    localStorage.setItem('likedCourses', JSON.stringify(likedArray));
+  }
+
+  /**
+   * Check if a course is liked
+   */
+  isCourseLiked(courseId: number | undefined): boolean {
+    if (!courseId) return false;
+    return this.likedCourseIds.has(courseId);
+  }
+
+  /**
+   * Toggle like status for a course
+   */
+  toggleLike(course: CourseDto): void {
+    if (!course.id) return;
+    
+    if (this.likedCourseIds.has(course.id)) {
+      this.likedCourseIds.delete(course.id);
+    } else {
+      this.likedCourseIds.add(course.id);
+    }
+    
+    this.saveLikedCourses();
   }
 }
