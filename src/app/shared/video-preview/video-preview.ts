@@ -60,7 +60,6 @@ export class VideoPreview implements OnInit {
         }, 100);
       },
       error: (error) => {
-        console.error('Error loading courses:', error);
         this.coursesSubject.next([]);
       }
     });
@@ -170,5 +169,23 @@ export class VideoPreview implements OnInit {
     return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzliNjAxMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmZmZmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db3Vyc2UgSW1hZ2U8L3RleHQ+PC9zdmc+';
   }
 
-  
+  enrollInCourse(course: CourseDto): void {
+    // Stop event propagation to prevent triggering openVideo
+    event?.stopPropagation();
+    
+    if (course.id) {
+      // Navigate to enrollment page or handle enrollment logic
+      this.router.navigate(['/dashboard/courses', course.id, 'enroll']);
+      
+      // Alternative: You could also call an enrollment service here
+      // this.courseService.enrollInCourse(course.id).subscribe({
+      //   next: () => {
+      //     // Show success message or navigate
+      //   },
+      //   error: (error) => {
+      //     // Handle enrollment error
+      //   }
+      // });
+    }
+  }
 }

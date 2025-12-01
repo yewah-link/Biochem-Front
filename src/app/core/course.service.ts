@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, map } from 'rxjs';
+import { CoursePriceService, CoursePriceDto } from './course-price.service';
 
 export interface CategoryDto {
   id?: number;
@@ -67,6 +68,9 @@ export interface CourseDto {
   videos?: VideosDto[];
   notes?: NotesDto[];
   exams?: ExamDto[];
+  
+  // Optional: Attach pricing data when loaded
+  coursePrice?: CoursePriceDto;
 }
 
 interface GenericResponseV2<T> {
@@ -82,9 +86,13 @@ export class CourseService {
   private apiUrl = 'http://localhost:8080/api/v1/course';
   private currentCourseSubject = new BehaviorSubject<CourseDto | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    public coursePriceService: CoursePriceService  
+  ) {}
 
-  // Admin operations
+  // ADMIN OPERATIONS
+
   createCourse(courseDto: CourseDto): Observable<CourseDto> {
     return this.http.post<GenericResponseV2<CourseDto>>(`${this.apiUrl}/create`, courseDto).pipe(
       map(res => {
@@ -138,7 +146,8 @@ export class CourseService {
     );
   }
 
-  // Read operations
+  // READ OPERATIONS
+
   getCourseById(id: number): Observable<CourseDto> {
     return this.http.get<GenericResponseV2<CourseDto>>(`${this.apiUrl}/${id}`).pipe(
       map(res => {
@@ -184,7 +193,9 @@ export class CourseService {
     );
   }
 
-  // Course content management
+  // COURSE CONTENT MANAGEMENT
+  
+
   addVideoToCourse(courseId: number, videoId: number): Observable<CourseDto> {
     return this.http.post<GenericResponseV2<CourseDto>>(`${this.apiUrl}/${courseId}/add-video/${videoId}`, {}).pipe(
       map(res => {
@@ -251,7 +262,8 @@ export class CourseService {
     );
   }
 
-  // Thumbnail management methods
+  // THUMBNAIL MANAGEMENT
+
   /**
    * Upload a thumbnail image for a course
    * @param courseId The ID of the course
@@ -293,20 +305,8 @@ export class CourseService {
     );
   }
 
-  // Get current course
-  getCurrentCourse(): Observable<CourseDto | null> {
-    return this.currentCourseSubject.asObservable();
-  }
-
-  // Set current course
-  setCurrentCourse(course: CourseDto | null): void {
-    this.currentCourseSubject.next(course);
-  }
-
   /**
    * Get the thumbnail URL using the backend endpoint
-   * Uses GET /api/v1/course/{courseId}/thumbnail
-   * @param course The course object
    * @returns Full URL to the thumbnail endpoint or placeholder
    */
   getCourseThumbnailUrl(course: CourseDto): string {
@@ -319,7 +319,23 @@ export class CourseService {
     return `${this.apiUrl}/${course.id}/thumbnail`;
   }
 
-  // Validate course ID helper
+  /**
+   * Get current course observable
+   */
+  getCurrentCourse(): Observable<CourseDto | null> {
+    return this.currentCourseSubject.asObservable();
+  }
+
+  /**
+   * Set current course
+   */
+  setCurrentCourse(course: CourseDto | null): void {
+    this.currentCourseSubject.next(course);
+  }
+
+  /**
+   * Validate course ID helper
+   */
   isValidCourseId(course: CourseDto): boolean {
     return !!(course && course.id && course.id > 0);
   }
